@@ -3,6 +3,7 @@ package fr.mattmouss.signs;
 import fr.mattmouss.signs.fixedpanel.ModBlock;
 import fr.mattmouss.signs.fixedpanel.PanelItem;
 import fr.mattmouss.signs.fixedpanel.PanelRegister;
+import fr.mattmouss.signs.fixedpanel.panelblock.SquarePanelBlock;
 import fr.mattmouss.signs.fixedpanel.support.*;
 import fr.mattmouss.signs.setup.ClientProxy;
 import fr.mattmouss.signs.setup.IProxy;
@@ -61,6 +62,7 @@ public class SignMod
         public static void onBlocksRegistry(final RegistryEvent.Register<Block> blockRegistryEvent) {
             blockRegistryEvent.getRegistry().register(new SignSupport());
             blockRegistryEvent.getRegistry().register(new GridSupport());
+            blockRegistryEvent.getRegistry().register(new SquarePanelBlock());
         }
 
         @SubscribeEvent
@@ -77,7 +79,7 @@ public class SignMod
                     .create(SignSupportTileEntity::new, ModBlock.SIGN_SUPPORT)
                     .build(null).setRegistryName("sign_support"));
             register.getRegistry().register(TileEntityType.Builder
-                    .create(SquareSignTileEntity::new, PanelRegister.SQUARE_PANEL)
+                    .create(SquareSignTileEntity::new, ModBlock.SQUARE_PANEL)
                     .build(null).setRegistryName("square_panel"));
         }
     }

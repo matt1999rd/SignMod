@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "sign:block/rectangle_panel" }
+  }
+}

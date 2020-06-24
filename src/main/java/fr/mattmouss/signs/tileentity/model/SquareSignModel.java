@@ -12,7 +12,7 @@ public class SquareSignModel extends Model {
     private final RendererModel support_background = new RendererModel(this,0,0);
 
     public SquareSignModel() {
-        panel.addBox(-5,2,-1,10,10,1);
+        panel.addBox(-5,2,-2,10,10,1);
         //for the grid background multiple box
         //add the two horizontal barrier
         grid_background.addBox(-8,3,0,16,2,0);

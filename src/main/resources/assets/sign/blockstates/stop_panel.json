@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "sign:block/stop_panel" }
+  }
+}

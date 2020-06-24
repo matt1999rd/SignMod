@@ -6,6 +6,7 @@ import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.mattmouss.signs.networking.Networking;
 import fr.mattmouss.signs.networking.PacketPlacePanel;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.ImageButton;
@@ -54,7 +55,6 @@ public class ChoiceScreen extends Screen {
 
     private void place(int form){
         Form f = Form.byIndex(form);
-        assert f != null;
         System.out.println("Form selected : "+f.toString());
         //put here the code for placing block into world
         Networking.INSTANCE.sendToServer(new PacketPlacePanel(futurePanelPos,form,futureFacing,rotated));

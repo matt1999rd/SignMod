@@ -8,6 +8,7 @@ import fr.mattmouss.signs.util.Functions;
 import javafx.scene.layout.Pane;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.ContainerBlock;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.BlockItemUseContext;
@@ -24,7 +25,7 @@ import javax.annotation.Nullable;
 
 public abstract class AbstractPanelBlock extends Block {
     public AbstractPanelBlock(String name) {
-        super(Properties.create(Material.ROCK).doesNotBlockMovement());
+        super(Properties.create(Material.ROCK).doesNotBlockMovement().hardnessAndResistance(2.0F).lightValue(0));
         this.setRegistryName(name+"_panel");
     }
 
@@ -40,7 +41,7 @@ public abstract class AbstractPanelBlock extends Block {
     }
 
 
-    public static AbstractPanelBlock asPanel(Form form){
+    public static AbstractPanelBlock createPanelInstance(Form form){
         switch (form){
             case UPSIDE_TRIANGLE:
                 return new LetWayPanelBlock();
@@ -74,16 +75,10 @@ public abstract class AbstractPanelBlock extends Block {
 
     public static BlockState getBlockStateFromSupport(int form,BlockState supportState,int facing,boolean rotated){
         Form f = Form.byIndex(form);
-        AbstractPanelBlock panelBlock = AbstractPanelBlock.asPanel(f);
-        BlockState panelState = panelBlock.getStateContainer().getBaseState();
-        if (supportState.getBlock() instanceof SignSupport){
-            panelState = panelState.with(GRID,false);
-        }else if (supportState.getBlock() instanceof GridSupport){
-            panelState = panelState.with(GRID,true);
-        }else{
-            throw new IllegalArgumentException("The state in argument must be a sign_support or grid_support !!");
-        }
-        return panelState.with(GridSupport.ROTATED,rotated).with(BlockStateProperties.HORIZONTAL_FACING, Direction.byHorizontalIndex(facing));
+        AbstractPanelBlock panelBlock = PanelRegister.asPanel(f);
+        BlockState panelState = panelBlock.getDefaultState();
+        boolean grid = (supportState.getBlock() instanceof GridSupport);
+        return panelState.with(GridSupport.ROTATED,rotated).with(BlockStateProperties.HORIZONTAL_FACING, Direction.byHorizontalIndex(facing)).with(GRID,grid);
     }
 
 

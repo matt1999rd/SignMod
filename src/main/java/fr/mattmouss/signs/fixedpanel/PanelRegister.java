@@ -15,7 +15,6 @@ public class PanelRegister {
 
     //enregistrement des panneaux
 
-
     public static final AbstractPanelBlock TRIANGLE_PANEL = register(Form.TRIANGLE); //warning
     public static final AbstractPanelBlock SQUARE_PANEL = register(Form.SQUARE); //information
     public static final AbstractPanelBlock LET_WAY_PANEL = register(Form.UPSIDE_TRIANGLE); //let way sign
@@ -28,7 +27,7 @@ public class PanelRegister {
 
 
     private static AbstractPanelBlock register(Form form){
-        AbstractPanelBlock panelBlock = AbstractPanelBlock.asPanel(form);
+        AbstractPanelBlock panelBlock = AbstractPanelBlock.createPanelInstance(form);
         System.out.println("-----------------Block "+form.toString()+" registered !------------------");
         System.out.println("------------------ Registry Name : "+panelBlock.getRegistryName()+"-------------");
         PANELS.add(panelBlock);
@@ -42,6 +41,31 @@ public class PanelRegister {
             event.getRegistry().register(panelBlock);
         });
         PANELS.clear();
+    }
+
+    public static AbstractPanelBlock asPanel(Form form){
+        switch (form){
+            case UPSIDE_TRIANGLE:
+                return ModBlock.LET_WAY_PANEL;
+            case TRIANGLE:
+                return ModBlock.TRIANGLE_PANEL;
+            case OCTOGONE:
+                return ModBlock.STOP_PANEL;
+            case CIRCLE:
+                return ModBlock.CIRCLE_PANEL;
+            case SQUARE:
+                return ModBlock.SQUARE_PANEL;
+            case RECTANGLE:
+                return ModBlock.RECTANGLE_PANEL;
+            case ARROW:
+                return ModBlock.DIRECTION_PANEL;
+            case PLAIN_SQUARE:
+                return ModBlock.HUGE_DIRECTION_PANEL;
+            case DIAMOND:
+                return ModBlock.PRIORITY_PANEL;
+            default:
+                return null;
+        }
     }
 
 }

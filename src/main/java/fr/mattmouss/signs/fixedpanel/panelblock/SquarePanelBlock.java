@@ -18,4 +18,5 @@ public class SquarePanelBlock extends AbstractPanelBlock {
     public TileEntity createTileEntity(BlockState state, IBlockReader world) {
         return new SquareSignTileEntity();
     }
+
 }
