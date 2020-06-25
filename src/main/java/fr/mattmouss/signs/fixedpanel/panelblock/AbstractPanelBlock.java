@@ -102,8 +102,6 @@ public abstract class AbstractPanelBlock extends Block {
     protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
         builder.add(
                 BlockStateProperties.HORIZONTAL_FACING,
-                BlockStateProperties.DOWN,
-                BlockStateProperties.UP,
                 GridSupport.ROTATED,
                 GRID);
     }

@@ -65,18 +65,24 @@ public class Functions {
         );
     }
 
-    public static float distance2DFromTo(Vec3d vec1,Vec3d vec2) {
-        double d0 = vec1.x - vec2.x;
-        double d1 = vec1.z - vec2.z;
-        return MathHelper.sqrt(d0 * d0 + d1 * d1);
-    }
-
     public static Vec3d getVecFromBlockPos (BlockPos pos,float horOffset){
         return new Vec3d(pos.getX()+horOffset,pos.getY(),pos.getZ()+horOffset);
     }
 
     public static double toDegree(double radianAngle){
-        return (180.0/Math.PI)*radianAngle;
+        double degreeAngle = (180.0/Math.PI)*radianAngle;
+        if (degreeAngle < 0){
+            degreeAngle +=360.0D;
+        }
+        return degreeAngle;
+    }
+
+    public static double toRadian(double degreeAngle){
+        double radianAngle = (Math.PI/180.0)*degreeAngle;
+        if (radianAngle < 0){
+            radianAngle += 2*Math.PI;
+        }
+        return radianAngle;
     }
 
     public static boolean isValidCoordinate(int x, int y) {

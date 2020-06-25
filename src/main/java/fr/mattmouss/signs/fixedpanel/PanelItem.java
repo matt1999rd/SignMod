@@ -63,21 +63,22 @@ public class PanelItem extends Item {
         //we compare our player position to the position of the support's center
         //we get angle using arctan function
         double angle = MathHelper.atan2(offsetPlayerPos.x,offsetPlayerPos.z);
-        //we convert to degree
-        double degreeAngle = Functions.toDegree(angle);
+        //we convert to degree and make it positive
+        double degreeAngle =Functions.toDegree(angle);
         //then to index from 2 to 9 corresponding to the part of stage where the player is
         int index = MathHelper.ceil((degreeAngle-22.5D)/45.0D);
         //we consider the part split by angle origin which correpond to 0
-        // and the following to 1 that we move of a complete circle for math simplification
+        // that we move of a complete circle for math simplification
         if (index == 0){
             index =8;
         }else if (index == 1){
             index =9;
         }
         //we get facing using a special index that is for i : 0->7 --> 0 0 3 3 2 2 1 1
-        //we have translated 0 and 1 to 8 and 9 to get a decreasing linear function --> 3 3 2 2 1 1 0 0
+        //we have translated 0 to 8 and 1 to 9 to get a decreasing linear function -->
+        // 2->3 3->3 4->2 5->2 6->1 7->1 8->0 9->0
         Direction facing = Direction.byHorizontalIndex((9-index)/2);
-        boolean isRotated = (index%2 == 0);
+        boolean isRotated = (index%2 == 1);
         ExtendDirection direction = ExtendDirection.getExtendedDirection(facing,isRotated);
         BooleanProperty centerDirectionProperty = direction.getSupportProperty();
         ExtendDirection leftDirection = direction.rotateY();
@@ -91,25 +92,28 @@ public class PanelItem extends Item {
             return null;
         }else{
             if (state.get(leftDirectionProperty)){
-                //right is free we return the left direction
-                return leftDirection;
-            }else {
+                //right is free we return the right direction
                 return rightDirection;
+            }else if (state.get(rightDirectionProperty)){
+                //left is free we return the left direction
+                return leftDirection;
             }
         }
+        return direction; // no grid on support : we return the right direction
     }
 
 
     private Direction getGridFacingDirection(Direction.Axis axis, PlayerEntity player, BlockPos pos,boolean rotated) {
         Direction.AxisDirection axisDirection;
-        switch (axis) {
+        Direction.Axis oppositeAxis = (axis == Direction.Axis.X) ? Direction.Axis.Z : Direction.Axis.X;
+        switch (oppositeAxis) {
             case X:
                 if (rotated){
                     //we are comparing point that are up of the line y = x+ Zoffset
                     //to make it we reduce to the blockPos as new origin and then compare to y= x line
                     Vec3d player_pos = player.getPositionVec();
                     Vec3d panel_origin_pos = Functions.getVecFromBlockPos(pos,0.0F);
-                    player_pos.subtract(panel_origin_pos);
+                    player_pos =player_pos.subtract(panel_origin_pos);
                     axisDirection = (player_pos.x>player_pos.z) ?
                             Direction.AxisDirection.NEGATIVE :
                             Direction.AxisDirection.POSITIVE;
@@ -124,14 +128,14 @@ public class PanelItem extends Item {
                     if (rotated){
                         Vec3d player_pos = player.getPositionVec();
                         Vec3d panel_origin_pos = Functions.getVecFromBlockPos(pos,0.5F);
-                        player_pos.subtract(panel_origin_pos);
+                        player_pos=player_pos.subtract(panel_origin_pos);
                         axisDirection = (player_pos.x+player_pos.z<0) ?
                                 Direction.AxisDirection.NEGATIVE :
                                 Direction.AxisDirection.POSITIVE;
                     }else {
                         axisDirection = (player.getPositionVec().z < pos.getZ() + 0.5F) ?
-                                Direction.AxisDirection.POSITIVE :
-                                Direction.AxisDirection.NEGATIVE;
+                                Direction.AxisDirection.NEGATIVE :
+                                Direction.AxisDirection.POSITIVE;
                     }
                     break;
                 case Y:
@@ -139,7 +143,7 @@ public class PanelItem extends Item {
                     return null;
             }
 
-            return Direction.getFacingFromAxis(axisDirection, axis);
+            return Direction.getFacingFromAxis(axisDirection, oppositeAxis);
     }
 
 

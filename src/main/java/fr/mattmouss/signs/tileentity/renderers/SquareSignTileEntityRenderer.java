@@ -6,6 +6,7 @@ import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.mattmouss.signs.fixedpanel.support.GridSupport;
 import fr.mattmouss.signs.tileentity.model.SquareSignModel;
 import fr.mattmouss.signs.tileentity.primary.SquareSignTileEntity;
+import fr.mattmouss.signs.util.Functions;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.state.properties.BlockStateProperties;
@@ -17,6 +18,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 @OnlyIn(Dist.CLIENT)
 public class SquareSignTileEntityRenderer extends TileEntityRenderer<SquareSignTileEntity> {
     private static final ResourceLocation SQUARE_BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/square.png");
+    private static final ResourceLocation SUPPORT = new ResourceLocation(SignMod.MODID,"textures/block/sign_support.png");
     private final SquareSignModel model = new SquareSignModel();
 
     public SquareSignTileEntityRenderer() {
@@ -40,7 +42,6 @@ public class SquareSignTileEntityRenderer extends TileEntityRenderer<SquareSignT
         }
         GlStateManager.rotatef(angle, 0.0F, 1.0F, 0.0F);
         //code for changing background display
-        //todo : complete devellopement of render function
         if (destroyStage >= 0) {
             this.bindTexture(DESTROY_STAGES[destroyStage]);
             GlStateManager.matrixMode(5890);
@@ -53,7 +54,7 @@ public class SquareSignTileEntityRenderer extends TileEntityRenderer<SquareSignT
         }
         GlStateManager.enableRescaleNormal();
         GlStateManager.pushMatrix();
-        this.model.renderSign();
+        this.model.renderSign(blockstate.get(GridSupport.ROTATED));
         GlStateManager.popMatrix();
         GlStateManager.depthMask(true);
         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -68,11 +69,10 @@ public class SquareSignTileEntityRenderer extends TileEntityRenderer<SquareSignT
     }
 
     private float getAngleFromBlockState(BlockState blockstate) {
-        float angle =0.0F;
-        if (blockstate.get(BlockStateProperties.HORIZONTAL_FACING).getAxis() == Direction.Axis.Z){
-            //axe NS -> 90° angle in addition to the rotation state
-            angle+=90.0F;
-        }
+        Direction facing = blockstate.get(BlockStateProperties.HORIZONTAL_FACING);
+        //to transform the horizontal index by a rotation angle that is proportionnal to 90°
+        //make 0->2 1->1 2->0 3->3 --> 0->2 1->1 2->0 3-> (-1%4) --> (2-x)%4
+        float angle = 90.0F * ((2-facing.getHorizontalIndex())%4);
 
         if (blockstate.get(GridSupport.ROTATED)){
             //if rotation add 45° rotation to the block
