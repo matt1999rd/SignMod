@@ -45,6 +45,7 @@ public class PanelItem extends Item {
             facing = getGridFacingDirection(axis,player,pos,rotated);
         }else if (block instanceof SignSupport){
             ExtendDirection extendDirection = getSupportFacingDirection(state,player,pos);
+            if (extendDirection == null)return ActionResultType.FAIL;
             facing = extendDirection.getDirection();
             rotated = extendDirection.isRotated();
         }
@@ -109,30 +110,33 @@ public class PanelItem extends Item {
         switch (oppositeAxis) {
             case X:
                 if (rotated){
-                    //we are comparing point that are up of the line y = x+ Zoffset
-                    //to make it we reduce to the blockPos as new origin and then compare to y= x line
+                    //we are comparing point that are up of the line z = x+ Zoffset
+                    //to make it we reduce to the blockPos as new origin and then compare to z= x line
                     Vec3d player_pos = player.getPositionVec();
                     Vec3d panel_origin_pos = Functions.getVecFromBlockPos(pos,0.0F);
                     player_pos =player_pos.subtract(panel_origin_pos);
                     axisDirection = (player_pos.x>player_pos.z) ?
-                            Direction.AxisDirection.NEGATIVE :
-                            Direction.AxisDirection.POSITIVE;
+                            Direction.AxisDirection.POSITIVE :
+                            Direction.AxisDirection.NEGATIVE;
                 }else {
                     //just comparing vertically
                     axisDirection = (player.getPositionVec().x < pos.getX() + 0.5F) ?
-                            Direction.AxisDirection.POSITIVE :
-                            Direction.AxisDirection.NEGATIVE;
+                            Direction.AxisDirection.NEGATIVE :
+                            Direction.AxisDirection.POSITIVE;
                 }
                 break;
                 case Z:
                     if (rotated){
+                        //when rotated this way we translate position to the center of the grid
+                        //then the position of the panel depends on the sum of x and z following the comparison to the line z = -x
                         Vec3d player_pos = player.getPositionVec();
                         Vec3d panel_origin_pos = Functions.getVecFromBlockPos(pos,0.5F);
                         player_pos=player_pos.subtract(panel_origin_pos);
-                        axisDirection = (player_pos.x+player_pos.z<0) ?
-                                Direction.AxisDirection.NEGATIVE :
-                                Direction.AxisDirection.POSITIVE;
+                        axisDirection = (player_pos.x+player_pos.z>0) ?
+                                Direction.AxisDirection.POSITIVE :
+                                Direction.AxisDirection.NEGATIVE;
                     }else {
+                        //just comparing horizontally
                         axisDirection = (player.getPositionVec().z < pos.getZ() + 0.5F) ?
                                 Direction.AxisDirection.NEGATIVE :
                                 Direction.AxisDirection.POSITIVE;

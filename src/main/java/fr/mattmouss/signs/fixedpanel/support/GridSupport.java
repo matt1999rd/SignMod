@@ -1,5 +1,8 @@
 package fr.mattmouss.signs.fixedpanel.support;
 
+import fr.mattmouss.signs.enums.ExtendDirection;
+import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
+import fr.mattmouss.signs.util.Functions;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -92,62 +95,12 @@ public class GridSupport extends Block {
 
     @Override
     public void onBlockHarvested(World worldIn, BlockPos pos, BlockState state, PlayerEntity player) {
-        this.deleteOtherGrid(pos,worldIn,player);
-        this.deleteBlock(pos,worldIn,player);
+        Functions.deleteOtherGrid(pos,worldIn,player,state);
+        Functions.deleteBlock(pos,worldIn,player);
         super.onBlockHarvested(worldIn, pos, state, player);
     }
 
-    public void deleteOtherGrid(BlockPos pos, World worldIn, PlayerEntity player) {
-        BlockState state = worldIn.getBlockState(pos);
-        boolean isRotated = state.get(ROTATED);
-        Direction.Axis axis = state.get(BlockStateProperties.HORIZONTAL_AXIS);
-        if (!isRotated) {
-            Direction posDir = Direction.getFacingFromAxisDirection(axis, Direction.AxisDirection.POSITIVE);
-            Direction negDir = Direction.getFacingFromAxisDirection(axis, Direction.AxisDirection.NEGATIVE);
-            deleteGridRow(posDir,null,pos,worldIn,player);
-            deleteGridRow(negDir,null,pos,worldIn,player);
-        }else {
-            Direction posDir1 = Direction.getFacingFromAxisDirection(axis, Direction.AxisDirection.POSITIVE);
-            Direction posDir2 = posDir1.rotateYCCW();
-            Direction negDir1 = Direction.getFacingFromAxisDirection(axis, Direction.AxisDirection.NEGATIVE);
-            Direction negDir2 = negDir1.rotateYCCW();
-            deleteGridRow(posDir1,posDir2,pos,worldIn,player);
-            deleteGridRow(negDir1,negDir2,pos,worldIn,player);
-        }
-    }
 
-    private void deleteGridRow(Direction dir1,@Nullable Direction dir2,BlockPos basePos,World worldIn,PlayerEntity player){
-        BlockPos offset_pos = (dir2 == null) ? basePos.offset(dir1) : basePos.offset(dir1).offset(dir2);
-        //check all the row of grid in the direction dir1 and stop when it is not a grid.
-        while (worldIn.getBlockState(offset_pos).getBlock() instanceof GridSupport){
-            offset_pos = (dir2 == null) ? offset_pos.offset(dir1) : offset_pos.offset(dir1).offset(dir2);
-        }
-        if (worldIn.getBlockState(offset_pos).getBlock() instanceof SignSupport) {
-            //if it is stable do not bother with this
-            return;
-        }
-        //if not we need to get back to the initial block and delete block in-between
-        offset_pos = (dir2 == null) ? offset_pos.offset(dir1.getOpposite())
-                : offset_pos
-                .offset(dir1.getOpposite())
-                .offset(dir2.getOpposite());
-        while (!offset_pos.equals(basePos)) {
-            ((GridSupport)worldIn.getBlockState(offset_pos).getBlock()).deleteBlock(offset_pos,worldIn,player);
-            offset_pos = (dir2 == null) ? offset_pos.offset(dir1.getOpposite())
-                    : offset_pos
-                    .offset(dir1.getOpposite())
-                    .offset(dir2.getOpposite());
-        }
-    }
 
-    public void deleteBlock(BlockPos pos, World world,PlayerEntity playerEntity){
-        ItemStack stack = playerEntity.getHeldItemMainhand();
-        BlockState state1 = world.getBlockState(pos);
-        world.playEvent(playerEntity,2001,pos,Block.getStateId(state1));
-        if (!world.isRemote && !playerEntity.isCreative()) {
-            Block.spawnDrops(state1, world, pos, null, playerEntity, stack);
-        }
-        world.setBlockState(pos, Blocks.AIR.getDefaultState(),35);
-    }
 
 }

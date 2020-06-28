@@ -1,5 +1,65 @@
 {
-  "variants": {
-    "": { "model": "sign:block/square_panel" }
-  }
+  "multipart": [
+    {   "apply": { "model": "sign:block/square_panel" }},
+    {
+      "when": {"OR": [
+        {"facing" : "north", "grid" : "true" , "rotated" : "false"},
+        {"facing" : "south", "grid" : "true" , "rotated" : "false"}
+      ]},
+      "apply": {"model": "sign:block/grid_support"}
+    },
+    {
+      "when": {"OR": [
+        {"facing" : "east", "grid" : "true" , "rotated" : "false"},
+        {"facing" : "west", "grid" : "true" , "rotated" : "false"}
+      ]},
+      "apply": {"model": "sign:block/grid_support","y": 90}
+    },
+    {
+      "when": {"OR": [
+        {"facing" : "north", "grid" : "true" , "rotated" : "true"},
+        {"facing" : "south", "grid" : "true" , "rotated" : "true"}
+      ]},
+      "apply": {"model": "sign:block/grid_support_rotated"}
+    },
+    {
+      "when": {"OR": [
+        {"facing" : "east", "grid" : "true" , "rotated" : "true"},
+        {"facing" : "west", "grid" : "true" , "rotated" : "true"}
+      ]},
+      "apply": {"model": "sign:block/grid_support_rotated","y": 90}
+    },
+    {
+      "when": {"grid": "false"},
+      "apply": {"model":   "sign:block/sign_support_post", "uvlock": true }
+    },
+    {   "when": { "north": "true" ,"grid": "false"},
+      "apply": { "model": "sign:block/sign_support_side", "uvlock": true }
+    },
+    {   "when": { "east": "true" ,"grid": "false"},
+      "apply": { "model": "sign:block/sign_support_side", "y": 90, "uvlock": true }
+    },
+    {   "when": { "south": "true" ,"grid": "false"},
+      "apply": { "model": "sign:block/sign_support_side", "y": 180, "uvlock": true }
+    },
+    {   "when": { "west": "true" ,"grid": "false"},
+      "apply": { "model": "sign:block/sign_support_side", "y": 270, "uvlock": true }
+    },
+    {
+      "when": {"north_east": "true" ,"grid": "false"},
+      "apply": {"model": "sign:block/sign_support_diag", "uvlock": true}
+    },
+    {
+      "when": {"south_east": "true" ,"grid": "false"},
+      "apply": {"model": "sign:block/sign_support_diag", "y": 90,"uvlock": true}
+    },
+    {
+      "when": {"south_west": "true" ,"grid": "false"},
+      "apply": {"model": "sign:block/sign_support_diag", "y": 180,"uvlock": true}
+    },
+    {
+      "when": {"north_west": "true" ,"grid": "false"},
+      "apply": {"model": "sign:block/sign_support_diag", "y": 270,"uvlock": true}
+    }
+  ]
 }

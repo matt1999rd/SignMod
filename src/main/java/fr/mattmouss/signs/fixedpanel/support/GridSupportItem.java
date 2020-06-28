@@ -1,7 +1,9 @@
 package fr.mattmouss.signs.fixedpanel.support;
 
 import com.mojang.datafixers.types.Func;
+import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.fixedpanel.ModBlock;
+import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.mattmouss.signs.util.Functions;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -36,14 +38,18 @@ public class GridSupportItem extends BlockItem {
         //test for all horizontal direction and diagonal direction (direction offset and rotated direction offset)
         for (int i=2;i<6;i++){
             Direction dir = directions[i];
-            Block horBlock = world.getBlockState(pos.offset(dir)).getBlock();
+            BlockState horBlockState = world.getBlockState(pos.offset(dir));
             BlockState diagBlockState = world.getBlockState(pos.offset(dir).offset(dir.rotateY()));
-            if (horBlock instanceof GridSupport){
+            if (Functions.isGridSupport(horBlockState)){
                 return true;
             }
             if (diagBlockState.getBlock() instanceof GridSupport){
-                //the grid need to be rotated and the axis must not be the dir axis because of arbitrary choice
+                //the grid need to be rotated and the axis must not be the dir axis because of facingY choice
                 return (diagBlockState.get(GridSupport.ROTATED))&& (dir.getAxis() != diagBlockState.get(BlockStateProperties.HORIZONTAL_AXIS));
+            }
+            if (diagBlockState.getBlock() instanceof AbstractPanelBlock) {
+                //the grid need to be rotated and the facing must have the same axis as the dir axis because of facingY choice
+                return (diagBlockState.get(GridSupport.ROTATED)) && (dir.getAxis() == diagBlockState.get(BlockStateProperties.HORIZONTAL_FACING).getAxis());
             }
         }
         return false;
@@ -54,12 +60,14 @@ public class GridSupportItem extends BlockItem {
         //test for all horizontal direction and diagonal direction (direction offset and rotated direction offset)
         for (int i=2;i<6;i++){
             Direction dir = directions[i];
-            Block horBlock = world.getBlockState(pos.offset(dir)).getBlock();
-            Block diagBlock = world.getBlockState(pos.offset(dir).offset(dir.rotateY())).getBlock();
-            if (horBlock instanceof SignSupport || diagBlock instanceof SignSupport){
+            BlockState horBlockState = world.getBlockState(pos.offset(dir));
+            BlockState diagBlockState = world.getBlockState(pos.offset(dir).offset(dir.rotateY()));
+            if (Functions.isSignSupport(horBlockState) || Functions.isSignSupport(diagBlockState)){
                 return true;
             }
         }
         return false;
     }
+
+
 }

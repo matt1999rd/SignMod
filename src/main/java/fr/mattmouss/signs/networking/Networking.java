@@ -28,12 +28,18 @@ public class Networking {
                 PacketPlacePanel::new,
                 PacketPlacePanel::handle);
 
+        INSTANCE.registerMessage(nextID(),
+                PacketOpenScreen.class,
+                PacketOpenScreen::toBytes,
+                PacketOpenScreen::new,
+                PacketOpenScreen::handle);
+        
         /*
         INSTANCE.registerMessage(nextID(),
-                PacketSpawn.class,
-                PacketSpawn::toBytes,
-                PacketSpawn::new,
-                PacketSpawn::handle);
+                PacketOpenScreen.class,
+                PacketOpenScreen::toBytes,
+                PacketOpenScreen::new,
+                PacketOpenScreen::handle);
         */
     }
 }

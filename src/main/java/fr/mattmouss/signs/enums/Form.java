@@ -30,4 +30,8 @@ public enum Form {
         }
         return forms[meta];
     }
+
+    public int getMeta(){
+        return meta;
+    }
 }

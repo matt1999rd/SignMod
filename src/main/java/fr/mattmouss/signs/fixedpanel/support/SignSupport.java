@@ -56,31 +56,18 @@ public class SignSupport extends Block {
     }
 
     @Override
-    public void onBlockHarvested(World worldIn, BlockPos pos, BlockState state, PlayerEntity player) {
-        this.deleteBlock(pos,worldIn,player);
-        super.onBlockHarvested(worldIn, pos, state, player);
-    }
-
-    private void deleteConnectingGrid(BlockPos pos, World worldIn, PlayerEntity player,BlockState state) {
-        boolean[] flags = Functions.getFlagsFromState(state);
-        for (int i=0;i<8;i++){
-            if (flags[i]){
-                if (i<4){
-                    Direction dir1 = Direction.byHorizontalIndex(i);
-                    BlockPos gridPos = pos.offset(dir1);
-                    BlockState gridState = worldIn.getBlockState(gridPos);
-                    GridSupport gridSupport = (GridSupport)(worldIn.getBlockState(gridPos).getBlock());
-                    gridSupport.onBlockHarvested(worldIn,gridPos,gridState,player);
-                }else {
-                    Direction dir1 = Direction.byHorizontalIndex(i-4);
-                    Direction dir2 = Direction.byHorizontalIndex((i-3)%4);
-                    BlockPos gridPos = pos.offset(dir1).offset(dir2);
-                    BlockState gridState = worldIn.getBlockState(gridPos);
-                    GridSupport gridSupport = (GridSupport)(worldIn.getBlockState(gridPos).getBlock());
-                    gridSupport.onBlockHarvested(worldIn,gridPos,gridState,player);
-                }
-            }
+    public void onBlockHarvested(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+        Functions.deleteConnectingGrid(pos,world,player,state);
+        BlockPos offset_pos = pos.up();
+        //we delete all block that this support block was handling
+        while (isSignSupport(world.getBlockState(offset_pos))){
+            BlockState state1 = world.getBlockState(offset_pos);
+            Functions.deleteBlock(offset_pos,world,player);
+            Functions.deleteConnectingGrid(offset_pos,world,player,state1);
+            offset_pos = offset_pos.up();
         }
+        Functions.deleteBlock(pos,world,player);
+        super.onBlockHarvested(world, pos, state, player);
     }
 
     @Override
@@ -102,22 +89,6 @@ public class SignSupport extends Block {
                 BlockStateProperties.SOUTH,
                 BlockStateProperties.WEST,
                 BlockStateProperties.EAST);
-    }
-
-    public void deleteBlock(BlockPos pos, World world, PlayerEntity playerEntity){
-        BlockState state = world.getBlockState(pos);
-        this.deleteConnectingGrid(pos,world,playerEntity,state);
-        BlockState state2 = world.getBlockState(pos.up());
-        if (state2.getBlock() instanceof SignSupport){
-            ((SignSupport) state2.getBlock()).deleteBlock(pos.up(),world,playerEntity);
-        }
-        ItemStack stack = playerEntity.getHeldItemMainhand();
-        BlockState state1 = world.getBlockState(pos);
-        world.playEvent(playerEntity,2001,pos,Block.getStateId(state1));
-        if (!world.isRemote && !playerEntity.isCreative() && playerEntity.canHarvestBlock(state1)) {
-            Block.spawnDrops(state1, world, pos, null, playerEntity, stack);
-        }
-        world.setBlockState(pos, Blocks.AIR.getDefaultState(),35);
     }
 
 }
