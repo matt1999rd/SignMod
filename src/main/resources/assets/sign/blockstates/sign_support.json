@@ -21,15 +21,15 @@
     },
     {
       "when": {"south_east": "true" },
-      "apply": {"model": "sign:block/sign_support_diag", "y": 90,"uvlock": true}
-    },
-    {
-      "when": {"south_west": "true"},
       "apply": {"model": "sign:block/sign_support_diag", "y": 180,"uvlock": true}
     },
     {
-      "when": {"north_west": "true"},
+      "when": {"south_west": "true"},
       "apply": {"model": "sign:block/sign_support_diag", "y": 270,"uvlock": true}
+    },
+    {
+      "when": {"north_west": "true"},
+      "apply": {"model": "sign:block/sign_support_diag", "y": 90,"uvlock": true}
     }
   ]
 }

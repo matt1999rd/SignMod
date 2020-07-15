@@ -62,7 +62,7 @@ public class SignMod
         public static void onBlocksRegistry(final RegistryEvent.Register<Block> blockRegistryEvent) {
             blockRegistryEvent.getRegistry().register(new SignSupport());
             blockRegistryEvent.getRegistry().register(new GridSupport());
-            blockRegistryEvent.getRegistry().register(new SquarePanelBlock());
+            PanelRegister.registerBlocks(blockRegistryEvent);
         }
 
         @SubscribeEvent

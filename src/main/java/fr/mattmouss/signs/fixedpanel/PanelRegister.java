@@ -4,8 +4,6 @@ import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import net.minecraft.block.Block;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.registries.ObjectHolder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +16,7 @@ public class PanelRegister {
     public static final AbstractPanelBlock TRIANGLE_PANEL = register(Form.TRIANGLE); //warning
     public static final AbstractPanelBlock SQUARE_PANEL = register(Form.SQUARE); //information
     public static final AbstractPanelBlock LET_WAY_PANEL = register(Form.UPSIDE_TRIANGLE); //let way sign
-    public static final AbstractPanelBlock PRIORITY_PANEL = register(Form.DIAMOND); //priority
+    public static final AbstractPanelBlock DIAMOND_PANEL = register(Form.DIAMOND); //priority
     public static final AbstractPanelBlock DIRECTION_PANEL = register(Form.ARROW); //sign with arrow to notify direction
     public static final AbstractPanelBlock HUGE_DIRECTION_PANEL = register(Form.PLAIN_SQUARE); //sign on road to specify direction
     public static final AbstractPanelBlock STOP_PANEL = register(Form.OCTOGONE); //sign that force the car to stop
@@ -35,7 +33,6 @@ public class PanelRegister {
     }
 
 
-    @SubscribeEvent
     public static void registerBlocks(RegistryEvent.Register<Block> event){
         PANELS.forEach(panelBlock -> {
             event.getRegistry().register(panelBlock);
@@ -62,7 +59,7 @@ public class PanelRegister {
             case PLAIN_SQUARE:
                 return ModBlock.HUGE_DIRECTION_PANEL;
             case DIAMOND:
-                return ModBlock.PRIORITY_PANEL;
+                return ModBlock.DIAMOND_PANEL;
             default:
                 return null;
         }

@@ -29,7 +29,7 @@ public class PacketChoicePanel {
         panelFuturePos = pos;
         this.facing = (byte) facing.getHorizontalIndex();
         this.rotated = rotated;
-    }
+}
 
     public void handle(Supplier<NetworkEvent.Context> ctx){
         ctx.get().enqueueWork(()->{

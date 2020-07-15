@@ -22,8 +22,8 @@ public class ModBlock {
     public static TrianglePanelBlock TRIANGLE_PANEL = new TrianglePanelBlock();
     @ObjectHolder("sign:let_way_panel")
     public static LetWayPanelBlock LET_WAY_PANEL = new LetWayPanelBlock();
-    @ObjectHolder("sign:priority_panel")
-    public static DiamondPanelBlock PRIORITY_PANEL = new DiamondPanelBlock();
+    @ObjectHolder("sign:diamond_panel")
+    public static DiamondPanelBlock DIAMOND_PANEL = new DiamondPanelBlock();
     @ObjectHolder("sign:direction_panel")
     public static ArrowPanelBlock DIRECTION_PANEL = new ArrowPanelBlock();
     @ObjectHolder("sign:huge_direction_panel")

@@ -5,7 +5,7 @@ import fr.mattmouss.signs.enums.ScreenType;
 
 public class DiamondPanelBlock extends AbstractPanelBlock {
     public DiamondPanelBlock() {
-        super("priority_road");
+        super("diamond");
     }
 
     @Override

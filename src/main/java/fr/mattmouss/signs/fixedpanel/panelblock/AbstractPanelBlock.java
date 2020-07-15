@@ -107,6 +107,12 @@ public abstract class AbstractPanelBlock extends Block {
         AbstractPanelBlock panelBlock = PanelRegister.asPanel(f);
         BlockState panelState = panelBlock.getDefaultState();
         boolean grid = (supportState.getBlock() instanceof GridSupport);
+        if (!grid){
+            for (ExtendDirection direction : ExtendDirection.values()){
+                BooleanProperty property = direction.getSupportProperty();
+                panelState = panelState.with(property,supportState.get(property));
+            }
+        }
         return panelState.with(GridSupport.ROTATED,rotated).with(BlockStateProperties.HORIZONTAL_FACING, Direction.byHorizontalIndex(facing)).with(GRID,grid);
     }
 

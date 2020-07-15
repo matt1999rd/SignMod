@@ -1,6 +1,6 @@
 {
   "multipart": [
-    {   "apply": { "model": "sign:block/square_panel" }},
+    {   "apply": { "model": "sign:block/panel" }},
     {
       "when": {"OR": [
         {"facing" : "north", "grid" : "true" , "rotated" : "false"},

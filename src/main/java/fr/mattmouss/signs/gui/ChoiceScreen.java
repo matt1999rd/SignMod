@@ -16,7 +16,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
 
 public class ChoiceScreen extends Screen {
-    private static final int LENGTH = 160;
+    private static final int LENGTH = 161;
     private static final int BUTTON_LENGTH = 51;
     private final BlockPos futurePanelPos ;
     private final Direction futureFacing ;
@@ -39,8 +39,8 @@ public class ChoiceScreen extends Screen {
         for (int i=0;i<3;i++){
             for (int j=0;j<3;j++){
                 int k = 3*i+j;
-                addButton(new ImageButton(relX+3+BUTTON_LENGTH*i, //PosX on gui
-                        relY+3+BUTTON_LENGTH*j, //PosY on gui
+                addButton(new ImageButton(relX+4+BUTTON_LENGTH*i, //PosX on gui
+                        relY+4+BUTTON_LENGTH*j, //PosY on gui
                         BUTTON_LENGTH, //width
                         BUTTON_LENGTH, //height
                         BUTTON_LENGTH*(k%5), //PosX on button texture
@@ -72,7 +72,7 @@ public class ChoiceScreen extends Screen {
         this.minecraft.getTextureManager().bindTexture(GUI);
         int relX = (this.width-LENGTH) / 2;
         int relY = (this.height-LENGTH) / 2;
-        this.blit(relX,relY,0,0,LENGTH+2,LENGTH);
+        this.blit(relX,relY,0,0,LENGTH,LENGTH);
         super.render(mouseX, mouseY, partialTicks);
     }
 

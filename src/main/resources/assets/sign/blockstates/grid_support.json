@@ -2,7 +2,7 @@
   "variants": {
     "axis=z,rotated=false":   { "model": "sign:block/grid_support"},
     "axis=x,rotated=false":   { "model": "sign:block/grid_support", "y": 90},
-    "axis=z,rotated=true":   { "model": "sign:block/grid_support_rotated"},
-    "axis=x,rotated=true":   { "model": "sign:block/grid_support_rotated", "y": 90}
+    "axis=x,rotated=true":   { "model": "sign:block/grid_support_rotated"},
+    "axis=z,rotated=true":   { "model": "sign:block/grid_support_rotated", "y": 90}
   }
 }
