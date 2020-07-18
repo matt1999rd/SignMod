@@ -18,25 +18,30 @@ public class SpecialSignModel extends Model {
         for (int i=0;i<128;i++){
             int j_beg =0,j_end=127;
             boolean isIn = false;
+            boolean hasChanged = false;
             for (int j=0;j<128;j++){
                 //if we arrived on the form space
                 if (form.isIn(i,j) && !isIn){
                     j_beg = j;
+                    hasChanged = true;
                 }
                 //if we quit the form space
                 if (!form.isIn(i,j) && isIn){
                     j_end = j;
+                    hasChanged = true;
                 }
                 isIn = form.isIn(i,j);
             }
-            this.addPixelRow(i,j_beg,j_end);
+            if (hasChanged){
+                this.addPixelRow(i,j_beg,j_end);
+            }
         }
     }
 
     private void addPixelRow(int i, int j_beg, int j_end){
         float completeLength = form.getCompleteLength();
         float pixelLength = completeLength/128;
-        panel.addBox(-5/pixelLength+i,3/pixelLength+10/pixelLength*(1-j_end/128.0F),-2,1,(j_end-j_beg+1),1);
+        panel.addBox(-5/pixelLength+i,5/pixelLength+10/pixelLength*(1-j_end/128.0F),-2,1,(j_end-j_beg+1),1);
     }
 
     public void renderSign(){

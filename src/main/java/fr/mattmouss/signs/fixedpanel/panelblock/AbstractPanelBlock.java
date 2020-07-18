@@ -45,7 +45,7 @@ import static fr.mattmouss.signs.util.Functions.SOUTH_WEST;
 
 public abstract class AbstractPanelBlock extends Block {
     public AbstractPanelBlock(String name) {
-        super(Properties.create(Material.ROCK).doesNotBlockMovement().hardnessAndResistance(2.0F).lightValue(0));
+        super(Properties.create(Material.ROCK).hardnessAndResistance(2.0F).lightValue(0));
         this.setRegistryName(name+"_panel");
     }
 

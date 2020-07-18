@@ -35,7 +35,7 @@ public enum Form {
         return (vec2f.x<1 && vec2f.x>0 && vec2f.y<1 && vec2f.y>0);
     }),
     DIAMOND(8,"diamond_panel",vec2f -> {
-        return 2*vec2f.x> MathHelper.abs(2*vec2f.y-1) && 2*vec2f.x<2+MathHelper.abs(1-2*vec2f.y);
+        return 2*vec2f.x> MathHelper.abs(2*vec2f.y-1) && 2*vec2f.x<2-MathHelper.abs(1-2*vec2f.y);
     });
 
     private final String block_name;
@@ -81,4 +81,7 @@ public enum Form {
         return (isOnWholeCube())? 16 : 10;
     }
 
+    public boolean isForDrawing() {
+        return (this == TRIANGLE || this == CIRCLE || this == SQUARE || this == DIAMOND);
+    }
 }

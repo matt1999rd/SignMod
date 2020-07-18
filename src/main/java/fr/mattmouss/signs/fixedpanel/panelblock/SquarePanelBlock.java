@@ -29,16 +29,16 @@ public class SquarePanelBlock extends AbstractPanelBlock {
     @Override
     public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
         VoxelShape vs = super.getShape(state, worldIn, pos, context);
-        VoxelInts vi_plane = new VoxelInts(3,3,6,10,10,1,true);
+        VoxelInts vi_plane = new VoxelInts(3,5,6,10,10,1,true);
         VoxelInts[] vi_diag = new VoxelInts[]{
-                new VoxelInts(3 ,3,10,1,10,1,true),
-                new VoxelInts(4 ,3,9 ,1,10,1,true),
-                new VoxelInts(5 ,3,8 ,1,10,1,true),
-                new VoxelInts(6 ,3,7 ,1,10,1,true),
-                new VoxelInts(7 ,3,6 ,1,10,1,true),
-                new VoxelInts(8 ,3,5 ,1,10,1,true),
-                new VoxelInts(9 ,3,4 ,1,10,1,true),
-                new VoxelInts(10,3,3 ,1,10,1,true)
+                new VoxelInts(3 ,5,10,1,10,1,true),
+                new VoxelInts(4 ,5,9 ,1,10,1,true),
+                new VoxelInts(5 ,5,8 ,1,10,1,true),
+                new VoxelInts(6 ,5,7 ,1,10,1,true),
+                new VoxelInts(7 ,5,6 ,1,10,1,true),
+                new VoxelInts(8 ,5,5 ,1,10,1,true),
+                new VoxelInts(9 ,5,4 ,1,10,1,true),
+                new VoxelInts(10,5,3 ,1,10,1,true)
         };
         boolean isRotated = state.get(GridSupport.ROTATED);
         Direction facing = state.get(BlockStateProperties.HORIZONTAL_FACING);

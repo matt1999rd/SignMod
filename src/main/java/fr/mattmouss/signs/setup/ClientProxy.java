@@ -1,5 +1,6 @@
 package fr.mattmouss.signs.setup;
 
+import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.tileentity.primary.*;
 import fr.mattmouss.signs.tileentity.renderers.*;
 import net.minecraft.client.Minecraft;
@@ -18,14 +19,14 @@ public class ClientProxy implements IProxy {
         // screen : ajout de screen
         //ScreenManager.registerFactory(ModBlock.TOLLGATE_USER_CONTAINER, TGUserScreen::new);
         ClientRegistry.bindTileEntitySpecialRenderer(UpsideTriangleSignTileEntity.class, new UpsideTriangleSignTileEntityRenderer());
-        ClientRegistry.bindTileEntitySpecialRenderer(TriangleSignTileEntity.class      , new TriangleSignTileEntityRenderer());
+        ClientRegistry.bindTileEntitySpecialRenderer(TriangleSignTileEntity.class      , new DrawingSignTileEntityRenderer<>(Form.TRIANGLE));
         ClientRegistry.bindTileEntitySpecialRenderer(OctogoneSignTileEntity.class      , new OctogoneSignTileEntityRenderer());
-        ClientRegistry.bindTileEntitySpecialRenderer(CircleSignTileEntity.class        , new CircleSignTileEntityRenderer());
-        ClientRegistry.bindTileEntitySpecialRenderer(SquareSignTileEntity.class        , new SquareSignTileEntityRenderer());
+        ClientRegistry.bindTileEntitySpecialRenderer(CircleSignTileEntity.class        , new DrawingSignTileEntityRenderer<>(Form.CIRCLE));
+        ClientRegistry.bindTileEntitySpecialRenderer(SquareSignTileEntity.class        , new DrawingSignTileEntityRenderer<>(Form.SQUARE));
         ClientRegistry.bindTileEntitySpecialRenderer(RectangleSignTileEntity.class     , new RectangleSignTileEntityRenderer());
         ClientRegistry.bindTileEntitySpecialRenderer(ArrowSignTileEntity.class         , new ArrowSignTileEntityRenderer());
         ClientRegistry.bindTileEntitySpecialRenderer(PlainSquareSignTileEntity.class   , new PlainSquareSignTileEntityRenderer());
-        ClientRegistry.bindTileEntitySpecialRenderer(DiamondSignTileEntity.class       , new DiamondSignTileEntityRenderer());
+        ClientRegistry.bindTileEntitySpecialRenderer(DiamondSignTileEntity.class       , new DrawingSignTileEntityRenderer<>(Form.DIAMOND));
     }
 
     @Override

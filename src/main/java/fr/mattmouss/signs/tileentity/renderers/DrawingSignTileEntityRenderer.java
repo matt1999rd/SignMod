@@ -4,27 +4,25 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.support.GridSupport;
+import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
 import fr.mattmouss.signs.tileentity.model.SpecialSignModel;
-import fr.mattmouss.signs.tileentity.primary.DiamondSignTileEntity;
-import fr.mattmouss.signs.tileentity.primary.RectangleSignTileEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
-@OnlyIn(Dist.CLIENT)
-public class DiamondSignTileEntityRenderer extends TileEntityRenderer<DiamondSignTileEntity> {
-    private static final ResourceLocation SQUARE_BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/square.png");
-    private final SpecialSignModel model = new SpecialSignModel(Form.DIAMOND);
+public class DrawingSignTileEntityRenderer<T extends DrawingSignTileEntity> extends TileEntityRenderer<T> {
+    private static final ResourceLocation BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/square.png");
+    private final SpecialSignModel model ;
 
-    public DiamondSignTileEntityRenderer() {
+    public DrawingSignTileEntityRenderer(Form form) {
+        if (!form.isForDrawing())throw new IllegalArgumentException("no such form are authorised in drawing tileentity");
+        model = new SpecialSignModel(form);
     }
 
     @Override
-    public void render(DiamondSignTileEntity tileEntityIn, double x, double y, double z, float partialTicks, int destroyStage) {
+    public void render(DrawingSignTileEntity tileEntityIn, double x, double y, double z, float partialTicks, int destroyStage) {
         BlockState blockstate = tileEntityIn.getBlockState();
         //code for display of background model
         GlStateManager.pushMatrix();
@@ -41,7 +39,7 @@ public class DiamondSignTileEntityRenderer extends TileEntityRenderer<DiamondSig
             GlStateManager.translatef(0.0625F, 0.0625F, 0.0625F);
             GlStateManager.matrixMode(5888);
         } else {
-            this.bindTexture(SQUARE_BACKGROUND);
+            this.bindTexture(BACKGROUND);
         }
         GlStateManager.enableRescaleNormal();
         GlStateManager.pushMatrix();
@@ -71,5 +69,4 @@ public class DiamondSignTileEntityRenderer extends TileEntityRenderer<DiamondSig
         }
         return angle;
     }
-
 }

@@ -2,6 +2,7 @@ package fr.mattmouss.signs.tileentity.primary;
 
 import fr.mattmouss.signs.capabilities.SignStorage;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
+import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
 import fr.mattmouss.signs.tileentity.PanelTileEntity;
 import fr.mattmouss.signs.tileentity.TEType;
 import net.minecraft.block.BlockState;
@@ -16,25 +17,10 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.common.util.LazyOptional;
 
 
-public class SquareSignTileEntity extends PanelTileEntity {
+public class SquareSignTileEntity extends DrawingSignTileEntity {
 
     public SquareSignTileEntity() {
         super(TEType.SQUARE_SIGN);
-    }
-
-    @Override
-    public void tick() {
-        BlockState state = getBlockState();
-        if (!state.get(AbstractPanelBlock.GRID)){
-            //if it is a support with grid
-            super.tick();
-        }
-    }
-
-    private LazyOptional<SignStorage> storage = LazyOptional.of(this::getStorage).cast();
-
-    private SignStorage getStorage() {
-        return new SignStorage();
     }
 
 }
