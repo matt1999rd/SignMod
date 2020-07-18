@@ -1,5 +1,6 @@
 package fr.mattmouss.signs.fixedpanel.support;
 
+import fr.mattmouss.signs.enums.ExtendDirection;
 import fr.mattmouss.signs.util.Functions;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -15,6 +16,9 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
@@ -29,6 +33,19 @@ public class SignSupport extends Block {
     public SignSupport() {
         super(Properties.create(Material.ROCK, MaterialColor.STONE));
         this.setRegistryName("sign_support");
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+        VoxelShape vs = Functions.getSupportShape();
+        boolean[] flags = Functions.getFlagsFromState(state);
+        for (int i = 0;i<flags.length;i++){
+            ExtendDirection direction = ExtendDirection.byIndex(i);
+            if (flags[i]){
+                vs=VoxelShapes.or(vs,Functions.getGridShape(direction.isRotated(),direction.getDirection()));
+            }
+        }
+        return vs;
     }
 
     //1.14.4 function replaced by notSolid()

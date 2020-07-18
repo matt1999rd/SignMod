@@ -17,7 +17,12 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
+import org.lwjgl.system.CallbackI;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -34,6 +39,15 @@ public class GridSupport extends Block {
     public GridSupport() {
         super(Properties.create(Material.ROCK));
         this.setRegistryName("grid_support");
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+        Direction.Axis axis = state.get(BlockStateProperties.HORIZONTAL_AXIS);
+        boolean isRotated = state.get(ROTATED);
+        VoxelShape vs1 = Functions.getGridShape(isRotated,Direction.getFacingFromAxis(Direction.AxisDirection.POSITIVE,axis));
+        VoxelShape vs2 = Functions.getGridShape(isRotated,Direction.getFacingFromAxis(Direction.AxisDirection.NEGATIVE,axis));
+        return VoxelShapes.or(vs1,vs2);
     }
 
     //1.14.4 function replaced by notSolid()
@@ -60,6 +74,8 @@ public class GridSupport extends Block {
             Block northWestBlock = worldIn.getBlockState(pos.west().north()).getBlock();
             Block southEastBlock = worldIn.getBlockState(pos.south().east()).getBlock();
             Block southWestBlock = worldIn.getBlockState(pos.south().west()).getBlock();
+            //todo : check context and make grid in the right direction if grid or support are clicked
+            //todo :  check grid more completely (do not allow grids in both axis connected)
             if (isSupportOrGrid(eastBlock) || isSupportOrGrid(westBlock)){
                 worldIn.setBlockState(pos,state
                         .with(BlockStateProperties.HORIZONTAL_AXIS, Direction.Axis.X)

@@ -100,6 +100,11 @@ public enum ExtendDirection {
         }
     }
 
+    public static ExtendDirection byIndex(int meta){
+        ExtendDirection[] directions = ExtendDirection.values();
+        if (meta<0 || meta>7)return null;
+        return directions[meta];
+    }
 
     public BooleanProperty getSupportProperty() {
         return property;

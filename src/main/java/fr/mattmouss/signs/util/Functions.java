@@ -18,6 +18,8 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -54,14 +56,9 @@ public class Functions {
 
     public static boolean[] getFlagsFromState(BlockState state) {
         boolean[] flags= new boolean[8];
-        flags[0] = state.get(BlockStateProperties.SOUTH);
-        flags[1] = state.get(BlockStateProperties.WEST);
-        flags[2] = state.get(BlockStateProperties.NORTH);
-        flags[3] = state.get(BlockStateProperties.EAST);
-        flags[4] = state.get(SOUTH_WEST);
-        flags[5] = state.get(NORTH_WEST);
-        flags[6] = state.get(NORTH_EAST);
-        flags[7] = state.get(SOUTH_EAST);
+        for (int i=0;i<8;i++){
+            flags[i] = state.get(ExtendDirection.byIndex(i).getSupportProperty());
+        }
         return flags;
     }
 
@@ -240,6 +237,33 @@ public class Functions {
     @OnlyIn(Dist.CLIENT)
     public static int getBlueValue(int color){
         return (color & 255);
+    }
+
+    public static VoxelShape getSupportShape(){
+        return Block.makeCuboidShape(7,0,7,9,16,9);
+    }
+
+    public static VoxelShape getGridShape(boolean isRotated,Direction facing){
+        VoxelInts vi_plane = new VoxelInts(7.5,2,0,1,12,8,true);
+        VoxelInts[] vi_diag = new VoxelInts[]{
+                new VoxelInts(15,2,0,1,12,1, true),
+                new VoxelInts(14,2,1,1,12,1, true),
+                new VoxelInts(13,2,2,1,12,1, true),
+                new VoxelInts(12,2,3,1,12,1, true),
+                new VoxelInts(11,2,4,1,12,1, true),
+                new VoxelInts(10,2,5,1,12,1, true),
+                new VoxelInts(9 ,2,6,1,12,1, true),
+                new VoxelInts(8 ,2,7,1,12,1, true)
+        };
+        if (isRotated){
+            VoxelShape vs = VoxelShapes.empty();
+            for (int i=0;i<7;i++){
+                vs = VoxelShapes.or(vs,vi_diag[i].rotate(Direction.EAST,facing).getAssociatedShape());
+            }
+            return vs;
+        }else {
+            return vi_plane.rotate(Direction.NORTH,facing).getAssociatedShape();
+        }
     }
 
 }

@@ -5,8 +5,8 @@ import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.support.GridSupport;
 import fr.mattmouss.signs.tileentity.model.SpecialSignModel;
-import fr.mattmouss.signs.tileentity.model.SquareSignModel;
-import fr.mattmouss.signs.tileentity.primary.SquareSignTileEntity;
+import fr.mattmouss.signs.tileentity.primary.OctogoneSignTileEntity;
+import fr.mattmouss.signs.tileentity.primary.TriangleSignTileEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.state.properties.BlockStateProperties;
@@ -16,15 +16,15 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-public class SquareSignTileEntityRenderer extends TileEntityRenderer<SquareSignTileEntity> {
+public class OctogoneSignTileEntityRenderer extends TileEntityRenderer<OctogoneSignTileEntity> {
     private static final ResourceLocation SQUARE_BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/square.png");
-    private final SpecialSignModel model = new SpecialSignModel(Form.SQUARE);
+    private final SpecialSignModel model = new SpecialSignModel(Form.OCTOGONE);
 
-    public SquareSignTileEntityRenderer() {
+    public OctogoneSignTileEntityRenderer() {
     }
 
     @Override
-    public void render(SquareSignTileEntity tileEntityIn, double x, double y, double z, float partialTicks, int destroyStage) {
+    public void render(OctogoneSignTileEntity tileEntityIn, double x, double y, double z, float partialTicks, int destroyStage) {
         BlockState blockstate = tileEntityIn.getBlockState();
         //code for display of background model
         GlStateManager.pushMatrix();

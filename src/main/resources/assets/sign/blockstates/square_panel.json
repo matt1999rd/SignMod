@@ -3,15 +3,15 @@
     {   "apply": { "model": "sign:block/panel" }},
     {
       "when": {"OR": [
-        {"facing" : "north", "grid" : "true" , "rotated" : "false"},
-        {"facing" : "south", "grid" : "true" , "rotated" : "false"}
+        {"facing" : "east", "grid" : "true" , "rotated" : "false"},
+        {"facing" : "west", "grid" : "true" , "rotated" : "false"}
       ]},
       "apply": {"model": "sign:block/grid_support"}
     },
     {
       "when": {"OR": [
-        {"facing" : "east", "grid" : "true" , "rotated" : "false"},
-        {"facing" : "west", "grid" : "true" , "rotated" : "false"}
+        {"facing" : "north", "grid" : "true" , "rotated" : "false"},
+        {"facing" : "south", "grid" : "true" , "rotated" : "false"}
       ]},
       "apply": {"model": "sign:block/grid_support","y": 90}
     },

@@ -16,7 +16,7 @@
       "apply": { "model": "sign:block/sign_support_side", "y": 270, "uvlock": true }
     },
     {
-      "when": {"north_east": "true" },
+      "when": {"north_west": "true" },
       "apply": {"model": "sign:block/sign_support_diag", "uvlock": true}
     },
     {
@@ -28,7 +28,7 @@
       "apply": {"model": "sign:block/sign_support_diag", "y": 270,"uvlock": true}
     },
     {
-      "when": {"north_west": "true"},
+      "when": {"north_east": "true"},
       "apply": {"model": "sign:block/sign_support_diag", "y": 90,"uvlock": true}
     }
   ]

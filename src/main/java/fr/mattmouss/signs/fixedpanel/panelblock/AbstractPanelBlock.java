@@ -29,6 +29,10 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkHooks;
@@ -49,6 +53,27 @@ public abstract class AbstractPanelBlock extends Block {
 
     static {
         GRID = BooleanProperty.create("grid");
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+        if (state.get(GRID)){
+            Direction dir = state.get(BlockStateProperties.HORIZONTAL_FACING).rotateY();
+            boolean isRotated = state.get(GridSupport.ROTATED);
+            VoxelShape vs1 = Functions.getGridShape(isRotated,Direction.getFacingFromAxis(Direction.AxisDirection.POSITIVE,dir.getAxis()));
+            VoxelShape vs2 = Functions.getGridShape(isRotated,Direction.getFacingFromAxis(Direction.AxisDirection.NEGATIVE,dir.getAxis()));
+            return VoxelShapes.or(vs1,vs2);
+        }else {
+            VoxelShape vs = Functions.getSupportShape();
+            boolean[] flags = Functions.getFlagsFromState(state);
+            for (int i = 0; i < flags.length; i++) {
+                ExtendDirection direction = ExtendDirection.byIndex(i);
+                if (flags[i]) {
+                    VoxelShapes.or(vs, Functions.getGridShape(direction.isRotated(), direction.getDirection()));
+                }
+            }
+            return vs;
+        }
     }
 
     @Override

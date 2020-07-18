@@ -9,7 +9,7 @@ import fr.mattmouss.signs.setup.ClientProxy;
 import fr.mattmouss.signs.setup.IProxy;
 import fr.mattmouss.signs.setup.ModSetup;
 import fr.mattmouss.signs.setup.ServerProxy;
-import fr.mattmouss.signs.tileentity.primary.SquareSignTileEntity;
+import fr.mattmouss.signs.tileentity.primary.*;
 import fr.mattmouss.signs.tileentity.renderers.SquareSignTileEntityRenderer;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -81,6 +81,32 @@ public class SignMod
             register.getRegistry().register(TileEntityType.Builder
                     .create(SquareSignTileEntity::new, ModBlock.SQUARE_PANEL)
                     .build(null).setRegistryName("square_panel"));
+            register.getRegistry().register(TileEntityType.Builder
+                    .create(TriangleSignTileEntity::new,ModBlock.TRIANGLE_PANEL)
+                    .build(null).setRegistryName("triangle_panel"));
+            register.getRegistry().register(TileEntityType.Builder
+                    .create(CircleSignTileEntity::new,ModBlock.CIRCLE_PANEL)
+                    .build(null).setRegistryName("circle_panel"));
+            register.getRegistry().register(TileEntityType.Builder
+                    .create(UpsideTriangleSignTileEntity::new,ModBlock.LET_WAY_PANEL)
+                    .build(null).setRegistryName("let_way_panel"));
+            register.getRegistry().register(TileEntityType.Builder
+                    .create(OctogoneSignTileEntity::new,ModBlock.STOP_PANEL)
+                    .build(null).setRegistryName("stop_panel"));
+            register.getRegistry().register(TileEntityType.Builder
+                    .create(ArrowSignTileEntity::new,ModBlock.DIRECTION_PANEL)
+                    .build(null).setRegistryName("direction_panel"));
+            register.getRegistry().register(TileEntityType.Builder
+                    .create(PlainSquareSignTileEntity::new,ModBlock.HUGE_DIRECTION_PANEL)
+                    .build(null).setRegistryName("huge_direction_panel"));
+            register.getRegistry().register(TileEntityType.Builder
+                    .create(DiamondSignTileEntity::new,ModBlock.DIAMOND_PANEL)
+                    .build(null).setRegistryName("diamond_panel"));
+            register.getRegistry().register(TileEntityType.Builder
+                    .create(RectangleSignTileEntity::new,ModBlock.RECTANGLE_PANEL)
+                    .build(null).setRegistryName("rectangle_panel"));
+
+
         }
     }
 }
