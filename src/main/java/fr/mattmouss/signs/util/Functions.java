@@ -1,5 +1,8 @@
 package fr.mattmouss.signs.util;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
+import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
 import fr.mattmouss.signs.enums.ExtendDirection;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.mattmouss.signs.fixedpanel.support.GridSupport;
@@ -11,12 +14,9 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.state.properties.DoorHingeSide;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
@@ -107,7 +107,7 @@ public class Functions {
     //usefull for text coordinate will be changed in the future
 
     public static boolean isValidCoordinate(int x, int y) {
-        return (x>-1 && y>-1 && x<17 && y<17);
+        return (x>-1 && y>-1 && x<128 && y<128);
     }
 
     //notify if the block is a grid support or a panel with grid support background
@@ -264,6 +264,22 @@ public class Functions {
         }else {
             return vi_plane.rotate(Direction.NORTH,facing).getAssociatedShape();
         }
+    }
+
+    public static void setWorldGLState() {
+        GlStateManager.enableDepthTest();
+        GlStateManager.disableTexture();
+        GlStateManager.disableLighting();
+        GlStateManager.enableBlend();
+        GlStateManager.translatef(-5.0F/16,5.0F/16,-2.1F/16);
+        GlStateManager.blendFuncSeparate(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO);
+        GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+    }
+
+    public static void resetWorldGLState() {
+        GlStateManager.disableBlend();
+        GlStateManager.enableTexture();
+        GlStateManager.enableLighting();
     }
 
 }

@@ -41,7 +41,7 @@ public class SpecialSignModel extends Model {
     private void addPixelRow(int i, int j_beg, int j_end){
         float completeLength = form.getCompleteLength();
         float pixelLength = completeLength/128;
-        panel.addBox(-5/pixelLength+i,5/pixelLength+10/pixelLength*(1-j_end/128.0F),-2,1,(j_end-j_beg+1),1);
+        panel.addBox(-5/pixelLength+i,5/pixelLength+10/pixelLength*(1-(j_end+1)/128.0F),-2,1,(j_end-j_beg+1),1);
     }
 
     public void renderSign(){

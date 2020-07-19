@@ -23,7 +23,7 @@ public enum Form {
         return (vec2f.x-0.5)*(vec2f.x-0.5)+(vec2f.y-0.5)*(vec2f.y-0.5)<0.5*0.5;
     })),
     SQUARE(4,"square_panel",(vec2f -> {
-        return (vec2f.x<1 && vec2f.x>0 && vec2f.y<1 && vec2f.y>0);
+        return (vec2f.x<=1 && vec2f.x>=0 && vec2f.y<=1 && vec2f.y>=0);
     })),
     RECTANGLE(5,"rectangle_panel",vec2f -> {
         return (vec2f.y>0.4 && vec2f.y<0.6 && vec2f.x>0 && vec2f.x<1);

@@ -6,19 +6,27 @@ import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.support.GridSupport;
 import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
 import fr.mattmouss.signs.tileentity.model.SpecialSignModel;
+import fr.mattmouss.signs.util.Functions;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 
+import java.awt.*;
+
 public class DrawingSignTileEntityRenderer<T extends DrawingSignTileEntity> extends TileEntityRenderer<T> {
     private static final ResourceLocation BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/square.png");
     private final SpecialSignModel model ;
+    private final Form form;
 
     public DrawingSignTileEntityRenderer(Form form) {
         if (!form.isForDrawing())throw new IllegalArgumentException("no such form are authorised in drawing tileentity");
         model = new SpecialSignModel(form);
+        this.form = form;
     }
 
     @Override
@@ -44,17 +52,58 @@ public class DrawingSignTileEntityRenderer<T extends DrawingSignTileEntity> exte
         GlStateManager.enableRescaleNormal();
         GlStateManager.pushMatrix();
         this.model.renderSign();
+        GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        if (destroyStage<0){
+            renderPicture(tileEntityIn);
+        }
         GlStateManager.popMatrix();
         GlStateManager.depthMask(true);
-        GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+
         GlStateManager.popMatrix();
         if (destroyStage>=0){
             GlStateManager.matrixMode(5890);
             GlStateManager.popMatrix();
             GlStateManager.matrixMode(5888);
         }
+    }
 
+    private void renderPicture(DrawingSignTileEntity tileEntity) {
+        GlStateManager.pushMatrix();
+        Functions.setWorldGLState();
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder builder = tessellator.getBuffer();
+        builder.begin(7, DefaultVertexFormats.POSITION_COLOR);
+        for (int i=0;i<128;i++){
+            for (int j=0;j<128;j++){
+                if (form.isIn(i,j)) {
+                    int color = tileEntity.getPixelColor(i, j);
+                    renderPixel(i, j, builder, color);
+                }
+            }
+        }
+        tessellator.draw();
+        Functions.resetWorldGLState();
+        GlStateManager.popMatrix();
+    }
 
+    private void renderPixel(int i, int j, BufferBuilder builder,int color) {
+        float completeLength = 10.0F/16;
+        float pixelLength = completeLength/128;
+        float x1 = pixelLength*i;
+        float y1 = completeLength-pixelLength*j;
+        float z = 0.006F;
+        float x2 = x1+pixelLength;
+        float y2 = y1-pixelLength;
+        Color color1 = new Color(color,true);
+        int red,green,blue,alpha;
+        red = color1.getRed();
+        green = color1.getGreen();
+        blue = color1.getBlue();
+        alpha = color1.getAlpha();
+        builder.pos(x1,y1,z).color(red,green,blue,alpha).endVertex();
+        builder.pos(x2,y1,z).color(red,green,blue,alpha).endVertex();
+        builder.pos(x2,y2,z).color(red,green,blue,alpha).endVertex();
+        builder.pos(x1,y2,z).color(red,green,blue,alpha).endVertex();
     }
 
     private float getAngleFromBlockState(BlockState blockstate) {

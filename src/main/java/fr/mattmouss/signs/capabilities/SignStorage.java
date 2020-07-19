@@ -1,6 +1,7 @@
 package fr.mattmouss.signs.capabilities;
 
 
+import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.util.Functions;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.nbt.CompoundNBT;
@@ -9,34 +10,32 @@ import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.util.INBTSerializable;
 
+import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 
 public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> {
 
-    int[][] picture = new int[16][16];
+    int[][] picture = new int[128][128];
     List<Text> texts = new ArrayList<>();
 
+
     public SignStorage(){
-        for (int i=0;i<17;i++){
-            for (int j=0;j<17;j++){
-                picture[i][j] = 0;
+        for (int i=0;i<128;i++){
+            for (int j=0;j<128;j++){
+                picture[i][j] = Color.WHITE.getRGB();
             }
         }
     }
 
     public SignStorage(Text[] texts){
-        for (int i=0;i<17;i++){
-            for (int j=0;j<17;j++){
-                picture[i][j] = 0;
-            }
-        }
+        this();
         int n = texts.length;
         for (int i=0;i<n;i++){
             this.texts.add(texts[i]);
         }
-
     }
 
     @Override
@@ -51,7 +50,7 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
         if (Functions.isValidCoordinate(x,y)){
             return picture[x][y];
         }else {
-            return -1;
+            return 0;
         }
     }
 
@@ -78,17 +77,17 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
 
     @Override
     public int[] getAllPixel() {
-        int[] allPixel = new int[16*16];
-        for (int i=0;i<16*16;i++){
-            allPixel[i] = picture[i/16][i%16];
+        int[] allPixel = new int[128*128];
+        for (int i=0;i<128*128;i++){
+            allPixel[i] = picture[i/128][i%128];
         }
         return allPixel;
     }
 
     @Override
     public void setAllPixel(int[] pixels) {
-        for (int i=0;i<16*16;i++){
-            setPixel(i/16,i%16,pixels[i]);
+        for (int i=0;i<128*128;i++){
+            setPixel(i/128,i%128,pixels[i]);
         }
     }
 
@@ -97,8 +96,8 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
     public CompoundNBT serializeNBT() {
         CompoundNBT nbt = new CompoundNBT();
         ListNBT pixels = new ListNBT();
-        for (int i=0;i<17;i++){
-            for (int j=0;j<17;j++){
+        for (int i=0;i<128;i++){
+            for (int j=0;j<128;j++){
                 CompoundNBT pixelNBT = new CompoundNBT();
                 pixelNBT.putInt("pixel",getRGBPixel(i,j));
                 pixels.add(pixelNBT);
@@ -120,11 +119,11 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
         int i=0;
         int j=0;
         for (INBT iNBT : pixelsNBT) {
-            if (i < 17) {
+            if (i < 128) {
                 CompoundNBT pixelNBT = (CompoundNBT) iNBT;
                 setPixel(i, j, pixelNBT.getInt("pixel"));
                 j++;
-                if (j > 16) {
+                if (j > 127) {
                     j = 0;
                     ++i;
                 }

@@ -44,7 +44,7 @@ public class SignCapability {
             public void readNBT(Capability<ISignStorage> capability, ISignStorage instance, Direction side, INBT nbt) {
                 CompoundNBT tag = (CompoundNBT)nbt;
                 ListNBT pixelsNBT = (ListNBT)(tag.get("pixels"));
-                int[] pixels = new int[16*16];
+                int[] pixels = new int[128*128];
                 int index = 0;
                 for (INBT inbt : pixelsNBT){
                     CompoundNBT pxlNBT = (CompoundNBT)inbt;
