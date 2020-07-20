@@ -39,5 +39,5 @@ public abstract class PanelTileEntity extends TileEntity implements ITickableTil
     }
 
 
-
+    public abstract void renderOnScreen(int guiLeft,int guiTop);
 }

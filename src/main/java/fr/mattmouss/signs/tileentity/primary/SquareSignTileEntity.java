@@ -24,4 +24,8 @@ public class SquareSignTileEntity extends DrawingSignTileEntity {
         super(TEType.SQUARE_SIGN);
     }
 
+    @Override
+    protected Form getForm() {
+        return Form.SQUARE;
+    }
 }

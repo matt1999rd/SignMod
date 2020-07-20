@@ -18,6 +18,10 @@ public enum PencilMode {
         return PencilMode.values()[meta];
     }
 
+    public int getMeta() {
+        return meta;
+    }
+
     public boolean enableSlider(){
         return this == WRITE || this == FILL;
     }

@@ -23,6 +23,10 @@ public class ArrowSignTileEntity extends PanelTileEntity {
         }
     }
 
+    @Override
+    public void renderOnScreen(int guiLeft, int guiTop) {
+    }
+
     private LazyOptional<SignStorage> storage = LazyOptional.of(this::getStorage).cast();
 
     private SignStorage getStorage() {

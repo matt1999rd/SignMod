@@ -4,12 +4,13 @@ import fr.mattmouss.signs.capabilities.SignStorage;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.LazyOptional;
 
-public class DrawingSignTileEntity extends PanelTileEntity {
+public abstract class DrawingSignTileEntity extends PanelTileEntity {
 
     private LazyOptional<SignStorage> storage = LazyOptional.of(this::getStorage).cast();
 
@@ -22,6 +23,7 @@ public class DrawingSignTileEntity extends PanelTileEntity {
     public DrawingSignTileEntity(TileEntityType<?> tileEntityTypeIn) {
         super(tileEntityTypeIn);
     }
+    protected abstract Form getForm();
 
     @OnlyIn(Dist.CLIENT)
     public int getPixelColor(int i,int j){
@@ -39,7 +41,18 @@ public class DrawingSignTileEntity extends PanelTileEntity {
         }
     }
 
-
+    @Override
+    public void renderOnScreen(int guiLeft,int guiTop) {
+        Form form = getForm();
+        for (int i=0;i<128;i++){
+            for (int j=0;j<128;j++){
+                if (form.isIn(i,j)){
+                    int color = getPixelColor(i,j);
+                    AbstractGui.fill(guiLeft+i,guiTop+j,guiLeft+i+1,guiTop+j+1,color);
+                }
+            }
+        }
+    }
 
 
 }

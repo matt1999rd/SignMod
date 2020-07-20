@@ -3,26 +3,30 @@ package fr.mattmouss.signs.gui.screenutils;
 import fr.mattmouss.signs.util.Functions;
 import net.minecraft.util.math.MathHelper;
 
+import java.awt.*;
+
 public class PencilOption {
-    int color;
+    Color color;
     int length;
     PencilMode mode;
 
-    private PencilOption(int color,int length,PencilMode mode){
+    private PencilOption(Color color,int length,PencilMode mode){
         this.color = color;
         this.length = length;
         this.mode = mode;
     }
 
     public static PencilOption getDefaultOption(){
-        int white = MathHelper.rgb(255,255,255);
-        return new PencilOption(white,1,PencilMode.WRITE);
+        return new PencilOption(Color.WHITE,1,PencilMode.WRITE);
     }
 
     public void setColor(int newColor,ColorType type) {
-        int rColor = Functions.getRedValue(color);
-        int gColor = Functions.getGreenValue(color);
-        int bColor = Functions.getBlueValue(color);
+        int rColor = color.getRed();
+        int gColor = color.getGreen();
+        int bColor = color.getBlue();
+        if (newColor>255){
+            newColor = 255;
+        }
         switch (type){
             case RED:
                 rColor = newColor;
@@ -36,17 +40,17 @@ public class PencilOption {
             default:
                 break;
         }
-        this.color = MathHelper.rgb(rColor,gColor,bColor);
+        this.color = new Color(rColor,gColor,bColor,255);
     }
 
     public int getColor(ColorType type){
         switch (type){
             case RED:
-                return Functions.getRedValue(this.color);
+                return color.getRed();
             case BLUE:
-                return Functions.getBlueValue(this.color);
+                return color.getBlue();
             case GREEN:
-                return Functions.getGreenValue(this.color);
+                return color.getGreen();
             default:
                 return -1;
         }
@@ -65,6 +69,6 @@ public class PencilOption {
     }
 
     public int getColor() {
-        return color;
+        return color.getRGB();
     }
 }

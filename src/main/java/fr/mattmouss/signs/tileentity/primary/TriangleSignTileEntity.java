@@ -16,4 +16,8 @@ public class TriangleSignTileEntity extends DrawingSignTileEntity {
         super(TEType.TRIANGLE_SIGN);
     }
 
+    @Override
+    protected Form getForm() {
+        return Form.TRIANGLE;
+    }
 }

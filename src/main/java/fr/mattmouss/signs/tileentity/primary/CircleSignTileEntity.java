@@ -16,6 +16,8 @@ public class CircleSignTileEntity extends DrawingSignTileEntity {
         super(TEType.CIRCLE_SIGN);
     }
 
-
-
+    @Override
+    protected Form getForm() {
+        return Form.CIRCLE;
+    }
 }
