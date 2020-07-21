@@ -3,6 +3,7 @@ package fr.mattmouss.signs.tileentity;
 import fr.mattmouss.signs.capabilities.SignStorage;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
+import fr.mattmouss.signs.util.Functions;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.tileentity.TileEntityType;
@@ -17,8 +18,6 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
     private SignStorage getStorage() {
         return new SignStorage();
     }
-
-
 
     public DrawingSignTileEntity(TileEntityType<?> tileEntityTypeIn) {
         super(tileEntityTypeIn);
@@ -52,6 +51,10 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
                 }
             }
         }
+    }
+
+    public int getScale(){
+        return getBlockState().get(Functions.SCALE);
     }
 
 

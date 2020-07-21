@@ -45,6 +45,7 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
 
 
 
+
     @Override
     public int getRGBPixel(int x, int y) {
         if (Functions.isValidCoordinate(x,y)){

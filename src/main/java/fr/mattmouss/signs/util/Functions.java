@@ -14,6 +14,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.BooleanProperty;
+import net.minecraft.state.IProperty;
+import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -26,6 +28,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class Functions {
 
+    public static final IntegerProperty SCALE;
     public static BooleanProperty NORTH_WEST,NORTH_EAST,SOUTH_WEST,SOUTH_EAST;
 
     static {
@@ -33,6 +36,7 @@ public class Functions {
         NORTH_EAST = BooleanProperty.create("north_east");
         SOUTH_EAST = BooleanProperty.create("south_east");
         SOUTH_WEST = BooleanProperty.create("south_west");
+        SCALE = IntegerProperty.create("scale",0,3);
     }
 
     //give the direction after placement for updating blockstate

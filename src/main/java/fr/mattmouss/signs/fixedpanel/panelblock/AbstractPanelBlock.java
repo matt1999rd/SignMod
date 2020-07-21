@@ -29,6 +29,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
@@ -128,8 +129,9 @@ public abstract class AbstractPanelBlock extends Block {
         }
     }
 
-    public static BlockState getBlockStateFromSupport(int form,BlockState supportState,int facing,boolean rotated){
+    public static BlockState getBlockStateFromSupport(int form,BlockState supportState,int facing,boolean rotated,int scale){
         Form f = Form.byIndex(form);
+        int i = MathHelper.log2DeBruijn(scale)-4;
         AbstractPanelBlock panelBlock = PanelRegister.asPanel(f);
         BlockState panelState = panelBlock.getDefaultState();
         boolean grid = (supportState.getBlock() instanceof GridSupport);
@@ -139,7 +141,9 @@ public abstract class AbstractPanelBlock extends Block {
                 panelState = panelState.with(property,supportState.get(property));
             }
         }
-        return panelState.with(GridSupport.ROTATED,rotated).with(BlockStateProperties.HORIZONTAL_FACING, Direction.byHorizontalIndex(facing)).with(GRID,grid);
+        return panelState.with(GridSupport.ROTATED,rotated)
+                .with(BlockStateProperties.HORIZONTAL_FACING, Direction.byHorizontalIndex(facing))
+                .with(GRID,grid).with(SCALE,i);
     }
 
     @Override

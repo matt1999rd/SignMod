@@ -25,4 +25,8 @@ public class ColorSlider extends AbstractSlider {
     protected void applyValue() {
         option.setColor((int)(this.value*256),this.type);
     }
+
+    public void updateSlider(int newColor){
+        this.value = newColor/256.0F;
+    }
 }

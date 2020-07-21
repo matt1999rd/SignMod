@@ -1,7 +1,6 @@
 package fr.mattmouss.signs.gui;
 
 
-import com.ibm.icu.lang.UCharacter;
 import com.mojang.blaze3d.platform.GlStateManager;
 import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.enums.Form;
@@ -10,12 +9,14 @@ import fr.mattmouss.signs.gui.screenutils.PencilMode;
 import fr.mattmouss.signs.gui.screenutils.PencilOption;
 import fr.mattmouss.signs.gui.widget.ColorSlider;
 import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
+import fr.mattmouss.signs.util.Functions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.ImageButton;
+import net.minecraft.item.DyeColor;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -33,6 +34,7 @@ public class DrawingScreen extends Screen {
     private static PencilOption option = PencilOption.getDefaultOption();
     ColorSlider RED_SLIDER,GREEN_SLIDER,BLUE_SLIDER;
     ImageButton[] pencil_button = new ImageButton[6];
+    ImageButton[] dye_color_button = new ImageButton[16];
     ImageButton chBgButton ;
     Button plusButton,moinsButton;
 
@@ -74,34 +76,65 @@ public class DrawingScreen extends Screen {
                         this.changePencilMode(PencilMode.getPencilMode(finalI));
             });
             this.addButton(pencil_button[i]);
-            chBgButton = new ImageButton(relX+75,
-                    relY+135,
-                    BUTTON_LENGTH,
-                    BUTTON_LENGTH,
-                    5*BUTTON_LENGTH,
-                    0,BUTTON_LENGTH,
-                    PENCIL_BUTTONS,
-                    button -> {
-                        this.chBgButton(option.getColor());
+        }
+        chBgButton = new ImageButton(relX+75,
+                relY+135,
+                BUTTON_LENGTH,
+                BUTTON_LENGTH,
+                5*BUTTON_LENGTH,
+                0,BUTTON_LENGTH,
+                PENCIL_BUTTONS,
+                button -> {
+                    this.chBgButton(option.getColor());
+                });
+        this.addButton(chBgButton);
+        pencil_button[0].visible = false;
+        pencil_button[0].active = false;
+        plusButton = new Button(relX+290,relY+109,21,20,"+",button->{
+            this.increaseLength();
+        });
+        moinsButton = new Button(relX+290,relY+129,21,20,"-",button->{
+            this.decreaseLength();
+        });
+        this.addButton(plusButton);
+        this.addButton(moinsButton);
+        int x_dye_begining = relX+164;
+        int y_dye_begining = relY+18;
+        int dye_button_length = 6;
+        for (DyeColor color : DyeColor.values()){
+            int i=color.getId();
+            dye_color_button[i] = new ImageButton(
+                    x_dye_begining+i%2*6,
+                    y_dye_begining+i/2*6,
+                    dye_button_length,dye_button_length,
+                    6*BUTTON_LENGTH+i*dye_button_length,
+                    0,
+                    dye_button_length,PENCIL_BUTTONS,
+                    b->{
+                        fixDyeColor(color);
             });
-            this.addButton(chBgButton);
-            pencil_button[0].visible = false;
-            pencil_button[0].active = false;
-            plusButton = new Button(relX+290,relY+109,21,20,"+",button->{
-                this.increaseLength();
-            });
-            moinsButton = new Button(relX+290,relY+129,21,20,"-",button->{
-                this.decreaseLength();
-            });
-            this.addButton(plusButton);
-            this.addButton(moinsButton);
+            this.addButton(dye_color_button[i]);
         }
     }
 
+    private void fixDyeColor(DyeColor color) {
+        int color_val = color.getColorValue();
+        option.setColor(color_val,null);
+        RED_SLIDER.updateSlider(Functions.getRedValue(color_val));
+        GREEN_SLIDER.updateSlider(Functions.getGreenValue(color_val));
+        BLUE_SLIDER.updateSlider(Functions.getBlueValue(color_val));
+    }
+
     private void decreaseLength() {
+        DrawingSignTileEntity dste = getTileEntity();
+        if (option.getLength() == 1){
+            moinsButton.active = false;
+        }else if (option.getLength() == dste.getScale()/2)
+        option.incrementLength(false);
     }
 
     private void increaseLength() {
+        option.incrementLength(true);
     }
 
     private void chBgButton(int color) {

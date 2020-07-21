@@ -12,4 +12,5 @@ public interface ISignStorage {
     int[] getAllPixel();
     void setAllPixel(int[] pixels);
 
+
 }
