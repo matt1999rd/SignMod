@@ -45,7 +45,7 @@ public class RectangleSignTileEntityRenderer extends TileEntityRenderer<Rectangl
         }
         GlStateManager.enableRescaleNormal();
         GlStateManager.pushMatrix();
-        this.model.renderSign();
+        this.model.renderSign(blockstate);
         GlStateManager.popMatrix();
         GlStateManager.depthMask(true);
         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);

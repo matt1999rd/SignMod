@@ -159,7 +159,8 @@ public abstract class AbstractPanelBlock extends Block {
                 BlockStateProperties.NORTH,
                 BlockStateProperties.SOUTH,
                 BlockStateProperties.WEST,
-                BlockStateProperties.EAST
+                BlockStateProperties.EAST,
+                SCALE
         );
     }
 
