@@ -127,13 +127,21 @@ public class DrawingScreen extends Screen {
 
     private void decreaseLength() {
         DrawingSignTileEntity dste = getTileEntity();
-        if (option.getLength() == 1){
+        if (option.getLength() == 2){
             moinsButton.active = false;
-        }else if (option.getLength() == dste.getScale()/2)
+        }else if (option.getLength() == dste.getScale()/2){
+            plusButton.active = true;
+        }
         option.incrementLength(false);
     }
 
     private void increaseLength() {
+        DrawingSignTileEntity dste = getTileEntity();
+        if (option.getLength() == 1){
+            moinsButton.active = true;
+        }else if (option.getLength() == dste.getScale()/2-1){
+            plusButton.active = false;
+        }
         option.incrementLength(true);
     }
 

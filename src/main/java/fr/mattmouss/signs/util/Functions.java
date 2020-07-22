@@ -99,12 +99,12 @@ public class Functions {
 
     //usefull if we need to convert to radian
 
-    public static double toRadian(double degreeAngle){
+    public static float toRadian(double degreeAngle){
         double radianAngle = (Math.PI/180.0)*degreeAngle;
         if (radianAngle < 0){
             radianAngle += 2*Math.PI;
         }
-        return radianAngle;
+        return (float)radianAngle;
     }
 
     //usefull for text coordinate will be changed in the future
@@ -283,6 +283,18 @@ public class Functions {
         GlStateManager.disableBlend();
         GlStateManager.enableTexture();
         GlStateManager.enableLighting();
+    }
+
+    public static int Pow2(int i){
+        if (i>31 || i<0){
+            return 1;
+        }
+        int pow2 = 1;
+        while (i!=0){
+            pow2 = pow2<<1;
+            i--;
+        }
+        return pow2;
     }
 
 }

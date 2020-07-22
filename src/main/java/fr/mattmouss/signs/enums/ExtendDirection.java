@@ -121,4 +121,11 @@ public enum ExtendDirection {
     public boolean isRotated() {
         return rotated;
     }
+
+    public float getAngleFrom(Direction direction){
+        float dir_angle = direction.getHorizontalAngle();
+        float base_angle = this.rotated ? this.direction.getHorizontalAngle()-45 : this.direction.getHorizontalAngle();
+        float angleDiff = dir_angle - base_angle;
+        return Functions.toRadian(angleDiff);
+    }
 }

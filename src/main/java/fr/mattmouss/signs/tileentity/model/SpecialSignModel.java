@@ -71,7 +71,6 @@ public class SpecialSignModel extends Model {
         support_diag.addBox(0,4,-4.4142F,0,8,2);
         support_diag.addBox(0,4,-8.02426F,0,8,2);
         support_diag.addBox(0,4,-11,0,8,1);
-        support_diag.rotateAngleY = 45;
     }
 
     private void initGridModel(){
@@ -82,6 +81,7 @@ public class SpecialSignModel extends Model {
         grid.addBox(0,4,-1,0,8,2);
         grid.addBox(0,4,3,0,8,2);
         grid.addBox(0,4,7,0,8,1);
+        grid.rotateAngleY = (float)Math.PI/2;
         grid_rotated.addBox(0,2,-12,0,2,24);
         grid_rotated.addBox(0,12,-12,0,2,24);
         grid_rotated.addBox(0,4,-12,0,8,1);
@@ -91,7 +91,7 @@ public class SpecialSignModel extends Model {
         grid_rotated.addBox(0,4,-1,0,8,2);
         grid_rotated.addBox(0,4,3,0,8,2);
         grid_rotated.addBox(0,4,7,0,8,2);
-        grid_rotated.rotateAngleY = -45;
+        grid_rotated.rotateAngleY = (float)Math.PI/2;
     }
 
     private void addPixelRow(int i, int j_beg, int j_end){
@@ -116,36 +116,32 @@ public class SpecialSignModel extends Model {
 
     private void renderSupport(BlockState state) {
         support_post.render(0.0625F);
+        Direction facing = state.get(BlockStateProperties.HORIZONTAL_FACING);
         boolean[] flags = Functions.getFlagsFromState(state);
         for (int i=0;i<flags.length;i++){
             ExtendDirection direction = ExtendDirection.byIndex(i);
             boolean rotated = direction.isRotated();
-            Direction mainDir = direction.getDirection();
-            int horIndex = mainDir.getHorizontalIndex();
             if (flags[i]) {
+                //both side and diag model is apply without (all or multiple) rotation if the flags is for west direction
+                float angle = direction.getAngleFrom(facing);
                 if (rotated) {
-                    support_diag.rotateAngleY += ((horIndex + 1) % 4) * 90;
+                    support_diag.rotateAngleY = angle;
                     support_diag.render(0.0625F);
-                    support_diag.rotateAngleY -= ((horIndex + 1) % 4) * 90;
                 } else {
-                    support_side.rotateAngleY += ((horIndex + 2) % 4) * 90;
+                    //the side model is apply without rotation if the flags is for west direction
+                    support_side.rotateAngleY = angle;
                     support_side.render(0.0625F);
-                    support_side.rotateAngleY -= ((horIndex + 2) % 4) * 90;
                 }
             }
         }
     }
 
     private void renderGrid(BlockState state){
-        int angle = (state.get(BlockStateProperties.HORIZONTAL_FACING).getAxis() == Direction.Axis.Z)? 0 :90;
+        //rotation are already done by GlStateManager and need only to rotate of 90° because model is not on the right way
         if (state.get(ROTATED)){
-            grid_rotated.rotateAngleY += angle;
             grid_rotated.render(0.0625F);
-            grid_rotated.rotateAngleY -= angle;
         }else {
-            grid.rotateAngleY += angle;
             grid.render(0.0625F);
-            grid.rotateAngleY -= angle;
         }
     }
 

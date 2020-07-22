@@ -1,5 +1,5 @@
 {
-  "multipart": [
-    {   "apply": { "model": "sign:block/panel" }}
-  ]
+  "variants": {
+    "": {"model": "sign:block/panel"}
+  }
 }

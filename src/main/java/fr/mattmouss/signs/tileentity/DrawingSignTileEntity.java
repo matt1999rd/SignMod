@@ -7,6 +7,7 @@ import fr.mattmouss.signs.util.Functions;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.LazyOptional;
@@ -54,7 +55,8 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
     }
 
     public int getScale(){
-        return getBlockState().get(Functions.SCALE);
+        int i = getBlockState().get(Functions.SCALE);
+        return Functions.Pow2(i+4);
     }
 
 
