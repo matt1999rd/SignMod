@@ -16,40 +16,36 @@ public class PacketPlacePanel {
     private final int form;
     private final byte facing;
     private final boolean rotated;
-    private final int scale;
 
     public PacketPlacePanel(PacketBuffer buf){
         panelFuturePos = buf.readBlockPos();
         byte[] array = buf.readByteArray();
         form = array[0];
         facing = array[1];
-        scale = Byte.toUnsignedInt(array[2]);
         rotated = buf.readBoolean();
     }
 
     public void toBytes(PacketBuffer buf){
         buf.writeBlockPos(panelFuturePos);
-        byte[] array = new byte[3];
+        byte[] array = new byte[2];
         array[0] = (byte)form;
         array[1] = facing;
-        array[2] = (byte)scale;
         buf.writeByteArray(array);
         buf.writeBoolean(rotated);
     }
 
-    public PacketPlacePanel(BlockPos pos, int form, Direction facing,boolean rotated,int scale){
+    public PacketPlacePanel(BlockPos pos, int form, Direction facing,boolean rotated){
         panelFuturePos = pos;
         this.form = form;
         this.facing = (byte) facing.getHorizontalIndex();
         this.rotated = rotated;
-        this.scale = scale;
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctx){
         ctx.get().enqueueWork(()->{
             ServerWorld world = Objects.requireNonNull(ctx.get().getSender()).getServerWorld();
             BlockState supportState = world.getBlockState(panelFuturePos);
-            BlockState panelState = AbstractPanelBlock.getBlockStateFromSupport(form,supportState,facing,rotated,scale);
+            BlockState panelState = AbstractPanelBlock.getBlockStateFromSupport(form,supportState,facing,rotated);
             world.setBlockState(panelFuturePos, panelState,11);
         });
         ctx.get().setPacketHandled(true);

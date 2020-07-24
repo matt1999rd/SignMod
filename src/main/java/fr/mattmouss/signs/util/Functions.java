@@ -27,7 +27,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class Functions {
 
-    public static final IntegerProperty SCALE;
     public static BooleanProperty NORTH_WEST,NORTH_EAST,SOUTH_WEST,SOUTH_EAST;
 
     static {
@@ -35,7 +34,6 @@ public class Functions {
         NORTH_EAST = BooleanProperty.create("north_east");
         SOUTH_EAST = BooleanProperty.create("south_east");
         SOUTH_WEST = BooleanProperty.create("south_west");
-        SCALE = IntegerProperty.create("scale",0,3);
     }
 
     //give the direction after placement for updating blockstate
@@ -109,8 +107,8 @@ public class Functions {
 
     //usefull for text coordinate will be changed in the future
 
-    public static boolean isValidCoordinate(int x, int y,int pixelLength) {
-        return (x>-1 && y>-1 && x<128/pixelLength && y<128/pixelLength);
+    public static boolean isValidCoordinate(int x, int y) {
+        return (x>-1 && y>-1 && x<128 && y<128);
     }
 
     //notify if the block is a grid support or a panel with grid support background
@@ -283,18 +281,6 @@ public class Functions {
         GlStateManager.disableBlend();
         GlStateManager.enableTexture();
         GlStateManager.enableLighting();
-    }
-
-    public static int Pow2(int i){
-        if (i>31 || i<0){
-            return 1;
-        }
-        int pow2 = 1;
-        while (i!=0){
-            pow2 = pow2<<1;
-            i--;
-        }
-        return pow2;
     }
 
 }

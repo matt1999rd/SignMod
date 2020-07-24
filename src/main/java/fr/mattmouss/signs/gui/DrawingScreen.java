@@ -130,20 +130,18 @@ public class DrawingScreen extends Screen {
     }
 
     private void decreaseLength() {
-        DrawingSignTileEntity dste = getTileEntity();
         if (option.getLength() == 2){
             moinsButton.active = false;
-        }else if (option.getLength() == dste.getScale()/2){
+        }else if (option.getLength() == 64){
             plusButton.active = true;
         }
         option.incrementLength(false);
     }
 
     private void increaseLength() {
-        DrawingSignTileEntity dste = getTileEntity();
         if (option.getLength() == 1){
             moinsButton.active = true;
-        }else if (option.getLength() == dste.getScale()/2-1){
+        }else if (option.getLength() == 63){
             plusButton.active = false;
         }
         option.incrementLength(true);
@@ -169,9 +167,11 @@ public class DrawingScreen extends Screen {
         blit(relX, relY,this.blitOffset , 0.0F, 0.0F, LENGTH, HEIGHT, 256, 512);
         super.render(mouseX, mouseY, partialTicks);
         FontRenderer renderer = this.minecraft.fontRenderer;
+        int length = option.getLength();
+        int gap = (length>9) ? 6:0;
         this.drawString(renderer,"Color of pencil :" ,relX+180,relY+93,white);
         this.drawString(renderer,"Length of pencil :",relX+160,relY+124,white);
-        this.drawString(renderer,""+option.getLength(),relX+272,relY+124,white);
+        this.drawString(renderer,""+length,relX+272-gap,relY+126,white);
         try {
             DrawingSignTileEntity dste = getTileEntity();
             dste.renderOnScreen(relX+30,relY+4);

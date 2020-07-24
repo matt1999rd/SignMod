@@ -43,7 +43,7 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
 
     @Override
     public int getRGBPixel(int x, int y) {
-        if (Functions.isValidCoordinate(x,y,1)){
+        if (Functions.isValidCoordinate(x,y)){
             int color = picture[x][y];
             return (color == 0) ? bg_color.getRGB() : color;
         }else {
@@ -52,23 +52,19 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
     }
 
     @Override
-    public void setPixel(int x, int y, int color,int pixelLength) {
-        if (Functions.isValidCoordinate(x,y,pixelLength)){
-            for (int i=0;i<pixelLength;i++){
-                for (int j=0;j<pixelLength;j++){
-                    picture[x*pixelLength+i][y*pixelLength+j] = color;
-                }
-            }
+    public void setPixel(int x, int y, int color) {
+        if (Functions.isValidCoordinate(x,y)){
+            picture[x][y] = color;
         }
     }
 
     @Override
-    public void setPixel(int x, int y, int color,int length,int pixelLength) {
+    public void setPixel(int x, int y, int color,int length) {
         int lateral_length = (length-1) /2;
         boolean even_length = (length % 2 == 0);
         for (int i=-lateral_length;i<=lateral_length+(even_length?1:0);i++){
             for (int j=-lateral_length;j<=lateral_length+(even_length?1:0);j++){
-                setPixel(x+i,y+j,color,pixelLength);
+                setPixel(x+i,y+j,color);
             }
         }
     }
@@ -156,15 +152,15 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
         }
     }
 
-    public void fill(int x,int y,int color,int scale){
+    public void fill(int x,int y,int color){
         int srcColor = getRGBPixel(x,y);
-        boolean[][] hits = new boolean[scale][scale];
+        boolean[][] hits = new boolean[128][128];
         Queue<Point> queue = new LinkedList();
         queue.add(new Point(x, y));
 
         while(!queue.isEmpty()) {
             Point p = queue.remove();
-            if (doFillOperation(hits, p.x, p.y, srcColor, color,scale)) {
+            if (doFillOperation(hits, p.x, p.y, srcColor, color)) {
                 queue.add(new Point(p.x, p.y - 1));
                 queue.add(new Point(p.x, p.y + 1));
                 queue.add(new Point(p.x - 1, p.y));
@@ -173,21 +169,21 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
         }
     }
 
-    private boolean doFillOperation(boolean[][] hits, int x, int y, int srcColor, int tgtColor,int scale) {
+    private boolean doFillOperation(boolean[][] hits, int x, int y, int srcColor, int tgtColor) {
         if (y < 0) {
             return false;
         } else if (x < 0) {
             return false;
-        } else if (y > scale-1) {
+        } else if (y > 127) {
             return false;
-        } else if (x > scale-1) {
+        } else if (x > 127) {
             return false;
         } else if (hits[x][y]) {
             return false;
         } else if (getRGBPixel(x,y)!= srcColor) {
             return false;
         } else {
-            setPixel(x,y,tgtColor,128/scale);
+            setPixel(x,y,tgtColor);
             hits[x][y] = true;
             return true;
         }

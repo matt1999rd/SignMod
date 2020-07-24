@@ -129,9 +129,8 @@ public abstract class AbstractPanelBlock extends Block {
         }
     }
 
-    public static BlockState getBlockStateFromSupport(int form,BlockState supportState,int facing,boolean rotated,int scale){
+    public static BlockState getBlockStateFromSupport(int form,BlockState supportState,int facing,boolean rotated){
         Form f = Form.byIndex(form);
-        int i = MathHelper.log2DeBruijn(scale)-4;
         AbstractPanelBlock panelBlock = PanelRegister.asPanel(f);
         BlockState panelState = panelBlock.getDefaultState();
         boolean grid = (supportState.getBlock() instanceof GridSupport);
@@ -143,7 +142,7 @@ public abstract class AbstractPanelBlock extends Block {
         }
         return panelState.with(GridSupport.ROTATED,rotated)
                 .with(BlockStateProperties.HORIZONTAL_FACING, Direction.byHorizontalIndex(facing))
-                .with(GRID,grid).with(SCALE,i);
+                .with(GRID,grid);
     }
 
     @Override
@@ -159,8 +158,7 @@ public abstract class AbstractPanelBlock extends Block {
                 BlockStateProperties.NORTH,
                 BlockStateProperties.SOUTH,
                 BlockStateProperties.WEST,
-                BlockStateProperties.EAST,
-                SCALE
+                BlockStateProperties.EAST
         );
     }
 

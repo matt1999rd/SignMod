@@ -51,8 +51,8 @@ public class DrawingSignTileEntityRenderer<T extends DrawingSignTileEntity> exte
         }
         GlStateManager.enableRescaleNormal();
         GlStateManager.pushMatrix();
-        this.model.renderSign(blockstate);
         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        this.model.renderSign(blockstate);
         if (destroyStage<0){
             renderPicture(tileEntityIn);
         }

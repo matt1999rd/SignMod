@@ -56,10 +56,7 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
         }
     }
 
-    public int getScale(){
-        int i = getBlockState().get(Functions.SCALE);
-        return Functions.Pow2(i+4);
-    }
+
 
     public void makeOperationFromScreen(ClientAction action,int x,int y,int color,int length){
         SignMod.LOGGER.info("doing operation in te with parameter : action : "+action+" x : "+x+" y : "+y+" color : "+color+" length : "+length);
@@ -69,29 +66,19 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
                 break;
             case SET_PIXEL:
                 storage.ifPresent(signStorage -> {
-                    int pixelLength = 128/getScale();
-                    int x_large_screen = x/pixelLength;
-                    int y_large_screen = y/pixelLength;
-                    signStorage.setPixel(x_large_screen,y_large_screen,color,length,pixelLength);
+                    signStorage.setPixel(x,y,color,length);
                 });
                 break;
             case ERASE_PIXEL:
                 storage.ifPresent(signStorage -> {
-                    int pixelLength = 128/getScale();
-                    int x_large_screen = x/pixelLength;
-                    int y_large_screen = y/pixelLength;
-                    signStorage.setPixel(x_large_screen,y_large_screen,0,length,pixelLength);
+                    signStorage.setPixel(x,y,0,length);
                 });
                 break;
             case MOVE_TEXT:
                 break;
             case FILL_PIXEL:
                 storage.ifPresent(signStorage -> {
-                    int pixelLength = 128/getScale();
-                    int scale= getScale();
-                    int x_large_screen = x/pixelLength;
-                    int y_large_screen = y/pixelLength;
-                    signStorage.fill(x_large_screen, y_large_screen, color, scale);
+                    signStorage.fill(x, y, color);
                 });
                 break;
         }

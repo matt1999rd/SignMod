@@ -5,8 +5,8 @@ import fr.mattmouss.signs.util.Text;
 
 public interface ISignStorage {
     int getRGBPixel(int x, int y);
-    void setPixel(int x,int y,int color,int pixelLength);
-    void setPixel(int x,int y,int color,int pixelLength,int length);
+    void setPixel(int x,int y,int color);
+    void setPixel(int x,int y,int color,int length);
     void addText(Text t);
     Text[] getTexts();
     int[] getAllPixel();

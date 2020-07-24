@@ -104,7 +104,6 @@ public class SpecialSignModel extends Model {
         float completeLength = form.getCompleteLength();
         float pixelLength = completeLength/128;
         GlStateManager.scalef(pixelLength,pixelLength,1.0F);
-        //GlStateManager.translatef(-3.55F,0.0F,0.0F);
         panel.render(0.0625F);
         GlStateManager.scalef(1/pixelLength,1/pixelLength,1.0F);
         if (state.get(GRID)){
@@ -115,6 +114,9 @@ public class SpecialSignModel extends Model {
     }
 
     private void renderSupport(BlockState state) {
+        if (state.get(ROTATED)){
+            support_post.rotateAngleY = (float) (Math.PI/4);
+        }
         support_post.render(0.0625F);
         Direction facing = state.get(BlockStateProperties.HORIZONTAL_FACING);
         boolean[] flags = Functions.getFlagsFromState(state);
