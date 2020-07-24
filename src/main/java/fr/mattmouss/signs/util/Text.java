@@ -26,7 +26,7 @@ public class Text implements INBTSerializable<CompoundNBT> {
     }
 
     public void set(int x,int y,String newText) {
-        if (Functions.isValidCoordinate(x,y)){
+        if (Functions.isValidCoordinate(x,y,1)){
             this.x = x;
             this.y = y;
             this.content = newText;

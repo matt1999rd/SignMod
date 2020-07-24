@@ -89,10 +89,10 @@ public class DrawingSignTileEntityRenderer<T extends DrawingSignTileEntity> exte
     private void renderPixel(int i, int j, BufferBuilder builder,int color) {
         float completeLength = 10.0F/16;
         float pixelLength = completeLength/128;
-        float x1 = pixelLength*i;
+        float x1 = completeLength-pixelLength*i;
         float y1 = completeLength-pixelLength*j;
         float z = 0.006F;
-        float x2 = x1+pixelLength;
+        float x2 = x1-pixelLength;
         float y2 = y1-pixelLength;
         Color color1 = new Color(color,true);
         int red,green,blue,alpha;
@@ -101,9 +101,9 @@ public class DrawingSignTileEntityRenderer<T extends DrawingSignTileEntity> exte
         blue = color1.getBlue();
         alpha = color1.getAlpha();
         builder.pos(x1,y1,z).color(red,green,blue,alpha).endVertex();
-        builder.pos(x2,y1,z).color(red,green,blue,alpha).endVertex();
-        builder.pos(x2,y2,z).color(red,green,blue,alpha).endVertex();
         builder.pos(x1,y2,z).color(red,green,blue,alpha).endVertex();
+        builder.pos(x2,y2,z).color(red,green,blue,alpha).endVertex();
+        builder.pos(x2,y1,z).color(red,green,blue,alpha).endVertex();
     }
 
     private float getAngleFromBlockState(BlockState blockstate) {

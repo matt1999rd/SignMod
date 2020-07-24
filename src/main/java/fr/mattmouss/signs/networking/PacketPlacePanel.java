@@ -23,7 +23,7 @@ public class PacketPlacePanel {
         byte[] array = buf.readByteArray();
         form = array[0];
         facing = array[1];
-        scale = array[2];
+        scale = Byte.toUnsignedInt(array[2]);
         rotated = buf.readBoolean();
     }
 

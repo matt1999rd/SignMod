@@ -3,11 +3,14 @@ package fr.mattmouss.signs.gui;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import fr.mattmouss.signs.SignMod;
+import fr.mattmouss.signs.enums.ClientAction;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.gui.screenutils.ColorType;
 import fr.mattmouss.signs.gui.screenutils.PencilMode;
 import fr.mattmouss.signs.gui.screenutils.PencilOption;
 import fr.mattmouss.signs.gui.widget.ColorSlider;
+import fr.mattmouss.signs.networking.Networking;
+import fr.mattmouss.signs.networking.PacketDrawingAction;
 import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
 import fr.mattmouss.signs.util.Functions;
 import net.minecraft.client.Minecraft;
@@ -31,7 +34,7 @@ public class DrawingScreen extends Screen {
 
     Form form ;
     BlockPos panelPos;
-    private static PencilOption option = PencilOption.getDefaultOption();
+    private static PencilOption option ;
     ColorSlider RED_SLIDER,GREEN_SLIDER,BLUE_SLIDER;
     ImageButton[] pencil_button = new ImageButton[6];
     ImageButton[] dye_color_button = new ImageButton[16];
@@ -53,6 +56,7 @@ public class DrawingScreen extends Screen {
 
     @Override
     protected void init() {
+        option = PencilOption.getDefaultOption();
         int BUTTON_LENGTH =25;
         int relX = (this.width-LENGTH) / 2;
         int relY = (this.height-HEIGHT) / 2;
@@ -111,18 +115,18 @@ public class DrawingScreen extends Screen {
                     0,
                     dye_button_length,PENCIL_BUTTONS,
                     b->{
-                        fixDyeColor(color);
+                        fixColor(color.getColorValue());
             });
             this.addButton(dye_color_button[i]);
         }
+        moinsButton.active = false;
     }
 
-    private void fixDyeColor(DyeColor color) {
-        int color_val = color.getColorValue();
-        option.setColor(color_val,null);
-        RED_SLIDER.updateSlider(Functions.getRedValue(color_val));
-        GREEN_SLIDER.updateSlider(Functions.getGreenValue(color_val));
-        BLUE_SLIDER.updateSlider(Functions.getBlueValue(color_val));
+    private void fixColor(int color) {
+        option.setColor(color,null);
+        RED_SLIDER.updateSlider(Functions.getRedValue(color));
+        GREEN_SLIDER.updateSlider(Functions.getGreenValue(color));
+        BLUE_SLIDER.updateSlider(Functions.getBlueValue(color));
     }
 
     private void decreaseLength() {
@@ -146,6 +150,7 @@ public class DrawingScreen extends Screen {
     }
 
     private void chBgButton(int color) {
+        transferActionToTE(ClientAction.SET_BG,-1,-1,color,-1);
     }
 
     @Override
@@ -217,6 +222,9 @@ public class DrawingScreen extends Screen {
             this.BLUE_SLIDER.visible = enableSlider;
             this.GREEN_SLIDER.visible = enableSlider;
             this.chBgButton.visible = enableSlider;
+            for (DyeColor dyeColor : DyeColor.values()){
+                this.dye_color_button[dyeColor.getId()].visible = enableSlider;
+            }
         }
 
     }
@@ -227,7 +235,54 @@ public class DrawingScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (mouseOnScreen(mouseX,mouseY)){
+            manageClickOnScreen(mouseX,mouseY,button);
+        }
         return super.mouseClicked(mouseX,mouseY,button);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double mouseXf, double mouseYf) {
+        if (mouseOnScreen(mouseX,mouseY)){
+            manageClickOnScreen(mouseX,mouseY,button);
+        }
+        return super.mouseDragged(mouseX,mouseY,button,mouseXf,mouseYf);
+    }
+
+    private void manageClickOnScreen(double mouseX, double mouseY, int button) {
+        int x = getXOnScreen(mouseX);
+        int y = getYOnScreen(mouseY);
+        if (option.getMode() == PencilMode.PICK){
+            DrawingSignTileEntity te = getTileEntity();
+            int color = te.getPixelColor(x,y);
+            if (color != option.getColor()){
+                fixColor(color);
+            }
+        }else {
+            int color = option.getColor();
+            int length = option.getLength();
+            transferActionToTE(ClientAction.getActionFromMode(option.getMode()),x,y,color,length);
+        }
+    }
+
+    private int getYOnScreen(double mouseY) {
+        int relY = (this.height-HEIGHT) / 2;
+        float screenTop = relY + 4;
+        double offsetMouseY = mouseY-screenTop;
+        return MathHelper.fastFloor(offsetMouseY);
+    }
+
+    private int getXOnScreen(double mouseX) {
+        int relX = (this.width-LENGTH) / 2;
+        float screenLeft = relX + 30;
+        double offsetMouseX = mouseX-screenLeft;
+        return MathHelper.fastFloor(offsetMouseX);
+    }
+
+    private boolean mouseOnScreen(double mouseX, double mouseY) {
+        int x = getXOnScreen(mouseX);
+        int y = getYOnScreen(mouseY);
+        return form.isIn(x,y);
     }
 
     private DrawingSignTileEntity getTileEntity(){
@@ -238,5 +293,11 @@ public class DrawingScreen extends Screen {
         }
         if (te == null)throw new NullPointerException("Tile entity at panelPos is not in desired place !");
         throw new IllegalStateException("Drawing Screen need drawing sign tile entity in place !");
+    }
+
+    private void transferActionToTE(ClientAction action,int x,int y,int color,int length){
+        DrawingSignTileEntity dste = getTileEntity();
+        dste.makeOperationFromScreen(action,x,y,color,length);
+        Networking.INSTANCE.sendToServer(new PacketDrawingAction(panelPos,action,x,y,color,length));
     }
 }

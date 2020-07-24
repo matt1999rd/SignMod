@@ -33,7 +33,12 @@ public class Networking {
                 PacketOpenScreen::toBytes,
                 PacketOpenScreen::new,
                 PacketOpenScreen::handle);
-        
+
+        INSTANCE.registerMessage(nextID(),
+                PacketDrawingAction.class,
+                PacketDrawingAction::toBytes,
+                PacketDrawingAction::new,
+                PacketDrawingAction::handle);
         /*
         INSTANCE.registerMessage(nextID(),
                 PacketOpenScreen.class,

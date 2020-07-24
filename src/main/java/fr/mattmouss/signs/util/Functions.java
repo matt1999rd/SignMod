@@ -109,8 +109,8 @@ public class Functions {
 
     //usefull for text coordinate will be changed in the future
 
-    public static boolean isValidCoordinate(int x, int y) {
-        return (x>-1 && y>-1 && x<128 && y<128);
+    public static boolean isValidCoordinate(int x, int y,int pixelLength) {
+        return (x>-1 && y>-1 && x<128/pixelLength && y<128/pixelLength);
     }
 
     //notify if the block is a grid support or a panel with grid support background
