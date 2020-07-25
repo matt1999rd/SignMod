@@ -19,7 +19,7 @@ import net.minecraft.util.ResourceLocation;
 import java.awt.*;
 
 public class DrawingSignTileEntityRenderer<T extends DrawingSignTileEntity> extends TileEntityRenderer<T> {
-    private static final ResourceLocation BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/square.png");
+    private static final ResourceLocation BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/block/sign.png");
     private final SpecialSignModel model ;
     private final Form form;
 
@@ -58,7 +58,6 @@ public class DrawingSignTileEntityRenderer<T extends DrawingSignTileEntity> exte
         }
         GlStateManager.popMatrix();
         GlStateManager.depthMask(true);
-
         GlStateManager.popMatrix();
         if (destroyStage>=0){
             GlStateManager.matrixMode(5890);

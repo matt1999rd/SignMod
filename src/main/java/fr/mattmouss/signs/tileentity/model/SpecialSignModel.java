@@ -55,8 +55,8 @@ public class SpecialSignModel extends Model {
                 this.addPixelRow(i,j_beg,j_end);
             }
         }
-        initGridModel();
-        initSupportModel();
+        //initGridModel();
+        //initSupportModel();
 
     }
 
@@ -74,23 +74,23 @@ public class SpecialSignModel extends Model {
     }
 
     private void initGridModel(){
-        grid.addBox(0,2,-8,0,2,16);
-        grid.addBox(0,12,-8,0,2,16);
-        grid.addBox(0,4,-8,0,8,1);
-        grid.addBox(0,4,-5,0,8,2);
-        grid.addBox(0,4,-1,0,8,2);
-        grid.addBox(0,4,3,0,8,2);
-        grid.addBox(0,4,7,0,8,1);
+        grid.addBox(0,2,-8,1,2,16);
+        grid.addBox(0,12,-8,1,2,16);
+        grid.addBox(0,4,-8,1,8,1);
+        grid.addBox(0,4,-5,1,8,2);
+        grid.addBox(0,4,-1,1,8,2);
+        grid.addBox(0,4,3,1,8,2);
+        grid.addBox(0,4,7,1,8,1);
         grid.rotateAngleY = (float)Math.PI/2;
-        grid_rotated.addBox(0,2,-12,0,2,24);
-        grid_rotated.addBox(0,12,-12,0,2,24);
-        grid_rotated.addBox(0,4,-12,0,8,1);
-        grid_rotated.addBox(0,4,11,0,8,1);
-        grid_rotated.addBox(0,4,-9,0,8,2);
-        grid_rotated.addBox(0,4,-5,0,8,2);
-        grid_rotated.addBox(0,4,-1,0,8,2);
-        grid_rotated.addBox(0,4,3,0,8,2);
-        grid_rotated.addBox(0,4,7,0,8,2);
+        grid_rotated.addBox(0,2,-12,1,2,24);
+        grid_rotated.addBox(0,12,-12,1,2,24);
+        grid_rotated.addBox(0,4,-12,1,8,1);
+        grid_rotated.addBox(0,4,11,1,8,1);
+        grid_rotated.addBox(0,4,-9,1,8,2);
+        grid_rotated.addBox(0,4,-5,1,8,2);
+        grid_rotated.addBox(0,4,-1,1,8,2);
+        grid_rotated.addBox(0,4,3,1,8,2);
+        grid_rotated.addBox(0,4,7,1,8,2);
         grid_rotated.rotateAngleY = (float)Math.PI/2;
     }
 
@@ -106,16 +106,21 @@ public class SpecialSignModel extends Model {
         GlStateManager.scalef(pixelLength,pixelLength,1.0F);
         panel.render(0.0625F);
         GlStateManager.scalef(1/pixelLength,1/pixelLength,1.0F);
+        /*
         if (state.get(GRID)){
             renderGrid(state);
         }else {
             renderSupport(state);
         }
+         */
     }
 
+    /*
     private void renderSupport(BlockState state) {
         if (state.get(ROTATED)){
             support_post.rotateAngleY = (float) (Math.PI/4);
+        }else {
+            support_post.rotateAngleY = 0.0F;
         }
         support_post.render(0.0625F);
         Direction facing = state.get(BlockStateProperties.HORIZONTAL_FACING);
@@ -147,7 +152,7 @@ public class SpecialSignModel extends Model {
         }
     }
 
-    /*
+
     public RendererModel getGrid() {
         return grid_background;
     }
