@@ -56,31 +56,8 @@ public class PanelItem extends Item {
         return super.onItemUse(context);
     }
 
-    private ExtendDirection getSupportFacingDirection(BlockState state, PlayerEntity player, BlockPos pos) {
-        //for the purpose of getting the state of the panel we divide space around the center of the support in 8 part
-        //division are for angle 22.5/67.5/112.5/157.5/202.5/247.5/292.5/337.5 (22.5+45*i for 0<=i<=7)
-        Vec3d support_center = Functions.getVecFromBlockPos(pos,0.5F);
-        Vec3d offsetPlayerPos = player.getPositionVec().subtract(support_center);
-        //we compare our player position to the position of the support's center
-        //we get angle using arctan function
-        double angle = MathHelper.atan2(offsetPlayerPos.x,offsetPlayerPos.z);
-        //we convert to degree and make it positive
-        double degreeAngle =Functions.toDegree(angle);
-        //then to index from 2 to 9 corresponding to the part of stage where the player is
-        int index = MathHelper.ceil((degreeAngle-22.5D)/45.0D);
-        //we consider the part split by angle origin which correpond to 0
-        // that we move of a complete circle for math simplification
-        if (index == 0){
-            index =8;
-        }else if (index == 1){
-            index =9;
-        }
-        //we get facing using a special index that is for i : 0->7 --> 0 0 3 3 2 2 1 1
-        //we have translated 0 to 8 and 1 to 9 to get a decreasing linear function -->
-        // 2->3 3->3 4->2 5->2 6->1 7->1 8->0 9->0
-        Direction facing = Direction.byHorizontalIndex((9-index)/2);
-        boolean isRotated = (index%2 == 1);
-        ExtendDirection direction = ExtendDirection.getExtendedDirection(facing,isRotated);
+    public ExtendDirection getSupportFacingDirection(BlockState state, PlayerEntity player, BlockPos pos) {
+        ExtendDirection direction = ExtendDirection.getFacingFromPlayer(player,pos);
         BooleanProperty centerDirectionProperty = direction.getSupportProperty();
         ExtendDirection leftDirection = direction.rotateY();
         ExtendDirection rightDirection = direction.rotateYCCW();

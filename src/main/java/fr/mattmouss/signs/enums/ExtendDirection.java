@@ -3,10 +3,14 @@ package fr.mattmouss.signs.enums;
 import fr.mattmouss.signs.fixedpanel.support.GridSupport;
 import fr.mattmouss.signs.fixedpanel.support.SignSupport;
 import fr.mattmouss.signs.util.Functions;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 
 public enum ExtendDirection {
     SOUTH(0,Direction.SOUTH,false, BlockStateProperties.SOUTH),
@@ -44,6 +48,20 @@ public enum ExtendDirection {
                 return (isRotated)?ExtendDirection.SOUTH_WEST:ExtendDirection.WEST;
             case EAST:
                 return (isRotated)?ExtendDirection.NORTH_EAST:ExtendDirection.EAST;
+        }
+    }
+
+    //return the direction that leads from the support pos to the pos of the block
+    public static ExtendDirection getDirectionFromPos(BlockPos supportPos, BlockPos pos) {
+        int x = pos.getX()-supportPos.getX();
+        int z = pos.getZ()-supportPos.getZ();
+        if (Math.abs(x)>1 || Math.abs(z)>1 || (x==0 && z==0))return null;
+        if (x==-1){
+            return (z == -1)? NORTH_WEST : (z == 0) ? WEST : SOUTH_WEST;
+        }else if (x == 0){
+            return (z == -1)? NORTH : SOUTH;
+        }else {
+            return (z == -1)? NORTH_EAST : (z == 0) ? EAST : SOUTH_EAST;
         }
     }
 
@@ -128,4 +146,39 @@ public enum ExtendDirection {
         float angleDiff = dir_angle - base_angle;
         return Functions.toRadian(angleDiff);
     }
+
+    public Direction.Axis getAxis(){
+        return direction.getAxis();
+    }
+
+    public static ExtendDirection getFacingFromPlayer(PlayerEntity player,BlockPos pos){
+        //for the purpose of getting the state of the panel we divide space around the center of the support in 8 part
+        //division are for angle 22.5/67.5/112.5/157.5/202.5/247.5/292.5/337.5 (22.5+45*i for 0<=i<=7)
+        Vec3d support_center = Functions.getVecFromBlockPos(pos,0.5F);
+        Vec3d offsetPlayerPos = player.getPositionVec().subtract(support_center);
+        //we compare our player position to the position of the support's center
+        //we get angle using arctan function
+        double angle = MathHelper.atan2(offsetPlayerPos.x,offsetPlayerPos.z);
+        //we convert to degree and make it positive
+        double degreeAngle =Functions.toDegree(angle);
+        //then to index from 2 to 9 corresponding to the part of stage where the player is
+        int index = MathHelper.ceil((degreeAngle-22.5D)/45.0D);
+        //we consider the part split by angle origin which correpond to 0
+        // that we move of a complete circle for math simplification
+        if (index == 0){
+            index =8;
+        }else if (index == 1){
+            index =9;
+        }
+        //we get facing using a special index that is for i : 0->7 --> 0 0 3 3 2 2 1 1
+        //we have translated 0 to 8 and 1 to 9 to get a decreasing linear function -->
+        // 2->3 3->3 4->2 5->2 6->1 7->1 8->0 9->0
+        Direction facing = Direction.byHorizontalIndex((9-index)/2);
+        boolean isRotated = (index%2 == 1);
+        ExtendDirection direction = ExtendDirection.getExtendedDirection(facing,isRotated);
+        return direction;
+    }
+
+
+
 }

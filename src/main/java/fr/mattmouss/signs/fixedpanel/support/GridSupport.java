@@ -9,6 +9,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
@@ -23,6 +24,7 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import org.lwjgl.system.CallbackI;
+import sun.security.x509.EDIPartyName;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -61,48 +63,6 @@ public class GridSupport extends Block {
         builder.add(BlockStateProperties.HORIZONTAL_AXIS,ROTATED);
     }
 
-
-
-    @Override
-    public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-        if (placer != null){
-            Block eastBlock = worldIn.getBlockState(pos.east()).getBlock();
-            Block westBlock = worldIn.getBlockState(pos.west()).getBlock();
-            Block northBlock = worldIn.getBlockState(pos.north()).getBlock();
-            Block southBlock = worldIn.getBlockState(pos.south()).getBlock();
-            Block northEastBlock = worldIn.getBlockState(pos.east().north()).getBlock();
-            Block northWestBlock = worldIn.getBlockState(pos.west().north()).getBlock();
-            Block southEastBlock = worldIn.getBlockState(pos.south().east()).getBlock();
-            Block southWestBlock = worldIn.getBlockState(pos.south().west()).getBlock();
-            //todo : check context and make grid in the right direction if grid or support are clicked
-            //todo :  check grid more completely (do not allow grids in both axis connected)
-            if (isSupportOrGrid(eastBlock) || isSupportOrGrid(westBlock)){
-                worldIn.setBlockState(pos,state
-                        .with(BlockStateProperties.HORIZONTAL_AXIS, Direction.Axis.X)
-                        .with(ROTATED,false)
-                );
-            }else if (isSupportOrGrid(northBlock) || isSupportOrGrid(southBlock)){
-                worldIn.setBlockState(pos,state
-                        .with(BlockStateProperties.HORIZONTAL_AXIS, Direction.Axis.Z)
-                        .with(ROTATED,false)
-                );
-            }else if (isSupportOrGrid(southEastBlock) || isSupportOrGrid(northWestBlock)) {
-                worldIn.setBlockState(pos,state
-                        .with(BlockStateProperties.HORIZONTAL_AXIS, Direction.Axis.Z)
-                        .with(ROTATED,true)
-                );
-            }else if (isSupportOrGrid(northEastBlock) || isSupportOrGrid(southWestBlock)) {
-                worldIn.setBlockState(pos,state
-                        .with(BlockStateProperties.HORIZONTAL_AXIS, Direction.Axis.X)
-                        .with(ROTATED,true)
-                );
-            }else {
-                throw new IllegalStateException("grid block cannot be created if there is no support block to support it.");
-            }
-
-        }
-    }
-
     @Override
     @ParametersAreNonnullByDefault
     public void harvestBlock(World world, PlayerEntity entity, BlockPos pos, BlockState state, @Nullable TileEntity tileEntity, ItemStack stack) {
@@ -116,7 +76,36 @@ public class GridSupport extends Block {
         super.onBlockHarvested(worldIn, pos, state, player);
     }
 
+    public BlockState getStateFromPos(BlockPos pos,BlockPos supportPos) {
+        BlockState state = this.getDefaultState();
+        ExtendDirection dir = ExtendDirection.getDirectionFromPos(supportPos,pos);
+        if (dir != null){
+            return state.with(GridSupport.ROTATED,dir.isRotated()).with(BlockStateProperties.HORIZONTAL_AXIS,dir.getAxis());
+        }else {
+            return null;
+        }
+    }
 
-
+    private boolean existGridInRightWay(World world, BlockPos pos) {
+        Direction[] directions = Direction.values();
+        //test for all horizontal direction and diagonal direction (direction offset and rotated direction offset)
+        for (int i=2;i<6;i++){
+            Direction dir = directions[i];
+            BlockState horBlockState = world.getBlockState(pos.offset(dir));
+            BlockState diagBlockState = world.getBlockState(pos.offset(dir).offset(dir.rotateY()));
+            if (Functions.isGridSupport(horBlockState)){
+                return true;
+            }
+            if (diagBlockState.getBlock() instanceof GridSupport){
+                //the grid need to be rotated and the axis must not be the dir axis because of facingY choice
+                return (diagBlockState.get(GridSupport.ROTATED))&& (dir.getAxis() != diagBlockState.get(BlockStateProperties.HORIZONTAL_AXIS));
+            }
+            if (diagBlockState.getBlock() instanceof AbstractPanelBlock) {
+                //the grid need to be rotated and the facing must have the same axis as the dir axis because of facingY choice
+                return (diagBlockState.get(GridSupport.ROTATED)) && (dir.getAxis() == diagBlockState.get(BlockStateProperties.HORIZONTAL_FACING).getAxis());
+            }
+        }
+        return false;
+    }
 
 }
