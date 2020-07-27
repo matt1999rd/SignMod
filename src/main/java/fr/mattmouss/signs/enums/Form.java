@@ -11,7 +11,7 @@ public enum Form {
         return (vec2f.y>0 && vec2f.x>vec2f.y/2 && vec2f.x<1-vec2f.y/2);
     }),
     TRIANGLE(1,"triangle_panel",vec2f -> {
-        return (vec2f.y<1 && vec2f.y>MathHelper.abs(2*vec2f.x-1));
+        return (vec2f.y<=1 && vec2f.y>=MathHelper.abs(2*vec2f.x-1));
     }),
     OCTOGONE(2,"stop_panel",vec2f -> {
         return (1-3*vec2f.y<3*vec2f.x && 3*vec2f.x<5-3*vec2f.y) &&
@@ -20,7 +20,7 @@ public enum Form {
                 (3*vec2f.y-2<3*vec2f.x && 3*vec2f.x<3*vec2f.y+2);
     }),
     CIRCLE(3,"circle_panel",(vec2f -> {
-        return (vec2f.x-0.5)*(vec2f.x-0.5)+(vec2f.y-0.5)*(vec2f.y-0.5)<0.5*0.5;
+        return (vec2f.x-0.5)*(vec2f.x-0.5)+(vec2f.y-0.5)*(vec2f.y-0.5)<=0.5*0.5;
     })),
     SQUARE(4,"square_panel",(vec2f -> {
         return (vec2f.x<=1 && vec2f.x>=0 && vec2f.y<=1 && vec2f.y>=0);
@@ -35,7 +35,7 @@ public enum Form {
         return (vec2f.x<1 && vec2f.x>0 && vec2f.y<1 && vec2f.y>0);
     }),
     DIAMOND(8,"diamond_panel",vec2f -> {
-        return 2*vec2f.x> MathHelper.abs(2*vec2f.y-1) && 2*vec2f.x<2-MathHelper.abs(1-2*vec2f.y);
+        return 2*vec2f.x>= MathHelper.abs(2*vec2f.y-1) && 2*vec2f.x<=2-MathHelper.abs(1-2*vec2f.y);
     });
 
     private final String block_name;
@@ -67,8 +67,8 @@ public enum Form {
     //return true if i and j coordinates that are between 0 and 128 are in the form figure
     public boolean isIn(int i,int j){
         float completeLength = 128;
-        float x = i/completeLength;
-        float y = j/completeLength;
+        float x = (i+0.5F)/completeLength;
+        float y = (j+0.5F)/completeLength;
         Vec2f vec2f = new Vec2f(x,y);
         return isIn.test(vec2f);
     }

@@ -42,10 +42,7 @@ public class DrawingScreen extends Screen {
     Button plusButton,moinsButton;
 
 
-    ResourceLocation TRIANGLE = new ResourceLocation(SignMod.MODID,"textures/gui/triangle_gui.png");
-    ResourceLocation CIRCLE = new ResourceLocation(SignMod.MODID,"textures/gui/circle_gui.png");
-    ResourceLocation SQUARE = new ResourceLocation(SignMod.MODID,"textures/gui/square_gui.png");
-    ResourceLocation DIAMOND = new ResourceLocation(SignMod.MODID,"textures/gui/diamond_gui.png");
+    ResourceLocation BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/gui/drawing_gui.png");
     ResourceLocation PENCIL_BUTTONS = new ResourceLocation(SignMod.MODID,"textures/gui/pencil_buttons.png");
 
     protected DrawingScreen(Form form,BlockPos panelPos) {
@@ -154,16 +151,9 @@ public class DrawingScreen extends Screen {
     @Override
     public void render(int mouseX, int mouseY, float partialTicks) {
         GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
-        ResourceLocation location = getTexture(this.form);
-        if (location == null){
-            super.render(mouseX,mouseY,partialTicks);
-            this.onClose();
-            SignMod.LOGGER.warn("Error in form given to this code !! ");
-            return;
-        }
         int relX = (this.width-LENGTH) / 2;
         int relY = (this.height-HEIGHT) / 2;
-        this.minecraft.getTextureManager().bindTexture(location);
+        this.minecraft.getTextureManager().bindTexture(BACKGROUND);
         blit(relX, relY,this.blitOffset , 0.0F, 0.0F, LENGTH, HEIGHT, 256, 512);
         super.render(mouseX, mouseY, partialTicks);
         FontRenderer renderer = this.minecraft.fontRenderer;
@@ -181,26 +171,6 @@ public class DrawingScreen extends Screen {
         GlStateManager.enableBlend();
         if (option.getMode().enableSlider()) {
             AbstractGui.fill(relX + 271, relY + 93, relX + 271 + 9, relY + 93 + 9, option.getColor());
-        }
-    }
-
-    private ResourceLocation getTexture(Form form) {
-        switch (form){
-            case CIRCLE:
-                return CIRCLE;
-            case SQUARE:
-                return SQUARE;
-            case DIAMOND:
-                return DIAMOND;
-            case TRIANGLE:
-                return TRIANGLE;
-            case ARROW:
-            case OCTOGONE:
-            case RECTANGLE:
-            case PLAIN_SQUARE:
-            case UPSIDE_TRIANGLE:
-            default:
-                return null;
         }
     }
 
