@@ -11,6 +11,6 @@ public interface ISignStorage {
     Text[] getTexts();
     int[] getAllPixel();
     void setAllPixel(int[] pixels);
-
-
+    void setText(Text t, int ind);
+    void delText(int ind);
 }

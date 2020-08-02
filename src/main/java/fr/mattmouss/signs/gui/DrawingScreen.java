@@ -10,9 +10,12 @@ import fr.mattmouss.signs.gui.screenutils.PencilMode;
 import fr.mattmouss.signs.gui.screenutils.PencilOption;
 import fr.mattmouss.signs.gui.widget.ColorSlider;
 import fr.mattmouss.signs.networking.Networking;
+import fr.mattmouss.signs.networking.PacketAddOrEditText;
+import fr.mattmouss.signs.networking.PacketDelText;
 import fr.mattmouss.signs.networking.PacketDrawingAction;
 import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
 import fr.mattmouss.signs.util.Functions;
+import fr.mattmouss.signs.util.Text;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
@@ -28,8 +31,8 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 
 public class DrawingScreen extends Screen {
-    private static final int LENGTH = 324;
-    private static final int HEIGHT = 166;
+    private static final int LENGTH = 325;
+    private static final int HEIGHT = 203;
     private static final int white = MathHelper.rgb(1.0F,1.0F,1.0F);
 
     Form form ;
@@ -39,7 +42,7 @@ public class DrawingScreen extends Screen {
     ImageButton[] pencil_button = new ImageButton[6];
     ImageButton[] dye_color_button = new ImageButton[16];
     ImageButton chBgButton ;
-    Button plusButton,moinsButton;
+    Button plusButton,moinsButton,addTextButton,delTextButton;
 
 
     ResourceLocation BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/gui/drawing_gui.png");
@@ -49,6 +52,12 @@ public class DrawingScreen extends Screen {
         super(new StringTextComponent("Drawing Screen"));
         this.form = form;
         this.panelPos = panelPos;
+    }
+
+    /** initial function of opening **/
+
+    public static void open(Form form,BlockPos panelPos){
+        Minecraft.getInstance().displayGuiScreen(new DrawingScreen(form,panelPos));
     }
 
     @Override
@@ -116,7 +125,63 @@ public class DrawingScreen extends Screen {
             });
             this.addButton(dye_color_button[i]);
         }
+        addTextButton = new Button(relX+132,relY+142,73,20,"Add Text",b->openTextGui());
+        delTextButton = new Button(relX+132,relY+165,73,20,"Delete Text",b->deleteSelText());
+        this.addButton(addTextButton);
+        this.addButton(delTextButton);
+        addTextButton.active = false;
+        delTextButton.active = false;
         moinsButton.active = false;
+    }
+
+    /** display function **/
+
+    @Override
+    public void render(int mouseX, int mouseY, float partialTicks) {
+        GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
+        int relX = (this.width-LENGTH) / 2;
+        int relY = (this.height-HEIGHT) / 2;
+        this.minecraft.getTextureManager().bindTexture(BACKGROUND);
+        blit(relX, relY,this.blitOffset , 0.0F, 0.0F, LENGTH, HEIGHT, 256, 512);
+        super.render(mouseX, mouseY, partialTicks);
+        FontRenderer renderer = this.minecraft.fontRenderer;
+        int length = option.getLength();
+        int gap = (length>9) ? 6:0;
+        this.drawString(renderer,"Color of pencil :" ,relX+180,relY+93,white);
+        this.drawString(renderer,"Length of pencil :",relX+160,relY+124,white);
+        this.drawString(renderer,""+length,relX+272-gap,relY+126,white);
+        try {
+            DrawingSignTileEntity dste = getTileEntity();
+            dste.renderOnScreen(relX+30,relY+4);
+        }catch (Exception e){
+            SignMod.LOGGER.warn("skip drawing screen : tile entity was not found and exception was raised : "+e.getMessage());
+        }
+        GlStateManager.enableBlend();
+        if (option.getMode().enableSlider()) {
+            AbstractGui.fill(relX + 271, relY + 93, relX + 271 + 9, relY + 93 + 9, option.getColor());
+        }
+    }
+
+    @Override
+    public void tick() {
+        if (option.isTextSelected()){
+            addTextButton.setMessage("Edit Text");
+        }else {
+            addTextButton.setMessage("Add Text");
+        }
+    }
+
+    /** IPressable Consumer object for button in drawing screen **/
+
+    private void deleteSelText() {
+        int n = option.getTextIndice();
+        if (option.isTextSelected()) delText(n);
+        else delTextButton.active = false;
+    }
+
+    private void openTextGui() {
+        Minecraft.getInstance().displayGuiScreen(null);
+        AddTextScreen.open(this);
     }
 
     private void fixColor(int color) {
@@ -148,32 +213,6 @@ public class DrawingScreen extends Screen {
         transferActionToTE(ClientAction.SET_BG,-1,-1,color,-1);
     }
 
-    @Override
-    public void render(int mouseX, int mouseY, float partialTicks) {
-        GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
-        int relX = (this.width-LENGTH) / 2;
-        int relY = (this.height-HEIGHT) / 2;
-        this.minecraft.getTextureManager().bindTexture(BACKGROUND);
-        blit(relX, relY,this.blitOffset , 0.0F, 0.0F, LENGTH, HEIGHT, 256, 512);
-        super.render(mouseX, mouseY, partialTicks);
-        FontRenderer renderer = this.minecraft.fontRenderer;
-        int length = option.getLength();
-        int gap = (length>9) ? 6:0;
-        this.drawString(renderer,"Color of pencil :" ,relX+180,relY+93,white);
-        this.drawString(renderer,"Length of pencil :",relX+160,relY+124,white);
-        this.drawString(renderer,""+length,relX+272-gap,relY+126,white);
-        try {
-            DrawingSignTileEntity dste = getTileEntity();
-            dste.renderOnScreen(relX+30,relY+4);
-        }catch (Exception e){
-            SignMod.LOGGER.warn("skip drawing screen : tile entity was not found and exception was raised : "+e.getMessage());
-        }
-        GlStateManager.enableBlend();
-        if (option.getMode().enableSlider()) {
-            AbstractGui.fill(relX + 271, relY + 93, relX + 271 + 9, relY + 93 + 9, option.getColor());
-        }
-    }
-
     private void changePencilMode(PencilMode newMode){
         PencilMode oldMode = option.getMode();
         if (oldMode != newMode){
@@ -184,6 +223,17 @@ public class DrawingScreen extends Screen {
             pencil_button[newModeMeta].visible = false;
             pencil_button[newModeMeta].active = false;
             option.changePencilMode(newMode);
+            if (newMode == PencilMode.SELECT){
+                addTextButton.active = true;
+                if (option.isTextSelected()){
+                    delTextButton.active = true;
+                }
+            }else if (oldMode == PencilMode.SELECT){
+                addTextButton.active = false;
+                if (option.isTextSelected()){
+                    delTextButton.active = false;
+                }
+            }
         }
         //xor : mean that we change slider position
         if (oldMode.enableSlider() != newMode.enableSlider()){
@@ -199,9 +249,8 @@ public class DrawingScreen extends Screen {
 
     }
 
-    public static void open(Form form,BlockPos panelPos){
-        Minecraft.getInstance().displayGuiScreen(new DrawingScreen(form,panelPos));
-    }
+
+    /** mouse clicked override function  **/
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
@@ -222,18 +271,27 @@ public class DrawingScreen extends Screen {
     private void manageClickOnScreen(double mouseX, double mouseY, int button) {
         int x = getXOnScreen(mouseX);
         int y = getYOnScreen(mouseY);
+        int color,length;
+        boolean makeAction = true;
         if (option.getMode() == PencilMode.PICK){
             DrawingSignTileEntity te = getTileEntity();
-            int color = te.getPixelColor(x,y);
+            color = te.getPixelColor(x,y);
             if (color != option.getColor()){
                 fixColor(color);
             }
+            length = 0;
+            makeAction = false;
+        }else if (option.getMode() != PencilMode.SELECT){
+            color = option.getColor();
+            length = option.getLength();
         }else {
-            int color = option.getColor();
-            int length = option.getLength();
-            transferActionToTE(ClientAction.getActionFromMode(option.getMode()),x,y,color,length);
+            color = -1;
+            length = option.getTextIndice();
         }
+        if (makeAction)transferActionToTE(ClientAction.getActionFromMode(option.getMode()),x,y,color,length);
     }
+
+    /**  screen test for mouse **/
 
     private int getYOnScreen(double mouseY) {
         int relY = (this.height-HEIGHT) / 2;
@@ -255,6 +313,8 @@ public class DrawingScreen extends Screen {
         return form.isIn(x,y);
     }
 
+
+
     private DrawingSignTileEntity getTileEntity(){
         World world = this.minecraft.world;
         TileEntity te = world.getTileEntity(panelPos);
@@ -265,9 +325,29 @@ public class DrawingScreen extends Screen {
         throw new IllegalStateException("Drawing Screen need drawing sign tile entity in place !");
     }
 
+
+
+    /**             networking task             **/
     private void transferActionToTE(ClientAction action,int x,int y,int color,int length){
         DrawingSignTileEntity dste = getTileEntity();
         dste.makeOperationFromScreen(action,x,y,color,length);
         Networking.INSTANCE.sendToServer(new PacketDrawingAction(panelPos,action,x,y,color,length));
+    }
+
+    public void addOrEditText(Text t){
+        int ind = option.getTextIndice();
+        DrawingSignTileEntity dste = getTileEntity();
+        Networking.INSTANCE.sendToServer(new PacketAddOrEditText(panelPos,t,ind));
+        dste.addOrEditText(t,ind);
+    }
+
+    private void delText(int ind){
+        DrawingSignTileEntity dste = getTileEntity();
+        Networking.INSTANCE.sendToServer(new PacketDelText(panelPos,ind));
+        dste.delText(ind);
+    }
+
+    public static PencilOption getOption() {
+        return option;
     }
 }

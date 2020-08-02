@@ -1,6 +1,7 @@
 package fr.mattmouss.signs.capabilities;
 
 
+import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.util.Functions;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.nbt.CompoundNBT;
@@ -99,6 +100,20 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
         }
     }
 
+    @Override
+    public void setText(Text t, int ind) {
+        try {
+            texts.set(ind,t);
+        } catch (IndexOutOfBoundsException e){
+            SignMod.LOGGER.warn("Try to set text that is not with the right indice : "+ind);
+        }
+    }
+
+    @Override
+    public void delText(int ind) {
+        texts.remove(ind);
+    }
+
     public void setBackGround(int newColor){
         bg_color = new Color(newColor,true);
     }
@@ -143,7 +158,7 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
         }
         ListNBT textsNBT = (ListNBT) nbt.get("texts");
         for (INBT iNBT : textsNBT) {
-            Text t = new Text(0,0,"");
+            Text t = new Text(0,0,"",Color.WHITE);
             CompoundNBT textNBT = (CompoundNBT)iNBT;
             t.deserializeNBT(textNBT);
             if (!(texts.contains(t))){

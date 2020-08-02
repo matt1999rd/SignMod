@@ -1,25 +1,19 @@
 package fr.mattmouss.signs.gui.screenutils;
 
-
 import fr.mattmouss.signs.util.Functions;
 
 import java.awt.*;
 
-public class PencilOption extends Option{
+public class TextOption extends Option{
     Color color;
     int length;
-    PencilMode mode;
-    int seltextIndice;
-
-    public PencilOption(Color color, int length, PencilMode mode){
+    private TextOption(Color color,int length){
         this.color = color;
         this.length = length;
-        this.mode = mode;
-        this.seltextIndice = -1;
     }
 
-    public static PencilOption getDefaultOption(){
-        return new PencilOption(Color.WHITE,1,PencilMode.WRITE);
+    public static TextOption getDefaultOption(){
+        return new TextOption(Color.WHITE,1);
     }
 
     public void setColor(int newColor,ColorType type) {
@@ -67,14 +61,6 @@ public class PencilOption extends Option{
         }
     }
 
-    public void changePencilMode(PencilMode newMode) {
-        this.mode = newMode;
-    }
-
-    public PencilMode getMode(){
-        return mode;
-    }
-
     public int getLength() {
         return length;
     }
@@ -89,17 +75,5 @@ public class PencilOption extends Option{
         }else {
             length--;
         }
-    }
-
-    public void selectText(int n){
-        this.seltextIndice = n;
-    }
-
-    public int getTextIndice(){
-        return seltextIndice;
-    }
-
-    public boolean isTextSelected(){
-        return (seltextIndice != -1);
     }
 }

@@ -39,6 +39,18 @@ public class Networking {
                 PacketDrawingAction::toBytes,
                 PacketDrawingAction::new,
                 PacketDrawingAction::handle);
+
+        INSTANCE.registerMessage(nextID(),
+                PacketAddOrEditText.class,
+                PacketAddOrEditText::toBytes,
+                PacketAddOrEditText::new,
+                PacketAddOrEditText::handle);
+
+        INSTANCE.registerMessage(nextID(),
+                PacketDelText.class,
+                PacketDelText::toBytes,
+                PacketDelText::new,
+                PacketDelText::handle);
         /*
         INSTANCE.registerMessage(nextID(),
                 PacketOpenScreen.class,

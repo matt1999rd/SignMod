@@ -1,16 +1,24 @@
 package fr.mattmouss.signs.gui.widget;
 
 import fr.mattmouss.signs.gui.screenutils.ColorType;
+import fr.mattmouss.signs.gui.screenutils.Option;
 import fr.mattmouss.signs.gui.screenutils.PencilOption;
+import fr.mattmouss.signs.gui.screenutils.TextOption;
 import net.minecraft.client.gui.widget.AbstractSlider;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class ColorSlider extends AbstractSlider {
-    PencilOption option;
+    Option option;
     ColorType type;
     public ColorSlider(int xIn, int yIn, PencilOption option, ColorType type) {
+        super(xIn, yIn, 132, 20, option.getColor(type)/255.0);
+        this.option = option;
+        this.type = type;
+    }
+
+    public ColorSlider(int xIn, int yIn, TextOption option, ColorType type) {
         super(xIn, yIn, 132, 20, option.getColor(type)/255.0);
         this.option = option;
         this.type = type;

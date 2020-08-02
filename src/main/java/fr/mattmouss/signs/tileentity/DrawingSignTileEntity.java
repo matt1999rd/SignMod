@@ -6,6 +6,7 @@ import fr.mattmouss.signs.enums.ClientAction;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.mattmouss.signs.util.Functions;
+import fr.mattmouss.signs.util.Text;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.tileentity.TileEntityType;
@@ -32,6 +33,31 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
         return storage.map(signStorage -> {
             return signStorage.getRGBPixel(i,j);
         }).orElse(0);
+    }
+
+    public int getNumberOfText(){
+        return storage.map(signStorage -> signStorage.getTexts().length).orElse(0);
+    }
+
+    public Text getText(int n){
+        return storage.map(signStorage -> {
+            Text[] texts = signStorage.getTexts();
+            int lim = texts.length;
+            if (n>lim || n<0)return null;
+            return texts[n];
+        }).orElse(null);
+    }
+
+    public void addOrEditText(Text newText,int ind){
+        if (ind == -1){
+            storage.ifPresent(signStorage -> signStorage.addText(newText));
+        } else {
+            storage.ifPresent(signStorage -> signStorage.setText(newText,ind));
+        }
+    }
+
+    public void delText(int ind){
+        storage.ifPresent(signStorage -> signStorage.delText(ind));
     }
 
     @Override
@@ -86,4 +112,7 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
     }
 
 
+    public void setText(Text t, int ind){
+        storage.ifPresent(signStorage -> signStorage.setText(t,ind));
+    }
 }
