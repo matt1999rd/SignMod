@@ -7,6 +7,7 @@ import java.awt.*;
 public class TextOption extends Option{
     Color color;
     int length;
+    boolean isDirty;
     private TextOption(Color color,int length){
         this.color = color;
         this.length = length;
@@ -46,6 +47,15 @@ public class TextOption extends Option{
             if (bColor>255)bColor=255;
         }
         this.color = new Color(rColor, gColor, bColor, 255);
+        isDirty = true;
+    }
+
+    public void updateDone(){
+        isDirty = false;
+    }
+
+    public boolean isDirty(){
+        return isDirty;
     }
 
     public int getColor(ColorType type){

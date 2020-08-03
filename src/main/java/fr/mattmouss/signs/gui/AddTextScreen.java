@@ -10,6 +10,7 @@ import fr.mattmouss.signs.gui.widget.LimitSizeTextField;
 import fr.mattmouss.signs.util.Functions;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.ImageButton;
@@ -81,8 +82,13 @@ public class AddTextScreen extends Screen {
         GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
         int relX = (this.width-LENGTH) / 2;
         int relY = (this.height-HEIGHT) / 2;
+        if (option.isDirty()){
+            field.updateColor(option);
+            option.updateDone();
+        }
         this.minecraft.getTextureManager().bindTexture(BACKGROUND);
         blit(relX, relY,this.blitOffset , 0.0F, 0.0F, LENGTH, HEIGHT, 256, 256);
+        AbstractGui.fill(relX + 143, relY + 93, relX + 143 + 9, relY + 93 + 9, option.getColor());
         super.render(mouseX, mouseY, partialTicks);
     }
 
