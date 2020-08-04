@@ -158,7 +158,7 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
                 int ind = color;
                 if (ind != -1) {
                     storage.ifPresent(signStorage -> {
-                        signStorage.setTextPosition(ind,x,y);
+                        signStorage.setTextPosition(ind,x,y,getForm());
                     });
                 }
                 break;

@@ -15,7 +15,7 @@ public enum Form {
     },h->{
         return h/2; //start text when you can fit a rectangle of height h
     },h->{
-        return 128-h; // a max length of 128-h/2-h/2
+        return 127-h; // a max length of 128-h/2-h/2
     },h->{
         return 0; // the y needed to get max length is 0
     }),
@@ -24,9 +24,9 @@ public enum Form {
     },h->{
         return h/2;
     },h->{
-        return 128-h;
+        return 127-h;
     },h->{
-        return 128-h;
+        return 127-h;
     }),
     OCTOGONE(2,"stop_panel",vec2f -> {
         return (1-3*vec2f.y<3*vec2f.x && 3*vec2f.x<5-3*vec2f.y) &&
@@ -36,7 +36,7 @@ public enum Form {
     },h->{
         return 0;
     },h->{
-        return 128;
+        return 127;
     },h->{
         return 50;
     }),
@@ -47,7 +47,7 @@ public enum Form {
         return k;
     },h->{
         int k = MathHelper.ceil(64+MathHelper.sqrt(64.0F-h*h/2.0F));
-        return 128-2*k;
+        return 127-2*k;
     },h->{
         return 64-h/2;
     }),
@@ -56,7 +56,7 @@ public enum Form {
     }),h->{
         return 0;
     },h->{
-        return 128;
+        return 127;
     },h->{
         return 0;
     }),
@@ -65,7 +65,7 @@ public enum Form {
     },h->{
         return 0;
     },h->{
-        return 128;
+        return 127;
     },h->{
         return 0;
     }),
@@ -74,7 +74,7 @@ public enum Form {
     },h->{
         return 0;
     },h->{
-        return 128;
+        return 127;
     },h->{
         return 0;
     }),
@@ -83,7 +83,7 @@ public enum Form {
     },h->{
         return 0;
     },h->{
-        return 128;
+        return 127;
     },h->{
         return 0;
     }),
@@ -92,7 +92,7 @@ public enum Form {
     },h->{
         return h/2;
     },h->{
-        return 128-h;
+        return 127-h;
     },h->{
         return 64-h/2;
     });
@@ -136,6 +136,17 @@ public enum Form {
         float y = (j+0.5F)/completeLength;
         Vec2f vec2f = new Vec2f(x,y);
         return isIn.test(vec2f);
+    }
+
+    public boolean rectangleIsIn(int i_min,int i_max,int j_min,int j_max){
+        for (int i=i_min;i<i_max+1;i++){
+            for (int j=j_min;j<j_max+1;j++){
+                if (!isIn(i,j)){
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private boolean isOnWholeCube(){

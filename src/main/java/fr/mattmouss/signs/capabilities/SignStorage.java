@@ -2,6 +2,7 @@ package fr.mattmouss.signs.capabilities;
 
 
 import fr.mattmouss.signs.SignMod;
+import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.util.Functions;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.nbt.CompoundNBT;
@@ -109,13 +110,13 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
     }
 
     @Override
-    public void setTextPosition(int ind, int newX, int newY) {
+    public void setTextPosition(int ind, int newX, int newY, Form form) {
         if (ind == -1 || ind>texts.size()){
             SignMod.LOGGER.warn("skip bad move text opration. indice is unvalid :"+ind);
             return;
         }
         Text t = texts.get(ind);
-        if (Functions.isValidCoordinate(newX+t.getLength(),newY+t.getHeight()))t.setPosition(newX,newY);
+        if (form.rectangleIsIn(newX,newX+t.getLength(),newY,newY+t.getHeight()))t.setPosition(newX,newY);
         else SignMod.LOGGER.info("coordinate leads to outpass the limit of the text : no position set !");
     }
 

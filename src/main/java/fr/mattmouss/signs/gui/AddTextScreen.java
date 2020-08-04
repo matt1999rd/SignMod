@@ -8,6 +8,7 @@ import fr.mattmouss.signs.gui.screenutils.TextOption;
 import fr.mattmouss.signs.gui.widget.ColorSlider;
 import fr.mattmouss.signs.gui.widget.LimitSizeTextField;
 import fr.mattmouss.signs.util.Functions;
+import fr.mattmouss.signs.util.Letter;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
@@ -42,16 +43,34 @@ public class AddTextScreen extends Screen {
 
     @Override
     protected void init() {
-        if (oldText == null)option = TextOption.getDefaultOption();
-        else option = new TextOption(oldText);
         int relX = (this.width - LENGTH) / 2;
         int relY = (this.height - HEIGHT) / 2;
+        Form f = parentScreen.form;
+        int xText= (oldText != null) ? oldText.getX() : f.getXBegining(7);
+        int yText= (oldText != null) ? oldText.getY() : f.getYBegining(7);
+        field = new LimitSizeTextField(this.minecraft,relX,relY,xText,yText,f);
+        field.setValidator(s -> {
+            int n= s.length();
+            for (int i=0;i<n;i++){
+                char c0 = s.charAt(i);
+                if (!Letter.isIn(c0)){
+                    return false;
+                }
+            }
+            return true;
+        });
+        field.setMaxStringLength(32);
+        if (oldText == null)option = TextOption.getDefaultOption();
+        else {
+            option = new TextOption(oldText);
+            field.setText(oldText.getText());
+            field.updateColor(option);
+        }
+
         RED_SLIDER = new ColorSlider(relX + 53, relY + 7, option, ColorType.RED);
         GREEN_SLIDER = new ColorSlider(relX + 53, relY + 32, option, ColorType.GREEN);
         BLUE_SLIDER = new ColorSlider(relX + 53, relY + 57, option, ColorType.BLUE);
-        this.addButton(RED_SLIDER);
-        this.addButton(BLUE_SLIDER);
-        this.addButton(GREEN_SLIDER);
+
         int x_dye_begining = relX + 36;
         int y_dye_begining = relY + 18;
         int dye_button_length = 6;
@@ -69,12 +88,13 @@ public class AddTextScreen extends Screen {
                     });
             this.addButton(dye_color_button[i]);
         }
-        cancelButton = new Button(relX + 44, relY + 165, 73, 20, "Cancel", b -> cancel());
-        addTextButton = new Button(relX + 44, relY + 142, 73, 20, "Done", b -> addText());
+        cancelButton = new Button(relX + 44, relY + 165, 74, 20, "Cancel", b -> cancel());
+        addTextButton = new Button(relX + 44, relY + 142, 74, 20, "Done", b -> addText());
         this.addButton(cancelButton);
         this.addButton(addTextButton);
-        super.init();
-        field = new LimitSizeTextField(this.minecraft,relX,relY);
+        this.addButton(RED_SLIDER);
+        this.addButton(BLUE_SLIDER);
+        this.addButton(GREEN_SLIDER);
         this.addButton(field);
     }
 
@@ -91,12 +111,16 @@ public class AddTextScreen extends Screen {
         }
         this.minecraft.getTextureManager().bindTexture(BACKGROUND);
         blit(relX, relY,this.blitOffset , 0.0F, 0.0F, LENGTH, HEIGHT, 256, 256);
-        AbstractGui.fill(relX + 143, relY + 93, relX + 143 + 9, relY + 93 + 9, option.getColor());
         super.render(mouseX, mouseY, partialTicks);
+        AbstractGui.fill(relX + 143, relY + 93, relX + 143 + 9, relY + 93 + 9, option.getColor());
     }
 
     public static void open(DrawingScreen screen,Text text){
         Minecraft.getInstance().displayGuiScreen(new AddTextScreen(screen,text));
+    }
+
+    public static void open(DrawingScreen screen){
+        Minecraft.getInstance().displayGuiScreen(new AddTextScreen(screen,null));
     }
 
     private void fixColor(int color) {
@@ -111,9 +135,13 @@ public class AddTextScreen extends Screen {
     }
 
     private void addText() {
+        if (field.getText().equals("")){
+            cancel();
+            return;
+        }
         Form f =parentScreen.form;
-        Text newText = new Text(f.getXBegining(option.getLength()),
-                f.getYBegining(option.getLength()),
+        Text newText = new Text(field.getX(),
+                field.getY(),
                 field.getText(),
                 new Color(option.getColor()));
         parentScreen.addOrEditText(newText);

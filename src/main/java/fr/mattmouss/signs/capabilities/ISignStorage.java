@@ -14,6 +14,6 @@ public interface ISignStorage {
     int[] getAllPixel();
     void setAllPixel(int[] pixels);
     void setText(Text t, int ind);
-    void setTextPosition(int ind,int newX,int newY);
+    void setTextPosition(int ind,int newX,int newY,Form form);
     void delText(int ind);
 }

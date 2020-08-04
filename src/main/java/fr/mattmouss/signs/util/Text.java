@@ -39,24 +39,7 @@ public class Text implements INBTSerializable<CompoundNBT> {
     public int getColor(){ return this.color.getRGB(); }
 
     public int getLength(){
-        int n=content.length();
-        int length = 0;
-        for (int i=0;i<n;i++){
-            char c0 = content.charAt(i);
-            if (c0 == ' '){
-                length+=4;
-            }else {
-                Letter l = new Letter(c0, 0, 0);
-                length += l.length;
-                char followingChar = (i != n - 1) ? content.charAt(i + 1) : ' ';
-                if (followingChar > 97) {
-                    length += 1;
-                } else if (followingChar != ' ') {
-                    length += 2;
-                }
-            }
-        }
-        return length;
+        return Functions.getLength(this.content);
     }
 
     public int getHeight(){

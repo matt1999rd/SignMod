@@ -29,6 +29,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
+import org.lwjgl.system.CallbackI;
 
 import java.util.List;
 
@@ -176,7 +177,13 @@ public class DrawingScreen extends Screen {
 
     private void openTextGui() {
         Minecraft.getInstance().displayGuiScreen(null);
-        AddTextScreen.open(this);
+        DrawingSignTileEntity dste = getTileEntity();
+        if (option.isTextSelected()){
+            Text t = dste.getText(option.getTextIndice());
+            AddTextScreen.open(this,t);
+        }else {
+            AddTextScreen.open(this);
+        }
     }
 
     private void fixColor(int color) {
@@ -297,6 +304,8 @@ public class DrawingScreen extends Screen {
         if (makeAction)transferActionToTE(ClientAction.getActionFromMode(option.getMode()),x,y,color,length);
     }
 
+    /**  screen test for mouse **/
+
     private int getTextClicked(double mouseX, double mouseY) {
         DrawingSignTileEntity dste = getTileEntity();
         int relX = (this.width-LENGTH) / 2;
@@ -310,8 +319,6 @@ public class DrawingScreen extends Screen {
         }
         return -1;
     }
-
-    /**  screen test for mouse **/
 
     private int getYOnScreen(double mouseY) {
         int relY = (this.height-HEIGHT) / 2;
@@ -332,6 +339,33 @@ public class DrawingScreen extends Screen {
         int y = getYOnScreen(mouseY);
         return form.isIn(x,y);
     }
+
+    /** key pressed override function **/
+
+    @Override
+    public boolean keyPressed(int button, int p_keyPressed_2_, int p_keyPressed_3_) {
+        if (option.getMode() == PencilMode.SELECT && button>259 && button<266) {
+            if (button == 260) { // button inser
+                openTextGui();
+            }else if (option.isTextSelected()) {
+                if (button == 261) { // button suppr
+                    deleteSelText();
+                } else { //pad button /|\ : 265  \|/ : 264  <- : 263 -> : 262
+                    button-=262;
+                    DrawingSignTileEntity dste = getTileEntity();
+                    Text t = dste.getText(option.getTextIndice());
+                    int x_offset = (button == 0)? 1 : (button == 1) ? -1 : 0;
+                    int y_offset = (button == 2)? 1 : (button == 3) ? -1 : 0;
+                    int x = t.getX() + x_offset;
+                    int y = t.getY() + y_offset;
+                    transferActionToTE(ClientAction.MOVE_TEXT,x,y,option.getTextIndice(),1);
+                }
+            }
+        }
+        return super.keyPressed(button,p_keyPressed_2_,p_keyPressed_3_);
+    }
+
+
 
 
 
@@ -371,7 +405,4 @@ public class DrawingScreen extends Screen {
         dste.delText(ind);
     }
 
-    public static PencilOption getOption() {
-        return option;
-    }
 }
