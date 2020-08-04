@@ -1,6 +1,11 @@
 package fr.mattmouss.signs.util;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import fr.mattmouss.signs.SignMod;
+import fr.mattmouss.signs.gui.DrawingScreen;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -41,6 +46,32 @@ public class Text implements INBTSerializable<CompoundNBT> {
             this.color = new Color(color,true);
         }
         SignMod.LOGGER.warn("Set is unvalid : x : "+this.x+" / y : "+this.y+"\nSkip unvalid settlement !!");
+    }
+
+    public void renderOnScreen(int guiLeft, int guiTop){
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder builder = tessellator.getBuffer();
+        builder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
+        GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
+        int n=content.length();
+        int shift = 0;
+        for (int i=0;i<n;i++){
+            char c0 = content.charAt(i);
+            if (c0 == ' '){
+                shift+=4;
+            }else {
+                Letter l = new Letter(c0, guiLeft + x + shift, guiTop + y);
+                l.renderOnScreen(builder,color.getRed(),color.getGreen(),color.getBlue(),color.getAlpha());
+                shift += l.length;
+                char followingChar = (i!=n-1)?content.charAt(i+1):' ';
+                if (followingChar>97){
+                    shift+=1;
+                }else if (followingChar != ' '){
+                    shift+=2;
+                }
+            }
+        }
+        tessellator.draw();
     }
 
     @Override

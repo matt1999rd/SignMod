@@ -8,7 +8,7 @@ import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
-
+import java.util.List;
 import javax.annotation.Nullable;
 import java.awt.*;
 
@@ -32,11 +32,11 @@ public class SignCapability {
                 }
                 tag.put("pixels",pixelsNBT);
                 ListNBT textsNBT = new ListNBT();
-                Text[] txts = instance.getTexts();
-                for (Text t : txts){
-                    CompoundNBT txtNBT = t.serializeNBT();
+                List<Text> txts = instance.getTexts();
+                txts.forEach(text -> {
+                    CompoundNBT txtNBT = text.serializeNBT();
                     textsNBT.add(txtNBT);
-                }
+                });
                 tag.put("texts",textsNBT);
                 return tag;
             }

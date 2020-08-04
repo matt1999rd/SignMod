@@ -1,9 +1,8 @@
 package fr.mattmouss.signs.tileentity;
 
-import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
-import fr.mattmouss.signs.fixedpanel.support.GridSupport;
 import fr.mattmouss.signs.util.Functions;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
@@ -39,5 +38,5 @@ public abstract class PanelTileEntity extends TileEntity implements ITickableTil
     }
 
 
-    public abstract void renderOnScreen(int guiLeft,int guiTop);
+    public abstract void renderOnScreen(int guiLeft, int guiTop);
 }

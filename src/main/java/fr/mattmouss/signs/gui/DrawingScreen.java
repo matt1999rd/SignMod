@@ -150,16 +150,13 @@ public class DrawingScreen extends Screen {
         this.drawString(renderer,"Color of pencil :" ,relX+180,relY+93,white);
         this.drawString(renderer,"Length of pencil :",relX+160,relY+124,white);
         this.drawString(renderer,""+length,relX+272-gap,relY+126,white);
-        try {
-            DrawingSignTileEntity dste = getTileEntity();
-            dste.renderOnScreen(relX+30,relY+4);
-        }catch (Exception e){
-            SignMod.LOGGER.warn("skip drawing screen : tile entity was not found and exception was raised : "+e.getMessage());
-        }
+        DrawingSignTileEntity dste = getTileEntity();
+        dste.renderOnScreen(relX+30,relY+4);
         GlStateManager.enableBlend();
         if (option.getMode().enableSlider()) {
             AbstractGui.fill(relX + 271, relY + 93, relX + 271 + 9, relY + 93 + 9, option.getColor());
         }
+
     }
 
     @Override

@@ -79,8 +79,7 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
     }
 
     @Override
-    public Text[] getTexts() {
-        Text[] texts = (Text[]) this.texts.toArray();
+    public List<Text> getTexts() {
         return texts;
     }
 

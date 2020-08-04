@@ -3,12 +3,14 @@ package fr.mattmouss.signs.capabilities;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.util.Text;
 
+import java.util.List;
+
 public interface ISignStorage {
     int getRGBPixel(int x, int y);
     void setPixel(int x,int y,int color);
     void setPixel(int x,int y,int color,int length);
     void addText(Text t);
-    Text[] getTexts();
+    List<Text> getTexts();
     int[] getAllPixel();
     void setAllPixel(int[] pixels);
     void setText(Text t, int ind);

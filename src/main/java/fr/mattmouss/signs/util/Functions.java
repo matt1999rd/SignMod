@@ -25,6 +25,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import java.util.List;
+
 public class Functions {
 
     public static BooleanProperty NORTH_WEST,NORTH_EAST,SOUTH_WEST,SOUTH_EAST;
@@ -224,6 +226,10 @@ public class Functions {
             Functions.deleteGridRow(negExtDir,pos,worldIn,player);
         }
     }
+    @OnlyIn(Dist.CLIENT)
+    public static int getAlphaValue(int color){
+        return (color & -2130706432) >> 24;
+    }
 
     @OnlyIn(Dist.CLIENT)
     public static int getRedValue(int color){
@@ -281,6 +287,17 @@ public class Functions {
         GlStateManager.disableBlend();
         GlStateManager.enableTexture();
         GlStateManager.enableLighting();
+    }
+
+    public static char[] toCharArray(List<Character> list){
+        int n= list.size();
+        char[] chars = new char[n];
+        int i = 0;
+        for (Character character : list) {
+            chars[i] = character;
+            i++;
+        }
+        return chars;
     }
 
 }

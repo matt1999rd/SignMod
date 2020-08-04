@@ -5,15 +5,16 @@ import fr.mattmouss.signs.capabilities.SignStorage;
 import fr.mattmouss.signs.enums.ClientAction;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
-import fr.mattmouss.signs.util.Functions;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.LazyOptional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class DrawingSignTileEntity extends PanelTileEntity {
 
@@ -36,15 +37,14 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
     }
 
     public int getNumberOfText(){
-        return storage.map(signStorage -> signStorage.getTexts().length).orElse(0);
+        return storage.map(signStorage -> signStorage.getTexts().size()).orElse(0);
     }
 
     public Text getText(int n){
         return storage.map(signStorage -> {
-            Text[] texts = signStorage.getTexts();
-            int lim = texts.length;
+            int lim = signStorage.getTexts().size();
             if (n>lim || n<0)return null;
-            return texts[n];
+            return signStorage.getTexts().get(n);
         }).orElse(null);
     }
 
@@ -70,7 +70,7 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
     }
 
     @Override
-    public void renderOnScreen(int guiLeft,int guiTop) {
+    public void renderOnScreen(int guiLeft, int guiTop) {
         Form form = getForm();
         for (int i=0;i<128;i++){
             for (int j=0;j<128;j++){
@@ -80,6 +80,8 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
                 }
             }
         }
+        List<Text> texts = storage.map(signStorage -> signStorage.getTexts()).orElse(new ArrayList<Text>());
+        texts.forEach(text -> text.renderOnScreen(guiLeft,guiTop));
     }
 
 
