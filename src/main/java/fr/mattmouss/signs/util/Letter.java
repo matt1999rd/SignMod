@@ -1,6 +1,10 @@
 package fr.mattmouss.signs.util;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import fr.mattmouss.signs.SignMod;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec2f;
 
 import java.util.ArrayList;
@@ -91,10 +95,10 @@ public class Letter {
     private boolean isIn(int letterLength, char letter,AtomicInteger i) {
         char[] charTab =lengthLetterMatrix[letterLength];
         for (char c : charTab){
-            i.incrementAndGet();
             if (c == letter){
                 return true;
             }
+            i.incrementAndGet();
         }
         return false;
     }

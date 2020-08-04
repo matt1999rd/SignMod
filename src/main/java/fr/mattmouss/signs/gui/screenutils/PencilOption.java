@@ -102,4 +102,8 @@ public class PencilOption extends Option{
     public boolean isTextSelected(){
         return (seltextIndice != -1);
     }
+
+    public void unselectText() {
+        this.seltextIndice = -1;
+    }
 }

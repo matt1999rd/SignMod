@@ -24,7 +24,7 @@ public class OctogoneSignTileEntity extends PanelTileEntity {
     }
 
     @Override
-    public void renderOnScreen(int guiLeft, int guiTop) {
+    public void renderOnScreen(int guiLeft, int guiTop,int selTextInd) {
 
     }
 

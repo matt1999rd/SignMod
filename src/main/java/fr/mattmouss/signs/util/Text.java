@@ -38,6 +38,31 @@ public class Text implements INBTSerializable<CompoundNBT> {
 
     public int getColor(){ return this.color.getRGB(); }
 
+    public int getLength(){
+        int n=content.length();
+        int length = 0;
+        for (int i=0;i<n;i++){
+            char c0 = content.charAt(i);
+            if (c0 == ' '){
+                length+=4;
+            }else {
+                Letter l = new Letter(c0, 0, 0);
+                length += l.length;
+                char followingChar = (i != n - 1) ? content.charAt(i + 1) : ' ';
+                if (followingChar > 97) {
+                    length += 1;
+                } else if (followingChar != ' ') {
+                    length += 2;
+                }
+            }
+        }
+        return length;
+    }
+
+    public int getHeight(){
+        return 7;
+    }
+
     public void set(int x,int y,String newText,int color) {
         if (Functions.isValidCoordinate(x,y)){
             this.x = x;
@@ -46,6 +71,13 @@ public class Text implements INBTSerializable<CompoundNBT> {
             this.color = new Color(color,true);
         }
         SignMod.LOGGER.warn("Set is unvalid : x : "+this.x+" / y : "+this.y+"\nSkip unvalid settlement !!");
+    }
+
+    public void setPosition(int x,int y){
+        if (Functions.isValidCoordinate(x,y)){
+            this.x = x;
+            this.y = y;
+        }
     }
 
     public void renderOnScreen(int guiLeft, int guiTop){
@@ -72,6 +104,12 @@ public class Text implements INBTSerializable<CompoundNBT> {
             }
         }
         tessellator.draw();
+    }
+
+    public boolean isIn(double mouseX,double mouseY,int guiLeft,int guiTop){
+        int L = getLength();
+        int h = getHeight();
+        return (mouseX>guiLeft-1+x && mouseX<guiLeft+x+L+1) && (mouseY>guiTop-1+y && mouseY<guiTop+y+h+1);
     }
 
     @Override

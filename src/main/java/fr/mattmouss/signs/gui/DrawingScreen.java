@@ -30,6 +30,8 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 
+import java.util.List;
+
 public class DrawingScreen extends Screen {
     private static final int LENGTH = 325;
     private static final int HEIGHT = 203;
@@ -125,8 +127,8 @@ public class DrawingScreen extends Screen {
             });
             this.addButton(dye_color_button[i]);
         }
-        addTextButton = new Button(relX+132,relY+142,73,20,"Add Text",b->openTextGui());
-        delTextButton = new Button(relX+132,relY+165,73,20,"Delete Text",b->deleteSelText());
+        addTextButton = new Button(relX+132,relY+142,74,20,"Add Text",b->openTextGui());
+        delTextButton = new Button(relX+132,relY+165,74,20,"Delete Text",b->deleteSelText());
         this.addButton(addTextButton);
         this.addButton(delTextButton);
         addTextButton.active = false;
@@ -151,7 +153,7 @@ public class DrawingScreen extends Screen {
         this.drawString(renderer,"Length of pencil :",relX+160,relY+124,white);
         this.drawString(renderer,""+length,relX+272-gap,relY+126,white);
         DrawingSignTileEntity dste = getTileEntity();
-        dste.renderOnScreen(relX+30,relY+4);
+        dste.renderOnScreen(relX+30,relY+4,option.getTextIndice());
         GlStateManager.enableBlend();
         if (option.getMode().enableSlider()) {
             AbstractGui.fill(relX + 271, relY + 93, relX + 271 + 9, relY + 93 + 9, option.getColor());
@@ -159,20 +161,16 @@ public class DrawingScreen extends Screen {
 
     }
 
-    @Override
-    public void tick() {
-        if (option.isTextSelected()){
-            addTextButton.setMessage("Edit Text");
-        }else {
-            addTextButton.setMessage("Add Text");
-        }
-    }
-
     /** IPressable Consumer object for button in drawing screen **/
 
     private void deleteSelText() {
         int n = option.getTextIndice();
-        if (option.isTextSelected()) delText(n);
+        if (option.isTextSelected()) {
+            delText(n);
+            option.unselectText();
+            addTextButton.setMessage("Add Text");
+            delTextButton.active = false;
+        }
         else delTextButton.active = false;
     }
 
@@ -282,10 +280,35 @@ public class DrawingScreen extends Screen {
             color = option.getColor();
             length = option.getLength();
         }else {
-            color = -1;
-            length = option.getTextIndice();
+            int newInd = getTextClicked(mouseX,mouseY);
+            if (!option.isTextSelected() && newInd != -1 && button == 0){
+                option.selectText(newInd);
+                addTextButton.setMessage("Edit Text");
+                delTextButton.active = true;
+            }else if (option.isTextSelected() && newInd == -1 && button == 1){
+                option.unselectText();
+                addTextButton.setMessage("Add Text");
+                delTextButton.active = false;
+            }
+            makeAction = option.isTextSelected();
+            color = option.getTextIndice();
+            length = 1;
         }
         if (makeAction)transferActionToTE(ClientAction.getActionFromMode(option.getMode()),x,y,color,length);
+    }
+
+    private int getTextClicked(double mouseX, double mouseY) {
+        DrawingSignTileEntity dste = getTileEntity();
+        int relX = (this.width-LENGTH) / 2;
+        int relY = (this.height-HEIGHT) / 2;
+        int n= dste.getNumberOfText();
+        for (int i=0;i<n;i++){
+            Text t = dste.getText(i);
+            if (t.isIn(mouseX,mouseY,relX+30,relY+4)){
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**  screen test for mouse **/
@@ -336,6 +359,10 @@ public class DrawingScreen extends Screen {
         DrawingSignTileEntity dste = getTileEntity();
         Networking.INSTANCE.sendToServer(new PacketAddOrEditText(panelPos,t,ind));
         dste.addOrEditText(t,ind);
+        if (ind ==-1){
+            int k=dste.getNumberOfText();
+            option.selectText(k-1);
+        }
     }
 
     private void delText(int ind){

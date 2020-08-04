@@ -22,6 +22,7 @@ import java.awt.*;
 
 public class AddTextScreen extends Screen {
     DrawingScreen parentScreen;
+    Text oldText;
     private static final int LENGTH = 197;
     private static final int HEIGHT = 203;
     ResourceLocation BACKGROUND = new ResourceLocation(SignMod.MODID, "textures/gui/add_text_gui.png");
@@ -33,14 +34,16 @@ public class AddTextScreen extends Screen {
     ImageButton[] dye_color_button = new ImageButton[16];
     private static TextOption option;
 
-    protected AddTextScreen(DrawingScreen parentScreen) {
+    protected AddTextScreen(DrawingScreen parentScreen,Text textToEdit) {
         super(new StringTextComponent("Drawing Screen"));
         this.parentScreen = parentScreen;
+        oldText = textToEdit;
     }
 
     @Override
     protected void init() {
-        option = TextOption.getDefaultOption();
+        if (oldText == null)option = TextOption.getDefaultOption();
+        else option = new TextOption(oldText);
         int relX = (this.width - LENGTH) / 2;
         int relY = (this.height - HEIGHT) / 2;
         RED_SLIDER = new ColorSlider(relX + 53, relY + 7, option, ColorType.RED);
@@ -92,8 +95,8 @@ public class AddTextScreen extends Screen {
         super.render(mouseX, mouseY, partialTicks);
     }
 
-    public static void open(DrawingScreen screen){
-        Minecraft.getInstance().displayGuiScreen(new AddTextScreen(screen));
+    public static void open(DrawingScreen screen,Text text){
+        Minecraft.getInstance().displayGuiScreen(new AddTextScreen(screen,text));
     }
 
     private void fixColor(int color) {

@@ -1,5 +1,6 @@
 package fr.mattmouss.signs.tileentity;
 
+import com.sun.org.apache.xerces.internal.impl.dv.DVFactoryException;
 import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.capabilities.SignStorage;
 import fr.mattmouss.signs.enums.ClientAction;
@@ -7,18 +8,25 @@ import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.LazyOptional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class DrawingSignTileEntity extends PanelTileEntity {
 
     private LazyOptional<SignStorage> storage = LazyOptional.of(this::getStorage).cast();
+    private final ResourceLocation TEXT = new ResourceLocation(SignMod.MODID,"textures/gui/letter.png");
 
     private SignStorage getStorage() {
         return new SignStorage();
@@ -70,7 +78,7 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
     }
 
     @Override
-    public void renderOnScreen(int guiLeft, int guiTop) {
+    public void renderOnScreen(int guiLeft, int guiTop,int selTextInd) {
         Form form = getForm();
         for (int i=0;i<128;i++){
             for (int j=0;j<128;j++){
@@ -81,7 +89,50 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
             }
         }
         List<Text> texts = storage.map(signStorage -> signStorage.getTexts()).orElse(new ArrayList<Text>());
-        texts.forEach(text -> text.renderOnScreen(guiLeft,guiTop));
+        Minecraft.getInstance().getTextureManager().bindTexture(TEXT);
+        AtomicInteger ind = new AtomicInteger(0);
+        texts.forEach(text -> {
+            text.renderOnScreen(guiLeft,guiTop);
+            renderTextLimit(text,guiLeft,guiTop,ind.getAndIncrement() == selTextInd);
+        });
+    }
+
+    private void renderTextLimit(Text t,int guiLeft,int guiTop,boolean isSelected){
+        int L = t.getLength();
+        int h = t.getHeight();
+        float u = (isSelected) ? 0 :1/256.0F;
+        float v = 35/256.0F+u;
+        float horDu = (L+2)/256.0F;
+        float verDu = 1/256.0F;
+        float horDv = verDu;
+        float verDv = (h+2)/256.0F;
+        guiLeft+=t.getX();
+        guiTop+=t.getY();
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder builder = tessellator.getBuffer();
+        builder.begin(7, DefaultVertexFormats.POSITION_TEX);
+        //up bar
+        builder.pos(guiLeft-1,  guiTop-1,0).tex(   u,          v)      .endVertex();
+        builder.pos(guiLeft-1,     guiTop,  0).tex(   u,       v+horDv).endVertex();
+        builder.pos(guiLeft+L+1,   guiTop,  0).tex(u+horDu, v+horDv).endVertex();
+        builder.pos(guiLeft+L+1,guiTop-1,0).tex(u+horDu,    v)      .endVertex();
+        //down bar
+        builder.pos(guiLeft-1,  guiTop+h,  0).tex(   u    ,     v)      .endVertex();
+        builder.pos(guiLeft-1,  guiTop+h+1,0).tex(   u    ,  v+horDv).endVertex();
+        builder.pos(guiLeft+L+1,guiTop+h+1,0).tex(u+horDu,v+horDv).endVertex();
+        builder.pos(guiLeft+L+1,guiTop+h,  0).tex(u+horDu,   v)      .endVertex();
+        //left bar
+        builder.pos(guiLeft-1,guiTop-1,  0).tex(   u,         v)      .endVertex();
+        builder.pos(guiLeft-1,guiTop+h+1,0).tex(   u,      v+verDv).endVertex();
+        builder.pos(   guiLeft,  guiTop+h+1,0).tex(u+verDu,v+verDv).endVertex();
+        builder.pos(   guiLeft,  guiTop-1,  0).tex(u+verDu,   v)      .endVertex();
+        //right bar
+        builder.pos(   guiLeft+L,    guiTop-1,  0).tex(   u,         v)      .endVertex();
+        builder.pos(   guiLeft+L,    guiTop+h+1,0).tex(   u,      v+verDv).endVertex();
+        builder.pos(   guiLeft+L+1,  guiTop+h+1,0).tex(u+verDu,v+verDv).endVertex();
+        builder.pos(   guiLeft+L+1,  guiTop-1,  0).tex(u+verDu,   v)      .endVertex();
+        //finish drawing
+        tessellator.draw();
     }
 
 
@@ -103,6 +154,13 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
                 });
                 break;
             case MOVE_TEXT:
+                //information !! : color is not a color but indice of text
+                int ind = color;
+                if (ind != -1) {
+                    storage.ifPresent(signStorage -> {
+                        signStorage.setTextPosition(ind,x,y);
+                    });
+                }
                 break;
             case FILL_PIXEL:
                 storage.ifPresent(signStorage -> {

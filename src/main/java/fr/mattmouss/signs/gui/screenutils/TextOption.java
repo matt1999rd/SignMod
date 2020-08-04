@@ -1,6 +1,7 @@
 package fr.mattmouss.signs.gui.screenutils;
 
 import fr.mattmouss.signs.util.Functions;
+import fr.mattmouss.signs.util.Text;
 
 import java.awt.*;
 
@@ -11,6 +12,11 @@ public class TextOption extends Option{
     private TextOption(Color color,int length){
         this.color = color;
         this.length = length;
+    }
+
+    public TextOption(Text t){
+        this.color = new Color(t.getColor(),true);
+        this.length = t.getLength();
     }
 
     public static TextOption getDefaultOption(){

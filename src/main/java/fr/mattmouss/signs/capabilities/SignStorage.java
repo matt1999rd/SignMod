@@ -109,6 +109,17 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
     }
 
     @Override
+    public void setTextPosition(int ind, int newX, int newY) {
+        if (ind == -1 || ind>texts.size()){
+            SignMod.LOGGER.warn("skip bad move text opration. indice is unvalid :"+ind);
+            return;
+        }
+        Text t = texts.get(ind);
+        if (Functions.isValidCoordinate(newX+t.getLength(),newY+t.getHeight()))t.setPosition(newX,newY);
+        else SignMod.LOGGER.info("coordinate leads to outpass the limit of the text : no position set !");
+    }
+
+    @Override
     public void delText(int ind) {
         texts.remove(ind);
     }
