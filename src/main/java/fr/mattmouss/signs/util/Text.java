@@ -3,11 +3,13 @@ package fr.mattmouss.signs.util;
 import com.mojang.blaze3d.platform.GlStateManager;
 import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.gui.DrawingScreen;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
 import org.lwjgl.system.CallbackI;
 
@@ -17,6 +19,7 @@ public class Text implements INBTSerializable<CompoundNBT> {
     private int x,y;
     private String content;
     private Color color;
+    private final ResourceLocation TEXT = new ResourceLocation(SignMod.MODID,"textures/gui/letter.png");
     public Text(int x,int y,String txt,Color color){
         this.x = x;
         this.y = y;
@@ -63,6 +66,30 @@ public class Text implements INBTSerializable<CompoundNBT> {
         }
     }
 
+    public void render(BufferBuilder builder){
+        Minecraft.getInstance().getTextureManager().bindTexture(TEXT);
+        GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
+        int n=content.length();
+        int shift = 0;
+        for (int i=0;i<n;i++){
+            char c0 = content.charAt(i);
+            if (c0 == ' '){
+                shift+=4;
+            }else {
+                Letter l = new Letter(c0,x+shift,y);
+                l.render(builder,color.getRed(),color.getGreen(),color.getBlue(),color.getAlpha());
+                shift+=l.length;
+                char followingChar = (i!=n-1)?content.charAt(i+1):' ';
+                if (followingChar>97){
+                    shift+=1;
+                }else if (followingChar != ' '){
+                    shift+=2;
+                }
+            }
+        }
+
+    }
+
     public void renderOnScreen(int guiLeft, int guiTop){
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder builder = tessellator.getBuffer();
@@ -75,8 +102,8 @@ public class Text implements INBTSerializable<CompoundNBT> {
             if (c0 == ' '){
                 shift+=4;
             }else {
-                Letter l = new Letter(c0, guiLeft + x + shift, guiTop + y);
-                l.renderOnScreen(builder,color.getRed(),color.getGreen(),color.getBlue(),color.getAlpha());
+                Letter l = new Letter(c0, x + shift, y);
+                l.renderOnScreen(builder,color.getRed(),color.getGreen(),color.getBlue(),color.getAlpha(),guiLeft,guiTop);
                 shift += l.length;
                 char followingChar = (i!=n-1)?content.charAt(i+1):' ';
                 if (followingChar>97){

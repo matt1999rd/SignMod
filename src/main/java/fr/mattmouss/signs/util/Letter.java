@@ -55,17 +55,35 @@ public class Letter {
         beg = new Vec2f(x,y);
     }
 
-    public void render(){
-
-    }
-
-    public void renderOnScreen(BufferBuilder builder,int red,int green,int blue,int alpha){
+    public void render(BufferBuilder builder,int red,int green,int blue,int alpha){
+        float completeLength = 10.0F/16;
+        float pixelLength = completeLength/128;
+        float x1 = completeLength-beg.x*pixelLength;
+        float y1 = completeLength-beg.y*pixelLength;
+        float x2 = completeLength-(beg.x+length)*pixelLength;
+        float y2 = completeLength-(beg.y+7)*pixelLength;
         float u = getUMapping()/256.0F;
         float v = getVMapping()/256.0F;
-        builder.pos(beg.x,beg.y,0).tex(u,v).color(red,green,blue,alpha).endVertex();
-        builder.pos(beg.x,beg.y+7,0).tex(u,v+7/256.0F).color(red,green,blue,alpha).endVertex();
-        builder.pos(beg.x+length,beg.y+7,0).tex(u+length/256.0F,v+7/256.0F).color(red,green,blue,alpha).endVertex();
-        builder.pos(beg.x+length,beg.y,0).tex(u+length/256.0F,v).color(red,green,blue,alpha).endVertex();
+        float du = length/256.0F;
+        float dv = 7/256.0F;
+        float z = -0.003F;
+        builder.pos(x1,y1,z).tex(u,v).color(red, green, blue, alpha).endVertex();
+        builder.pos(x1,y2,z).tex(u,v+dv).color(red, green, blue, alpha).endVertex();
+        builder.pos(x2,y2,z).tex(u+du,v+dv).color(red, green, blue, alpha).endVertex();
+        builder.pos(x2,y1,z).tex(u+du,v).color(red, green, blue, alpha).endVertex();
+    }
+
+    public void renderOnScreen(BufferBuilder builder,int red,int green,int blue,int alpha,int guiLeft,int guiTop){
+        float u = getUMapping()/256.0F;
+        float v = getVMapping()/256.0F;
+        int x1 = (int)beg.x+guiLeft;
+        int y1 = (int)beg.y+guiTop;
+        int x2 = x1+length;
+        int y2 = y1+7;
+        builder.pos(x1,y1,0).tex(u,v).color(red,green,blue,alpha).endVertex();
+        builder.pos(x1,y2,0).tex(u,v+7/256.0F).color(red,green,blue,alpha).endVertex();
+        builder.pos(x2,y2,0).tex(u+length/256.0F,v+7/256.0F).color(red,green,blue,alpha).endVertex();
+        builder.pos(x2,y1,0).tex(u+length/256.0F,v).color(red,green,blue,alpha).endVertex();
     }
 
     private int getUMapping(){

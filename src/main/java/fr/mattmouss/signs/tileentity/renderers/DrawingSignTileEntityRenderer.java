@@ -7,6 +7,7 @@ import fr.mattmouss.signs.fixedpanel.support.GridSupport;
 import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
 import fr.mattmouss.signs.tileentity.model.SpecialSignModel;
 import fr.mattmouss.signs.util.Functions;
+import fr.mattmouss.signs.util.Text;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
@@ -16,6 +17,7 @@ import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 
+import java.util.List;
 import java.awt.*;
 
 public class DrawingSignTileEntityRenderer<T extends DrawingSignTileEntity> extends TileEntityRenderer<T> {
@@ -79,6 +81,15 @@ public class DrawingSignTileEntityRenderer<T extends DrawingSignTileEntity> exte
                     renderPixel(i, j, builder, color);
                 }
             }
+        }
+        tessellator.draw();
+        GlStateManager.enableTexture();
+        GlStateManager.enableBlend();
+        builder.begin(7,DefaultVertexFormats.POSITION_TEX_COLOR);
+        int n= tileEntity.getNumberOfText();
+        for (int i=0;i<n;i++){
+            Text t = tileEntity.getText(i);
+            t.render(builder);
         }
         tessellator.draw();
         Functions.resetWorldGLState();
