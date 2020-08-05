@@ -5,7 +5,7 @@ import fr.mattmouss.signs.util.Functions;
 
 import java.awt.*;
 
-public class PencilOption extends Option{
+public class PencilOption implements Option{
     Color color;
     int length;
     PencilMode mode;

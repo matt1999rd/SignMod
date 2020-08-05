@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 @Mod(SignMod.MODID)
 public class SignMod
 {
+    //5058 line of code for now before doing special panel
     // Directly reference a log4j logger.
     public static final Logger LOGGER = LogManager.getLogger();
 

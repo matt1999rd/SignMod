@@ -116,7 +116,7 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
             return;
         }
         Text t = texts.get(ind);
-        if (form.rectangleIsIn(newX,newX+t.getLength(),newY,newY+t.getHeight()))t.setPosition(newX,newY);
+        if (form.rectangleIsIn(newX,newX+t.getLength()-1,newY,newY+t.getHeight()-1))t.setPosition(newX,newY);
         else SignMod.LOGGER.info("coordinate leads to outpass the limit of the text : no position set !");
     }
 
@@ -169,7 +169,7 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
         }
         ListNBT textsNBT = (ListNBT) nbt.get("texts");
         for (INBT iNBT : textsNBT) {
-            Text t = new Text(0,0,"",Color.WHITE);
+            Text t = new Text(0,0,"",Color.WHITE,1);
             CompoundNBT textNBT = (CompoundNBT)iNBT;
             t.deserializeNBT(textNBT);
             if (!(texts.contains(t))){
@@ -214,7 +214,4 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
             return true;
         }
     }
-
-
-
 }

@@ -1,6 +1,5 @@
 package fr.mattmouss.signs.tileentity;
 
-import com.sun.org.apache.xerces.internal.impl.dv.DVFactoryException;
 import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.capabilities.SignStorage;
 import fr.mattmouss.signs.enums.ClientAction;

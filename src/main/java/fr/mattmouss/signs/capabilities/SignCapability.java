@@ -57,7 +57,7 @@ public class SignCapability {
                 ListNBT textsNBT = (ListNBT)(tag.get("texts"));
                 for (INBT inbt : textsNBT){
                     CompoundNBT textNBT = (CompoundNBT)inbt;
-                    Text t = new Text(0,0," ", Color.WHITE);
+                    Text t = new Text(0,0," ", Color.WHITE,1);
                     t.deserializeNBT(textNBT);
                     instance.addText(t);
                 }

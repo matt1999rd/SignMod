@@ -2,7 +2,6 @@ package fr.mattmouss.signs.util;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import fr.mattmouss.signs.SignMod;
-import fr.mattmouss.signs.gui.DrawingScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
@@ -11,20 +10,21 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
-import org.lwjgl.system.CallbackI;
 
 import java.awt.*;
 
 public class Text implements INBTSerializable<CompoundNBT> {
     private int x,y;
+    private int scale;
     private String content;
     private Color color;
     private final ResourceLocation TEXT = new ResourceLocation(SignMod.MODID,"textures/gui/letter.png");
-    public Text(int x,int y,String txt,Color color){
+    public Text(int x,int y,String txt,Color color,int scale){
         this.x = x;
         this.y = y;
         this.content = txt;
         this.color = color;
+        this.scale = scale;
     }
 
     public int getX(){
@@ -42,19 +42,28 @@ public class Text implements INBTSerializable<CompoundNBT> {
     public int getColor(){ return this.color.getRGB(); }
 
     public int getLength(){
-        return Functions.getLength(this.content);
+        return Functions.getLength(this.content)* scale;
+    }
+
+    public int getScale() {
+        return scale;
     }
 
     public int getHeight(){
-        return 7;
+        return 7* scale;
     }
 
-    public void set(int x,int y,String newText,int color) {
+    public void changeScale(int incr){
+        scale +=incr;
+    }
+
+    public void set(int x,int y,String newText,int color,int scale) {
         if (Functions.isValidCoordinate(x,y)){
             this.x = x;
             this.y = y;
             this.content = newText;
             this.color = new Color(color,true);
+            this.scale = scale;
         }
         SignMod.LOGGER.warn("Set is unvalid : x : "+this.x+" / y : "+this.y+"\nSkip unvalid settlement !!");
     }
@@ -74,16 +83,16 @@ public class Text implements INBTSerializable<CompoundNBT> {
         for (int i=0;i<n;i++){
             char c0 = content.charAt(i);
             if (c0 == ' '){
-                shift+=4;
+                shift+=4*scale;
             }else {
                 Letter l = new Letter(c0,x+shift,y);
-                l.render(builder,color.getRed(),color.getGreen(),color.getBlue(),color.getAlpha());
-                shift+=l.length;
+                l.render(builder,color.getRed(),color.getGreen(),color.getBlue(),color.getAlpha(), scale);
+                shift+=l.length*scale;
                 char followingChar = (i!=n-1)?content.charAt(i+1):' ';
                 if (followingChar>97){
-                    shift+=1;
+                    shift+=scale;
                 }else if (followingChar != ' '){
-                    shift+=2;
+                    shift+=2*scale;
                 }
             }
         }
@@ -100,16 +109,16 @@ public class Text implements INBTSerializable<CompoundNBT> {
         for (int i=0;i<n;i++){
             char c0 = content.charAt(i);
             if (c0 == ' '){
-                shift+=4;
+                shift+=4* scale;
             }else {
                 Letter l = new Letter(c0, x + shift, y);
-                l.renderOnScreen(builder,color.getRed(),color.getGreen(),color.getBlue(),color.getAlpha(),guiLeft,guiTop);
-                shift += l.length;
+                l.renderOnScreen(builder,color.getRed(),color.getGreen(),color.getBlue(),color.getAlpha(),guiLeft,guiTop, scale);
+                shift += l.length* scale;
                 char followingChar = (i!=n-1)?content.charAt(i+1):' ';
                 if (followingChar>97){
-                    shift+=1;
+                    shift+= scale;
                 }else if (followingChar != ' '){
-                    shift+=2;
+                    shift+= scale *2;
                 }
             }
         }
@@ -129,6 +138,7 @@ public class Text implements INBTSerializable<CompoundNBT> {
         txtNBT.putInt("y_coor",getY());
         txtNBT.putString("text_content",getText());
         txtNBT.putInt("color",color.getRGB());
+        txtNBT.putInt("scale",scale);
         return txtNBT;
     }
 
@@ -138,7 +148,8 @@ public class Text implements INBTSerializable<CompoundNBT> {
         int y = nbt.getInt("y_coor");
         String content = nbt.getString("text_content");
         int color =nbt.getInt("color");
-        set(x,y,content,color);
+        int scale =nbt.getInt("scale");
+        set(x,y,content,color,scale);
     }
 
     public void writeText(PacketBuffer buf){
@@ -148,14 +159,16 @@ public class Text implements INBTSerializable<CompoundNBT> {
         buf.writeByteArray(bytes);
         buf.writeInt(color.getRGB());
         buf.writeString(content);
+        buf.writeInt(scale);
     }
 
     public static Text readText(PacketBuffer buf){
         byte[] pos = buf.readByteArray();
         int color = buf.readInt();
         String content = buf.readString();
+        int scale = buf.readInt();
         if (Functions.isValidCoordinate(pos[0],pos[1])){
-            return new Text(pos[0],pos[1],content,new Color(color,true));
+            return new Text(pos[0],pos[1],content,new Color(color,true),scale);
         }
         throw new IllegalArgumentException("position are badly transmited : get text outside bound");
     }
