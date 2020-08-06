@@ -64,8 +64,9 @@ public class Text implements INBTSerializable<CompoundNBT> {
             this.content = newText;
             this.color = new Color(color,true);
             this.scale = scale;
+        }else {
+            SignMod.LOGGER.warn("Set is unvalid : x : " + this.x + " / y : " + this.y + "\nSkip unvalid settlement !!");
         }
-        SignMod.LOGGER.warn("Set is unvalid : x : "+this.x+" / y : "+this.y+"\nSkip unvalid settlement !!");
     }
 
     public void setPosition(int x,int y){

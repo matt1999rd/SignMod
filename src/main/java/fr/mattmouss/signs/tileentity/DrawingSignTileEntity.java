@@ -1,6 +1,7 @@
 package fr.mattmouss.signs.tileentity;
 
 import fr.mattmouss.signs.SignMod;
+import fr.mattmouss.signs.capabilities.SignCapability;
 import fr.mattmouss.signs.capabilities.SignStorage;
 import fr.mattmouss.signs.enums.ClientAction;
 import fr.mattmouss.signs.enums.Form;
@@ -12,12 +13,19 @@ import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -170,8 +178,36 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
 
     }
 
+    @Nonnull
+    @Override
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+        if (cap == SignCapability.SIGN_STORAGE){
+            return storage.cast();
+        }
+        return super.getCapability(cap, side);
+    }
+
+    @Override
+    public void read(CompoundNBT compound) {
+        CompoundNBT storage_tag = compound.getCompound("sign");
+        getCapability(SignCapability.SIGN_STORAGE).ifPresent(s -> ((INBTSerializable<CompoundNBT>) s).deserializeNBT(storage_tag));
+        super.read(compound);
+    }
+
+    @Override
+    public CompoundNBT write(CompoundNBT tag) {
+        getCapability(SignCapability.SIGN_STORAGE).ifPresent(storage -> {
+            CompoundNBT compoundNBT = ((INBTSerializable<CompoundNBT>) storage).serializeNBT();
+            tag.put("sign", compoundNBT);
+        });
+        return super.write(tag);
+    }
 
     public void setText(Text t, int ind){
         storage.ifPresent(signStorage -> signStorage.setText(t,ind));
+    }
+
+    public CompoundNBT getUpdateTag() {
+        return this.write(new CompoundNBT());
     }
 }
