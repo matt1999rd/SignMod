@@ -4,27 +4,34 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.support.GridSupport;
+import fr.mattmouss.signs.tileentity.EditingSignTileEntity;
 import fr.mattmouss.signs.tileentity.model.SpecialSignModel;
-import fr.mattmouss.signs.tileentity.primary.OctogoneSignTileEntity;
-import fr.mattmouss.signs.tileentity.primary.TriangleSignTileEntity;
+import fr.mattmouss.signs.util.Functions;
+import fr.mattmouss.signs.util.Text;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
-@OnlyIn(Dist.CLIENT)
-public class OctogoneSignTileEntityRenderer extends TileEntityRenderer<OctogoneSignTileEntity> {
-    private static final ResourceLocation SQUARE_BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/square.png");
-    private final SpecialSignModel model = new SpecialSignModel(Form.OCTOGONE);
+public class EditingSignTileEntityRenderer<T extends EditingSignTileEntity> extends TileEntityRenderer<T> {
 
-    public OctogoneSignTileEntityRenderer() {
+    private static final ResourceLocation STOP_BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/stop.png");
+    private static final ResourceLocation LW_BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/let_way.png");
+    private final SpecialSignModel model ;
+    private final Form form;
+
+    public EditingSignTileEntityRenderer(Form form) {
+        if (!form.isForEditing())throw new IllegalArgumentException("no such form are authorised in editing tileentity");
+        model = new SpecialSignModel(form);
+        this.form = form;
     }
 
     @Override
-    public void render(OctogoneSignTileEntity tileEntityIn, double x, double y, double z, float partialTicks, int destroyStage) {
+    public void render(EditingSignTileEntity tileEntityIn, double x, double y, double z, float partialTicks, int destroyStage) {
         BlockState blockstate = tileEntityIn.getBlockState();
         //code for display of background model
         GlStateManager.pushMatrix();
@@ -41,11 +48,15 @@ public class OctogoneSignTileEntityRenderer extends TileEntityRenderer<OctogoneS
             GlStateManager.translatef(0.0625F, 0.0625F, 0.0625F);
             GlStateManager.matrixMode(5888);
         } else {
-            this.bindTexture(SQUARE_BACKGROUND);
+            this.bindTexture(getTexture());
         }
         GlStateManager.enableRescaleNormal();
         GlStateManager.pushMatrix();
+        GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         this.model.renderSign();
+        if (destroyStage<0){
+            renderText(tileEntityIn);
+        }
         GlStateManager.popMatrix();
         GlStateManager.depthMask(true);
         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -55,8 +66,19 @@ public class OctogoneSignTileEntityRenderer extends TileEntityRenderer<OctogoneS
             GlStateManager.popMatrix();
             GlStateManager.matrixMode(5888);
         }
+    }
 
-
+    private void renderText(EditingSignTileEntity tileEntity){
+        GlStateManager.pushMatrix();
+        Text t=tileEntity.getText();
+        Functions.setWorldGLState();
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder builder = tessellator.getBuffer();
+        builder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
+        t.render(builder);
+        tessellator.draw();
+        Functions.resetWorldGLState();
+        GlStateManager.popMatrix();
     }
 
     private float getAngleFromBlockState(BlockState blockstate) {
@@ -64,7 +86,6 @@ public class OctogoneSignTileEntityRenderer extends TileEntityRenderer<OctogoneS
         //to transform the horizontal index by a rotation angle that is proportionnal to 90°
         //make 0->2 1->1 2->0 3->3 --> 0->2 1->1 2->0 3-> (-1%4) --> (2-x)%4
         float angle = 90.0F * ((2-facing.getHorizontalIndex())%4);
-
         if (blockstate.get(GridSupport.ROTATED)){
             //if rotation add 45° rotation to the block
             return angle+45.0F;
@@ -72,4 +93,14 @@ public class OctogoneSignTileEntityRenderer extends TileEntityRenderer<OctogoneS
         return angle;
     }
 
+    private ResourceLocation getTexture(){
+        if (form == Form.OCTOGONE){
+            return STOP_BACKGROUND;
+        }else if (form == Form.UPSIDE_TRIANGLE){
+            return LW_BACKGROUND;
+        }else {
+            //never happenning !!
+            throw new IllegalArgumentException("form given in is not right for editing sign : "+form);
+        }
+    }
 }

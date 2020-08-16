@@ -18,9 +18,9 @@ public class ClientProxy implements IProxy {
     public void init() {
         // screen : ajout de screen
         //ScreenManager.registerFactory(ModBlock.TOLLGATE_USER_CONTAINER, TGUserScreen::new);
-        ClientRegistry.bindTileEntitySpecialRenderer(UpsideTriangleSignTileEntity.class, new UpsideTriangleSignTileEntityRenderer());
+        ClientRegistry.bindTileEntitySpecialRenderer(UpsideTriangleSignTileEntity.class, new EditingSignTileEntityRenderer<>(Form.UPSIDE_TRIANGLE));
         ClientRegistry.bindTileEntitySpecialRenderer(TriangleSignTileEntity.class      , new DrawingSignTileEntityRenderer<>(Form.TRIANGLE));
-        ClientRegistry.bindTileEntitySpecialRenderer(OctogoneSignTileEntity.class      , new OctogoneSignTileEntityRenderer());
+        ClientRegistry.bindTileEntitySpecialRenderer(OctogoneSignTileEntity.class      , new EditingSignTileEntityRenderer<>(Form.OCTOGONE));
         ClientRegistry.bindTileEntitySpecialRenderer(CircleSignTileEntity.class        , new DrawingSignTileEntityRenderer<>(Form.CIRCLE));
         ClientRegistry.bindTileEntitySpecialRenderer(SquareSignTileEntity.class        , new DrawingSignTileEntityRenderer<>(Form.SQUARE));
         ClientRegistry.bindTileEntitySpecialRenderer(RectangleSignTileEntity.class     , new RectangleSignTileEntityRenderer());

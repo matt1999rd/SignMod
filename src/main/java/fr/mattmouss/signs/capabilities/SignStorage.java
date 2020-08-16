@@ -169,9 +169,8 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
         }
         ListNBT textsNBT = (ListNBT) nbt.get("texts");
         for (INBT iNBT : textsNBT) {
-            Text t = new Text(0,0,"",Color.WHITE,1);
             CompoundNBT textNBT = (CompoundNBT)iNBT;
-            t.deserializeNBT(textNBT);
+            Text t =Text.getTextFromNBT(textNBT);
             if (!(texts.contains(t))){
                 texts.add(t);
             }

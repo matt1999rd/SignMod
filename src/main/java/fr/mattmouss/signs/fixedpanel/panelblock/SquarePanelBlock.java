@@ -1,7 +1,6 @@
 package fr.mattmouss.signs.fixedpanel.panelblock;
 
 
-import fr.mattmouss.signs.enums.ExtendDirection;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.enums.ScreenType;
 import fr.mattmouss.signs.fixedpanel.support.GridSupport;

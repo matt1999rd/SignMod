@@ -3,8 +3,12 @@ package fr.mattmouss.signs.fixedpanel.panelblock;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.enums.ScreenType;
 import fr.mattmouss.signs.tileentity.primary.RectangleSignTileEntity;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.IBlockReader;
 
 import javax.annotation.Nullable;

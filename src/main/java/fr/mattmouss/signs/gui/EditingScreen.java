@@ -23,7 +23,7 @@ public class EditingScreen extends Screen {
 
     @Override
     public void render(int p_render_1_, int p_render_2_, float p_render_3_) {
-
+        
     }
 
     public static void open(Form form,BlockPos panelPos){

@@ -1,36 +1,23 @@
 package fr.mattmouss.signs.tileentity.primary;
 
 import fr.mattmouss.signs.capabilities.SignStorage;
+import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
+import fr.mattmouss.signs.tileentity.EditingSignTileEntity;
 import fr.mattmouss.signs.tileentity.PanelTileEntity;
 import fr.mattmouss.signs.tileentity.TEType;
 import net.minecraft.block.BlockState;
 import net.minecraftforge.common.util.LazyOptional;
 
 
-public class UpsideTriangleSignTileEntity extends PanelTileEntity {
+public class UpsideTriangleSignTileEntity extends EditingSignTileEntity {
 
     public UpsideTriangleSignTileEntity() {
         super(TEType.UPSIDE_TRIANGLE_SIGN);
     }
 
     @Override
-    public void tick() {
-        BlockState state = getBlockState();
-        if (!state.get(AbstractPanelBlock.GRID)){
-            //if it is a support with grid
-            super.tick();
-        }
+    protected Form getForm() {
+        return Form.UPSIDE_TRIANGLE;
     }
-
-    @Override
-    public void renderOnScreen(int guiLeft, int guiTop,int selTextInd) {
-    }
-
-    private LazyOptional<SignStorage> storage = LazyOptional.of(this::getStorage).cast();
-
-    private SignStorage getStorage() {
-        return new SignStorage();
-    }
-
 }

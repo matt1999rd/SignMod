@@ -17,7 +17,6 @@ import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 
-import java.util.List;
 import java.awt.*;
 
 public class DrawingSignTileEntityRenderer<T extends DrawingSignTileEntity> extends TileEntityRenderer<T> {

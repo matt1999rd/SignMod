@@ -10,7 +10,6 @@ import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import java.util.List;
 import javax.annotation.Nullable;
-import java.awt.*;
 
 public class SignCapability {
     @CapabilityInject(ISignStorage.class)
@@ -57,8 +56,7 @@ public class SignCapability {
                 ListNBT textsNBT = (ListNBT)(tag.get("texts"));
                 for (INBT inbt : textsNBT){
                     CompoundNBT textNBT = (CompoundNBT)inbt;
-                    Text t = new Text(0,0," ", Color.WHITE,1);
-                    t.deserializeNBT(textNBT);
+                    Text t= Text.getTextFromNBT(textNBT);
                     instance.addText(t);
                 }
             }

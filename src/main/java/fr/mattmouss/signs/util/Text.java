@@ -13,7 +13,7 @@ import net.minecraftforge.common.util.INBTSerializable;
 
 import java.awt.*;
 
-public class Text implements INBTSerializable<CompoundNBT> {
+public class Text {
     private int x,y;
     private int scale;
     private String content;
@@ -25,6 +25,10 @@ public class Text implements INBTSerializable<CompoundNBT> {
         this.content = txt;
         this.color = color;
         this.scale = scale;
+    }
+
+    public static Text getDefaultText(){
+        return new Text(0,0,"",Color.WHITE,1);
     }
 
     public int getX(){
@@ -132,7 +136,6 @@ public class Text implements INBTSerializable<CompoundNBT> {
         return (mouseX>guiLeft-1+x && mouseX<guiLeft+x+L+1) && (mouseY>guiTop-1+y && mouseY<guiTop+y+h+1);
     }
 
-    @Override
     public CompoundNBT serializeNBT() {
         CompoundNBT txtNBT = new CompoundNBT();
         txtNBT.putInt("x_coor",getX());
@@ -143,15 +146,6 @@ public class Text implements INBTSerializable<CompoundNBT> {
         return txtNBT;
     }
 
-    @Override
-    public void deserializeNBT(CompoundNBT nbt) {
-        int x = nbt.getInt("x_coor");
-        int y = nbt.getInt("y_coor");
-        String content = nbt.getString("text_content");
-        int color =nbt.getInt("color");
-        int scale =nbt.getInt("scale");
-        set(x,y,content,color,scale);
-    }
 
     public void writeText(PacketBuffer buf){
         byte[] bytes = new byte[2];
@@ -172,5 +166,14 @@ public class Text implements INBTSerializable<CompoundNBT> {
             return new Text(pos[0],pos[1],content,new Color(color,true),scale);
         }
         throw new IllegalArgumentException("position are badly transmited : get text outside bound");
+    }
+
+    public static Text getTextFromNBT(CompoundNBT nbt){
+        int x = nbt.getInt("x_coor");
+        int y = nbt.getInt("y_coor");
+        String content = nbt.getString("text_content");
+        int color =nbt.getInt("color");
+        int scale =nbt.getInt("scale");
+        return new Text(x,y,content,new Color(color,true),scale);
     }
 }

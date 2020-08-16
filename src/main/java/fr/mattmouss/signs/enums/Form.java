@@ -1,30 +1,33 @@
 package fr.mattmouss.signs.enums;
 
-import fr.mattmouss.signs.util.Functions;
+import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
+import fr.mattmouss.signs.tileentity.EditingSignTileEntity;
+import fr.mattmouss.signs.tileentity.primary.ArrowSignTileEntity;
+import fr.mattmouss.signs.tileentity.primary.DiamondSignTileEntity;
+import fr.mattmouss.signs.tileentity.primary.PlainSquareSignTileEntity;
+import fr.mattmouss.signs.tileentity.primary.RectangleSignTileEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
-import sun.nio.cs.ext.MacHebrew;
 
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 public enum Form {
-    UPSIDE_TRIANGLE(0,"let_way_panel",vec2f -> {
+    UPSIDE_TRIANGLE(0,"let_way_panel", EditingSignTileEntity.class, vec2f -> {
         return (vec2f.y>0 && vec2f.x>vec2f.y/2 && vec2f.x<1-vec2f.y/2);
     },h->{
         return h/2+2; //start text when you can fit a rectangle of height h
     },h->{
         return 0; // the y needed to get max length
     }),
-    TRIANGLE(1,"triangle_panel",vec2f -> {
+    TRIANGLE(1,"triangle_panel", DrawingSignTileEntity.class, vec2f -> {
         return (vec2f.y<=1 && vec2f.y>=MathHelper.abs(2*vec2f.x-1));
     },h->{
         return h/2+2;
     },h->{
         return 127-h;
     }),
-    OCTOGONE(2,"stop_panel",vec2f -> {
+    OCTOGONE(2,"stop_panel",EditingSignTileEntity.class,vec2f -> {
         return (1-3*vec2f.y<3*vec2f.x && 3*vec2f.x<5-3*vec2f.y) &&
                 (0<vec2f.x && vec2f.x<1) &&
                 (0<vec2f.y && vec2f.y<1) &&
@@ -34,7 +37,7 @@ public enum Form {
     },h->{
         return 50;
     }),
-    CIRCLE(3,"circle_panel",(vec2f -> {
+    CIRCLE(3,"circle_panel",DrawingSignTileEntity.class,(vec2f -> {
         return (vec2f.x-0.5)*(vec2f.x-0.5)+(vec2f.y-0.5)*(vec2f.y-0.5)<=0.5*0.5;
     }),h->{
         int k = MathHelper.ceil(64+MathHelper.sqrt(64.0F-h*h/2.0F));
@@ -42,35 +45,35 @@ public enum Form {
     },h->{
         return 64-h/2;
     }),
-    SQUARE(4,"square_panel",(vec2f -> {
+    SQUARE(4,"square_panel",DrawingSignTileEntity.class,(vec2f -> {
         return (vec2f.x<=1 && vec2f.x>=0 && vec2f.y<=1 && vec2f.y>=0);
     }),h->{
         return 0;
     },h->{
         return 0;
     }),
-    RECTANGLE(5,"rectangle_panel",vec2f -> {
-        return (vec2f.y>0.4 && vec2f.y<0.6 && vec2f.x>0 && vec2f.x<1);
+    RECTANGLE(5,"rectangle_panel", RectangleSignTileEntity.class, vec2f -> {
+        return (vec2f.y>0.4 && vec2f.y<0.6 && vec2f.x>-0.5 && vec2f.x<1.5);
     },h->{
         return 0;
     },h->{
         return 0;
     }),
-    ARROW(6,"direction_panel",vec2f -> {
+    ARROW(6,"direction_panel", ArrowSignTileEntity.class, vec2f -> {
         return (vec2f.y > 0.4 && vec2f.y < 0.6 && vec2f.x > 0 && vec2f.x < 1);
     },h->{
         return 0;
     },h->{
         return 0;
     }),
-    PLAIN_SQUARE(7,"huge_direction_panel",vec2f -> {
+    PLAIN_SQUARE(7,"huge_direction_panel", PlainSquareSignTileEntity.class, vec2f -> {
         return (vec2f.x<1 && vec2f.x>0 && vec2f.y<1 && vec2f.y>0);
     },h-> {
         return 0;
     },h->{
         return 0;
     }),
-    DIAMOND(8,"diamond_panel",vec2f -> {
+    DIAMOND(8,"diamond_panel", DrawingSignTileEntity.class, vec2f -> {
         return 2*vec2f.x>= MathHelper.abs(2*vec2f.y-1) && 2*vec2f.x<=2-MathHelper.abs(1-2*vec2f.y);
     },h->{
         return h/2+2;
@@ -83,13 +86,15 @@ public enum Form {
     private final Predicate<Vec2f> isIn;
     private final IntFunction<Integer> xBegText;
     private final IntFunction<Integer> yBegText;
+    private final Class tileEntityClass;
 
-    Form(int meta, String block_name, Predicate<Vec2f> isIn,IntFunction<Integer> xBeg,IntFunction<Integer> yBegText){
+    Form(int meta, String block_name,Class teClass, Predicate<Vec2f> isIn, IntFunction<Integer> xBeg, IntFunction<Integer> yBegText){
         this.meta = meta;
         this.block_name = block_name;
         this.isIn = isIn;
         this.xBegText = xBeg;
         this.yBegText = yBegText;
+        this.tileEntityClass = teClass;
     }
 
     public String getRegistryName(){
@@ -136,9 +141,7 @@ public enum Form {
         return (isOnWholeCube())? 16 : 10;
     }
 
-    public boolean isForDrawing() {
-        return (this == TRIANGLE || this == CIRCLE || this == SQUARE || this == DIAMOND);
-    }
+    public boolean isForDrawing() {return (this.tileEntityClass == DrawingSignTileEntity.class);}
 
     public int getXBegining(int textHeight){
         return xBegText.apply(textHeight);
@@ -148,4 +151,5 @@ public enum Form {
         return yBegText.apply(textHeight);
     }
 
+    public boolean isForEditing() {return (this.tileEntityClass == EditingSignTileEntity.class);}
 }

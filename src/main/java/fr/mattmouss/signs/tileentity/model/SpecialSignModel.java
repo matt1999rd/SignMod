@@ -29,6 +29,7 @@ public class SpecialSignModel extends Model {
     }
 
     private void initModel(){
+        if (form == Form.OCTOGONE)panel.setTextureSize(8,129);
         for (int i=0;i<128;i++){
             int j_beg =0,j_end=127;
             boolean isIn = false;
@@ -55,6 +56,10 @@ public class SpecialSignModel extends Model {
 
     private void addPixelRow(int i, int j_beg, int j_end){
         float completeLength = form.getCompleteLength();
+        if (form == Form.OCTOGONE) {
+            if (i == 0 || i == 127) panel.setTextureOffset(4, 0);
+            else if (i == 1) panel.setTextureOffset(0, 0);
+        }
         float pixelLength = completeLength/128;
         panel.addBox(-5/pixelLength+10/pixelLength*(1-(i+1)/128.0F),5/pixelLength+10/pixelLength*(1-(j_end+1)/128.0F),-2,1,(j_end-j_beg+1),1);
     }
