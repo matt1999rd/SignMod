@@ -3,7 +3,6 @@ package fr.mattmouss.signs.enums;
 import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
 import fr.mattmouss.signs.tileentity.EditingSignTileEntity;
 import fr.mattmouss.signs.tileentity.primary.ArrowSignTileEntity;
-import fr.mattmouss.signs.tileentity.primary.DiamondSignTileEntity;
 import fr.mattmouss.signs.tileentity.primary.PlainSquareSignTileEntity;
 import fr.mattmouss.signs.tileentity.primary.RectangleSignTileEntity;
 import net.minecraft.util.math.MathHelper;
