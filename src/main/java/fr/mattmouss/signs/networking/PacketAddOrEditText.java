@@ -2,6 +2,7 @@ package fr.mattmouss.signs.networking;
 
 import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
+import fr.mattmouss.signs.tileentity.EditingSignTileEntity;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
@@ -38,6 +39,9 @@ public class PacketAddOrEditText {
             if (te instanceof DrawingSignTileEntity){
                 DrawingSignTileEntity dste = (DrawingSignTileEntity)te;
                 dste.addOrEditText(t,ind);
+            }else if (te instanceof EditingSignTileEntity){
+                EditingSignTileEntity este = (EditingSignTileEntity)te;
+                este.setText(t);
             }else {
                 SignMod.LOGGER.warn("unable to send packet to server : invalid position send");
             }

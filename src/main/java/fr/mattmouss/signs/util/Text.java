@@ -105,6 +105,7 @@ public class Text {
     }
 
     public void renderOnScreen(int guiLeft, int guiTop){
+        Minecraft.getInstance().getTextureManager().bindTexture(TEXT);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder builder = tessellator.getBuffer();
         builder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);

@@ -29,11 +29,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
-import org.lwjgl.system.CallbackI;
 
-import java.util.List;
-
-public class DrawingScreen extends Screen {
+public class DrawingScreen extends Screen implements IWithEditTextScreen {
     private static final int LENGTH = 325;
     private static final int HEIGHT = 203;
     private static final int white = MathHelper.rgb(1.0F,1.0F,1.0F);
@@ -388,6 +385,11 @@ public class DrawingScreen extends Screen {
         Networking.INSTANCE.sendToServer(new PacketDrawingAction(panelPos,action,x,y,color,length));
     }
 
+    @Override
+    public Form getForm() {
+        return form;
+    }
+
     public void addOrEditText(Text t){
         int ind = option.getTextIndice();
         DrawingSignTileEntity dste = getTileEntity();
@@ -397,6 +399,11 @@ public class DrawingScreen extends Screen {
             int k=dste.getNumberOfText();
             option.selectText(k-1);
         }
+    }
+
+    @Override
+    public Screen getScreen() {
+        return this;
     }
 
     private void delText(int ind){

@@ -1,14 +1,17 @@
 package fr.mattmouss.signs.tileentity;
 
+import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.capabilities.TextCapability;
 import fr.mattmouss.signs.capabilities.TextStorage;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
@@ -20,7 +23,6 @@ import javax.annotation.Nullable;
 public abstract class EditingSignTileEntity extends PanelTileEntity {
 
     private LazyOptional<TextStorage> storage = LazyOptional.of(this::getStorage);
-
     public EditingSignTileEntity(TileEntityType<?> tileEntityTypeIn) {
         super(tileEntityTypeIn);
     }
@@ -44,8 +46,13 @@ public abstract class EditingSignTileEntity extends PanelTileEntity {
         return storage.map(textStorage -> textStorage.getText(0)).orElse(Text.getDefaultText());
     }
 
+    public void setText(Text newText){
+        storage.ifPresent(textStorage -> textStorage.setText(newText,0));
+    }
     @Override
     public void renderOnScreen(int guiLeft, int guiTop, int selTextInd) {
+        Text t = getText();
+        t.renderOnScreen(guiLeft,guiTop);
     }
 
     @Nonnull

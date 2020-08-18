@@ -21,7 +21,7 @@ import net.minecraft.util.text.StringTextComponent;
 import java.awt.*;
 
 public class AddTextScreen extends Screen {
-    DrawingScreen parentScreen;
+    IWithEditTextScreen parentScreen;
     Text oldText;
     private static final int LENGTH = 197;
     private static final int HEIGHT = 203;
@@ -34,7 +34,7 @@ public class AddTextScreen extends Screen {
     ColorSlider RED_SLIDER, GREEN_SLIDER, BLUE_SLIDER;
     ImageButton[] dye_color_button = new ImageButton[16];
 
-    protected AddTextScreen(DrawingScreen parentScreen,Text textToEdit) {
+    protected AddTextScreen(IWithEditTextScreen parentScreen,Text textToEdit) {
         super(new StringTextComponent("Drawing Screen"));
         this.parentScreen = parentScreen;
         oldText = textToEdit;
@@ -44,7 +44,7 @@ public class AddTextScreen extends Screen {
     protected void init() {
         int relX = (this.width - LENGTH) / 2;
         int relY = (this.height - HEIGHT) / 2;
-        Form f = parentScreen.form;
+        Form f = parentScreen.getForm();
         field = new LimitSizeTextField(this.minecraft,relX,relY,f,oldText);
         field.setValidator(s -> {
             int n= s.length();
@@ -113,11 +113,11 @@ public class AddTextScreen extends Screen {
         AbstractGui.fill(relX + 143, relY + 93, relX + 143 + 9, relY + 93 + 9, field.getColor(null));
     }
 
-    public static void open(DrawingScreen screen,Text text){
+    public static void open(IWithEditTextScreen screen,Text text){
         Minecraft.getInstance().displayGuiScreen(new AddTextScreen(screen,text));
     }
 
-    public static void open(DrawingScreen screen){
+    public static void open(IWithEditTextScreen screen){
         Minecraft.getInstance().displayGuiScreen(new AddTextScreen(screen,null));
     }
 
@@ -129,7 +129,7 @@ public class AddTextScreen extends Screen {
     }
 
     private void cancel() {
-        Minecraft.getInstance().displayGuiScreen(parentScreen);
+        Minecraft.getInstance().displayGuiScreen(parentScreen.getScreen());
     }
 
     private void addText() {
@@ -142,7 +142,7 @@ public class AddTextScreen extends Screen {
                 field.getText(),
                 new Color(field.getColor(null)),field.getScale());
         parentScreen.addOrEditText(newText);
-        Minecraft.getInstance().displayGuiScreen(parentScreen);
+        Minecraft.getInstance().displayGuiScreen(parentScreen.getScreen());
     }
 
     private void changeScale(boolean incr){
