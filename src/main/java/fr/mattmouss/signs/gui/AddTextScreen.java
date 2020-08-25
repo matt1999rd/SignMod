@@ -133,7 +133,7 @@ public class AddTextScreen extends Screen {
     }
 
     private void addText() {
-        if (field.getText().equals("")){
+        if (field.getText().equals("") && parentScreen instanceof DrawingScreen){
             cancel();
             return;
         }

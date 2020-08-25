@@ -10,6 +10,7 @@ import fr.mattmouss.signs.util.Text;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.util.math.MathHelper;
 
 import javax.annotation.Nullable;
 import java.awt.*;
@@ -51,6 +52,9 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
             scale++;
         }else {
             scale--;
+        }
+        if (form == Form.UPSIDE_TRIANGLE){
+            x= MathHelper.ceil(3.5f*scale-0.5);
         }
     }
 

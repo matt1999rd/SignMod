@@ -77,6 +77,7 @@ public class TextStorage implements ITextStorage, INBTSerializable<CompoundNBT> 
             listNBT.add(nbt1);
         });
         nbt.put("txts",listNBT);
+        nbt.putInt("maxLength",maxLength);
         return nbt;
     }
 
@@ -89,7 +90,7 @@ public class TextStorage implements ITextStorage, INBTSerializable<CompoundNBT> 
         }
         nbt1.forEach(inbt->{
             CompoundNBT nbt2 = (CompoundNBT)inbt;
-            texts.add(Text.getTextFromNBT(nbt2));
+            setText(Text.getTextFromNBT(nbt2),0);
         });
     }
 }

@@ -52,6 +52,10 @@ public class EditingSignTileEntityRenderer<T extends EditingSignTileEntity> exte
         }
         GlStateManager.enableRescaleNormal();
         GlStateManager.pushMatrix();
+        GlStateManager.enableDepthTest();
+        GlStateManager.disableLighting();
+        GlStateManager.enableBlend();
+        GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         this.model.renderSign();
         if (destroyStage<0){
@@ -70,8 +74,10 @@ public class EditingSignTileEntityRenderer<T extends EditingSignTileEntity> exte
 
     private void renderText(EditingSignTileEntity tileEntity){
         GlStateManager.pushMatrix();
-        Text t=tileEntity.getText();
         Functions.setWorldGLState();
+        Text t = tileEntity.getText();
+        GlStateManager.enableTexture();
+        GlStateManager.enableBlend();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder builder = tessellator.getBuffer();
         builder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);

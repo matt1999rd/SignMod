@@ -44,8 +44,11 @@ public class EditingScreen extends Screen implements IWithEditTextScreen{
         Minecraft.getInstance().displayGuiScreen(null);
         EditingSignTileEntity este = getTileEntity();
         Text t = este.getText();
-        t.setPosition(0,50);
-        AddTextScreen.open(this,t);
+        if (t.isEmpty()){
+            AddTextScreen.open(this,null);
+        }else {
+            AddTextScreen.open(this,t);
+        }
     }
 
     @Override
@@ -58,7 +61,8 @@ public class EditingScreen extends Screen implements IWithEditTextScreen{
         this.blit(relX,relY,0,0,LENGTH,HEIGHT);
         super.render(p_render_1_,p_render_2_,p_render_3_);
         EditingSignTileEntity este = getTileEntity();
-        este.renderOnScreen(relX+8,relY+8,-1);
+        int dec = (form == Form.OCTOGONE)? 8 : 4;
+        este.renderOnScreen(relX+dec,relY+dec,-1);
         GlStateManager.enableBlend();
     }
 
@@ -89,6 +93,11 @@ public class EditingScreen extends Screen implements IWithEditTextScreen{
     @Override
     public void addOrEditText(Text t) {
         EditingSignTileEntity este = getTileEntity();
+        if (form == Form.OCTOGONE) {
+            int H = t.getHeight();
+            int L = t.getLength();
+            t.setPosition(64 - L / 2, 64 - H / 2);
+        }
         Networking.INSTANCE.sendToServer(new PacketAddOrEditText(panelPos,t,-1));
         este.setText(t);
     }

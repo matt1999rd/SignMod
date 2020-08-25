@@ -177,4 +177,8 @@ public class Text {
         int scale =nbt.getInt("scale");
         return new Text(x,y,content,new Color(color,true),scale);
     }
+
+    public boolean isEmpty() {
+        return this.content.isEmpty();
+    }
 }

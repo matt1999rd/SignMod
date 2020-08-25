@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 
 public enum Form {
     UPSIDE_TRIANGLE(0,"let_way_panel", EditingSignTileEntity.class, vec2f -> {
-        return (vec2f.y>0 && vec2f.x>vec2f.y/2 && vec2f.x<1-vec2f.y/2);
+        return (vec2f.y>=0 && vec2f.x>=vec2f.y/2 && vec2f.x<=1-vec2f.y/2);
     },h->{
         return h/2+2; //start text when you can fit a rectangle of height h
     },h->{
