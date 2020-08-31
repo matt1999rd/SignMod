@@ -54,7 +54,7 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
             scale--;
         }
         if (form == Form.UPSIDE_TRIANGLE){
-            x= MathHelper.ceil(3.5f*scale-0.5);
+            x= 5+MathHelper.ceil(3.5f*scale-0.5);
         }
     }
 

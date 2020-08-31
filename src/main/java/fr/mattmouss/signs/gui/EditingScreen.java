@@ -93,10 +93,12 @@ public class EditingScreen extends Screen implements IWithEditTextScreen{
     @Override
     public void addOrEditText(Text t) {
         EditingSignTileEntity este = getTileEntity();
+        int L = t.getLength();
         if (form == Form.OCTOGONE) {
             int H = t.getHeight();
-            int L = t.getLength();
             t.setPosition(64 - L / 2, 64 - H / 2);
+        }else {
+            t.setPosition(64 - L / 2,t.getY());
         }
         Networking.INSTANCE.sendToServer(new PacketAddOrEditText(panelPos,t,-1));
         este.setText(t);

@@ -17,7 +17,7 @@ public enum Form {
     },h->{
         return h/2+2; //start text when you can fit a rectangle of height h
     },h->{
-        return 0; // the y needed to get max length
+        return 10; // the y needed to get max length
     }),
     TRIANGLE(1,"triangle_panel", DrawingSignTileEntity.class, vec2f -> {
         return (vec2f.y<=1 && vec2f.y>=MathHelper.abs(2*vec2f.x-1));
