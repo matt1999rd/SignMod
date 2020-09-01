@@ -2,6 +2,7 @@ package fr.mattmouss.signs.networking;
 
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.enums.ScreenType;
+import fr.mattmouss.signs.gui.DirectionScreen;
 import fr.mattmouss.signs.gui.DrawingScreen;
 import fr.mattmouss.signs.gui.EditingAdvScreen;
 import fr.mattmouss.signs.gui.EditingScreen;
@@ -46,6 +47,9 @@ public class PacketOpenScreen {
                     break;
                 case DRAWING_SCREEN:
                     DrawingScreen.open(Form.byIndex(form),panelPos);
+                    break;
+                case DIRECTION_SCREEN:
+                    DirectionScreen.open(Form.byIndex(form),panelPos);
                     break;
             }
         });

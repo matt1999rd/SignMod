@@ -1,5 +1,6 @@
 package fr.mattmouss.signs.enums;
 
+import fr.mattmouss.signs.tileentity.DirectionSignTileEntity;
 import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
 import fr.mattmouss.signs.tileentity.EditingSignTileEntity;
 import fr.mattmouss.signs.tileentity.primary.ArrowSignTileEntity;
@@ -51,14 +52,14 @@ public enum Form {
     },h->{
         return 0;
     }),
-    RECTANGLE(5,"rectangle_panel", RectangleSignTileEntity.class, vec2f -> {
+    RECTANGLE(5,"rectangle_panel", DirectionSignTileEntity.class, vec2f -> {
         return (vec2f.y>0.4 && vec2f.y<0.6 && vec2f.x>-0.5 && vec2f.x<1.5);
     },h->{
         return 0;
     },h->{
         return 0;
     }),
-    ARROW(6,"direction_panel", ArrowSignTileEntity.class, vec2f -> {
+    ARROW(6,"direction_panel", DirectionSignTileEntity.class, vec2f -> {
         return (vec2f.y > 0.4 && vec2f.y < 0.6 && vec2f.x > 0 && vec2f.x < 1);
     },h->{
         return 0;
@@ -151,4 +152,8 @@ public enum Form {
     }
 
     public boolean isForEditing() {return (this.tileEntityClass == EditingSignTileEntity.class);}
+
+    public boolean isForDirection() {
+        return (this.tileEntityClass == DirectionSignTileEntity.class);
+    }
 }

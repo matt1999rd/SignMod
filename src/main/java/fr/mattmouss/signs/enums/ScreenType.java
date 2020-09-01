@@ -6,7 +6,9 @@ public enum ScreenType {
     DRAWING_SCREEN(0),
     //editing screen is a screen when you can only add text (use for Octogone and Upside Triangle panel)
     EDITING_SCREEN(1),
-    //a more advanced scrren than previous one which can add text and modify colour of the text and colour of background
+    //direction screen is a screen for direction indicating panel which has feature of adding and removing part of panel
+    DIRECTION_SCREEN(2),
+    //a more advanced screen than previous one which can add text and modify colour of the text and colour of background
     //and with others features
     EDITING_AND_COLOURING_SCREEN(2);
     int meta;

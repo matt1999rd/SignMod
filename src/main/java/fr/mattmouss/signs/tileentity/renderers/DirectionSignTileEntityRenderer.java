@@ -26,7 +26,7 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
     private final Form form;
 
     public DirectionSignTileEntityRenderer(Form form) {
-        if (!form.isForEditing())throw new IllegalArgumentException("no such form are authorised in editing tileentity");
+        if (!form.isForDirection())throw new IllegalArgumentException("no such form are authorised in direction tileentity");
         model = new DirectionSignModel(form);
         this.form = form;
     }
@@ -54,7 +54,6 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
         GlStateManager.enableRescaleNormal();
         GlStateManager.pushMatrix();
         GlStateManager.enableDepthTest();
-        GlStateManager.disableLighting();
         GlStateManager.enableBlend();
         GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);

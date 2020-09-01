@@ -52,9 +52,9 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
 
     private boolean getPlacement(int i) {
         DirectionSignTileEntity dste = getTileEntity();
-        if (i==2)return dste.is12connected();
-        if (i==4)return dste.is23connected();
-        return dste.hasPanel(MathHelper.ceil(i/2.0F));
+        if (i==1)return dste.is12connected();
+        if (i==3)return dste.is23connected();
+        return dste.hasPanel((i+2)/2);
     }
 
     @Override
@@ -76,14 +76,14 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         DirectionPartBox box = changeBool[ind];
         boolean newBool = box.func_212942_a();
         DirectionSignTileEntity dste = getTileEntity();
-        if (ind==2){
+        if (ind==1){
             if (newBool)dste.add12connection();
             else dste.remove12connection();
-        }else if (ind==4){
+        }else if (ind==3){
             if (newBool)dste.add23connection();
             else dste.remove23connection();
         } else {
-            int newInd= MathHelper.ceil(ind/2.0F);
+            int newInd= (ind+2)/2;
             if (newBool)dste.addPanel(newInd);
             else dste.removePanel(newInd);
         }

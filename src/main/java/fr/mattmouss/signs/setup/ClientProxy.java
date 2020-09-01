@@ -1,6 +1,7 @@
 package fr.mattmouss.signs.setup;
 
 import fr.mattmouss.signs.enums.Form;
+import fr.mattmouss.signs.tileentity.DirectionSignTileEntity;
 import fr.mattmouss.signs.tileentity.primary.*;
 import fr.mattmouss.signs.tileentity.renderers.*;
 import net.minecraft.client.Minecraft;
@@ -23,8 +24,8 @@ public class ClientProxy implements IProxy {
         ClientRegistry.bindTileEntitySpecialRenderer(OctogoneSignTileEntity.class      , new EditingSignTileEntityRenderer<>(Form.OCTOGONE));
         ClientRegistry.bindTileEntitySpecialRenderer(CircleSignTileEntity.class        , new DrawingSignTileEntityRenderer<>(Form.CIRCLE));
         ClientRegistry.bindTileEntitySpecialRenderer(SquareSignTileEntity.class        , new DrawingSignTileEntityRenderer<>(Form.SQUARE));
-        ClientRegistry.bindTileEntitySpecialRenderer(RectangleSignTileEntity.class     , new RectangleSignTileEntityRenderer());
-        ClientRegistry.bindTileEntitySpecialRenderer(ArrowSignTileEntity.class         , new ArrowSignTileEntityRenderer());
+        ClientRegistry.bindTileEntitySpecialRenderer(RectangleSignTileEntity.class     , new DirectionSignTileEntityRenderer<>(Form.RECTANGLE));
+        ClientRegistry.bindTileEntitySpecialRenderer(ArrowSignTileEntity.class         , new DirectionSignTileEntityRenderer<>(Form.ARROW));
         ClientRegistry.bindTileEntitySpecialRenderer(PlainSquareSignTileEntity.class   , new PlainSquareSignTileEntityRenderer());
         ClientRegistry.bindTileEntitySpecialRenderer(DiamondSignTileEntity.class       , new DrawingSignTileEntityRenderer<>(Form.DIAMOND));
     }

@@ -1,6 +1,8 @@
 package fr.mattmouss.signs.tileentity;
 
 import fr.mattmouss.signs.capabilities.DirectionStorage;
+import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
+import net.minecraft.block.BlockState;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraftforge.common.util.LazyOptional;
 
@@ -8,6 +10,15 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
     private LazyOptional<DirectionStorage> storage = LazyOptional.of(this::getStorage).cast();
     public DirectionSignTileEntity(TileEntityType<?> tileEntityTypeIn) {
         super(tileEntityTypeIn);
+    }
+
+    @Override
+    public void tick() {
+        BlockState state = getBlockState();
+        if (!state.get(AbstractPanelBlock.GRID)){
+            //if it is a support with grid
+            super.tick();
+        }
     }
 
     private DirectionStorage getStorage() {
@@ -58,5 +69,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         storage.ifPresent(DirectionStorage::remove23connection);
     }
 
-
+    @Override
+    public void renderOnScreen(int guiLeft, int guiTop, int selTextInd) {
+    }
 }

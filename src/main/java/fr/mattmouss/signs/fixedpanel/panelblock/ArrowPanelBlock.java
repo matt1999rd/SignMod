@@ -16,7 +16,7 @@ public class ArrowPanelBlock extends AbstractPanelBlock {
 
     @Override
     public ScreenType getScreenType() {
-        return ScreenType.EDITING_AND_COLOURING_SCREEN;
+        return ScreenType.DIRECTION_SCREEN;
     }
 
     @Override
