@@ -18,6 +18,7 @@ import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
@@ -321,4 +322,7 @@ public class Functions {
         return length;
     }
 
+    public static float distance(float x, float y) {
+        return MathHelper.sqrt(x*x+y*y);
+    }
 }

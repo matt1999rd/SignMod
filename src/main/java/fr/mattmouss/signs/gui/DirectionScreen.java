@@ -23,7 +23,7 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
     private static final int white = MathHelper.rgb(1.0F,1.0F,1.0F);
     Form form ;
     BlockPos panelPos;
-    DirectionPartBox[] changeBool = new DirectionPartBox[5];
+    DirectionPartBox[] changeBool = new DirectionPartBox[8];
 
     ResourceLocation BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/gui/direction_gui.png");
 
@@ -43,7 +43,7 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
     protected void init() {
         int relX = (this.width-LENGTH) / 2;
         int relY = (this.height-HEIGHT) / 2;
-        for (int i=0;i<5;i++){
+        for (int i=0;i<8;i++){
             boolean b = getPlacement(i);
             changeBool[i] = new DirectionPartBox(i,this,relX,relY,b);
             addButton(changeBool[i]);
@@ -54,7 +54,8 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         DirectionSignTileEntity dste = getTileEntity();
         if (i==1)return dste.is12connected();
         if (i==3)return dste.is23connected();
-        return dste.hasPanel((i+2)/2);
+        if (i<5) return dste.hasPanel((i+2)/2);
+        return dste.isRightArrow(i-4);
     }
 
     @Override
@@ -82,10 +83,13 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         }else if (ind==3){
             if (newBool)dste.add23connection();
             else dste.remove23connection();
-        } else {
+        } else if (ind<5){
             int newInd= (ind+2)/2;
             if (newBool)dste.addPanel(newInd);
             else dste.removePanel(newInd);
+        } else {
+            int newInd = ind-4;
+            dste.changeArrowSide(newInd);
         }
     }
 

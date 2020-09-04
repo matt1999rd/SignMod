@@ -3,6 +3,7 @@ package fr.mattmouss.signs.tileentity.model;
 import com.mojang.blaze3d.platform.GlStateManager;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.tileentity.DirectionSignTileEntity;
+import fr.mattmouss.signs.util.Functions;
 import net.minecraft.client.renderer.entity.model.RendererModel;
 import net.minecraft.client.renderer.model.Model;
 import net.minecraft.util.math.MathHelper;
@@ -40,17 +41,39 @@ public class DirectionSignModel extends Model {
         //to match with the other square we translate of only the oR minus i
         float oR = MathHelper.sqrt(2)-1;
         arrowU.addBox(7     ,15-i  ,-2,i,i,1);
+        setRotationPoint(7,15,arrowU,-Math.PI/4);
         arrowD.addBox(7     ,15-2*i,-2,i,i,1);
+        setRotationPoint(7,15-2*i,arrowD,Math.PI/4);
         arrowC.addBox(7+oR*i,15-i,  -2,i,i,1);
-        arrowU.setRotationPoint(15,15    ,7);
-        arrowD.setRotationPoint(15,15-2*i,7);
-        arrowC.setRotationPoint(15,15    ,7);
-        arrowU.rotateAngleZ = -45;
-        arrowC.rotateAngleZ = -45;
-        arrowD.rotateAngleZ = +45;
-        arrow1.addChild(arrowU);
-        arrow1.addChild(arrowD);
-        arrow1.addChild(arrowC);
+        setRotationPoint(7,15,arrowC,-Math.PI/4);
+
+        arrowU.rotateAngleZ = (float) (-Math.PI/4);
+        arrowC.rotateAngleZ = (float) (-Math.PI/4);
+        arrowD.rotateAngleZ = (float) (+Math.PI/4);
+        RendererModel arrow;
+        if (i == 1) {
+            arrow = arrow1;
+        }else if (i == 3){
+            arrow = arrow3;
+        }else {
+            arrow = arrow5;
+        }
+        arrow.addChild(arrowU);
+        arrow.addChild(arrowC);
+        arrow.addChild(arrowD);
+    }
+
+    private void setRotationPoint(float x,float y,RendererModel model,double angle){
+        //angleXY is the angle between line ur of initial point and y axis.
+        double angleXY = Math.atan(x/y);
+        //distance between the point and the origin
+        float D = Functions.distance(x,y);
+        //the x coordinate after rotating
+        float newX = D*MathHelper.sin((float) (angleXY-angle));
+        //the y coordinate after rotating
+        float newY = D*MathHelper.cos((float) (angleXY-angle));
+        //what we need to do to get back to the initial position is to translate back
+        model.setRotationPoint(x-newX,y-newY,0);
     }
 
 
@@ -72,8 +95,48 @@ public class DirectionSignModel extends Model {
     }
 
     private void renderArrow(DirectionSignTileEntity dste){
-        if (dste.hasPanel(1)){
-            
+        //boolean norms : L n for an arrow of length n P i (j) panels where to put the arrow
+        //the not values are here to prevent boolean of being used both
+        // (L1P1 != L3P12 != L5 and L1P2 != L3P12 != L3P23 != L5 and L1P3 != L3P23 != L5)
+        boolean L1P1 = dste.hasPanel(1) && (!dste.is12connected() || !dste.hasPanel(2));
+        boolean L1P2 = dste.hasPanel(2) && (!dste.is12connected() || !dste.hasPanel(1))
+                                             && (!dste.is23connected() || !dste.hasPanel(3));
+        boolean L1P3 = dste.hasPanel(3) && (!dste.is23connected() || !dste.hasPanel(2));
+        boolean L3P12 = dste.hasPanel(1) && dste.hasPanel(2) && dste.is12connected() &&
+                (!dste.is23connected() || !dste.hasPanel(3));
+        boolean L3P23 = dste.hasPanel(2) && dste.hasPanel(3) && dste.is23connected() &&
+                (!dste.is12connected() || !dste.hasPanel(1));
+        boolean L5 = dste.hasPanel(1) && dste.hasPanel(2) && dste.hasPanel(3) && dste.is12connected() && dste.is23connected();
+        if (L1P1){
+            arrow1.mirror = dste.isRightArrow(1);
+            arrow1.render(0.0625F);
         }
+        if (L1P2){
+            arrow1.mirror = dste.isRightArrow(2);
+            GlStateManager.translatef(0,-4/16F,0);
+            arrow1.render(0.0625F);
+            GlStateManager.translatef(0,+4/16F,0);
+        }
+        if (L1P3){
+            arrow1.mirror = dste.isRightArrow(3);
+            GlStateManager.translatef(0,-8/16F,0);
+            arrow1.render(0.0625F);
+            GlStateManager.translatef(0,+8/16F,0);
+        }
+        if (L3P12){
+            arrow3.mirror = dste.isRightArrow(1);
+            arrow3.render(0.0625F);
+        }
+        if (L3P23){
+            arrow3.mirror = dste.isRightArrow(2);
+            GlStateManager.translatef(0,-4/16F,0);
+            arrow3.render(0.0625F);
+            GlStateManager.translatef(0,+4/16F,0);
+        }
+        if (L5){
+            arrow5.mirror = dste.isRightArrow(1);
+            arrow5.render(0.0625F);
+        }
+
     }
 }
