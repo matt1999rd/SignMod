@@ -107,36 +107,57 @@ public class DirectionSignModel extends Model {
         boolean L3P23 = dste.hasPanel(2) && dste.hasPanel(3) && dste.is23connected() &&
                 (!dste.is12connected() || !dste.hasPanel(1));
         boolean L5 = dste.hasPanel(1) && dste.hasPanel(2) && dste.hasPanel(3) && dste.is12connected() && dste.is23connected();
+        boolean flagRight;
         if (L1P1){
-            arrow1.mirror = dste.isRightArrow(1);
+            flagRight = dste.isRightArrow(1);
+            setupGL(14,flagRight);
             arrow1.render(0.0625F);
+            setupGL(14,flagRight);
         }
         if (L1P2){
-            arrow1.mirror = dste.isRightArrow(2);
+            flagRight = dste.isRightArrow(2);
             GlStateManager.translatef(0,-4/16F,0);
+            setupGL(14,flagRight);
             arrow1.render(0.0625F);
+            setupGL(14,flagRight);
             GlStateManager.translatef(0,+4/16F,0);
         }
         if (L1P3){
-            arrow1.mirror = dste.isRightArrow(3);
+            flagRight= dste.isRightArrow(3);
             GlStateManager.translatef(0,-8/16F,0);
+            setupGL(14,flagRight);
             arrow1.render(0.0625F);
+            setupGL(14,flagRight);
             GlStateManager.translatef(0,+8/16F,0);
         }
         if (L3P12){
-            arrow3.mirror = dste.isRightArrow(1);
+            flagRight = dste.isRightArrow(1);
+            setupGL(12,flagRight);
             arrow3.render(0.0625F);
+            setupGL(12,flagRight);
         }
         if (L3P23){
-            arrow3.mirror = dste.isRightArrow(2);
+            flagRight = dste.isRightArrow(2);
             GlStateManager.translatef(0,-4/16F,0);
+            setupGL(12,flagRight);
             arrow3.render(0.0625F);
+            setupGL(12,flagRight);
             GlStateManager.translatef(0,+4/16F,0);
         }
         if (L5){
-            arrow5.mirror = dste.isRightArrow(1);
+            flagRight = dste.isRightArrow(1);
+            setupGL(10,flagRight);
             arrow5.render(0.0625F);
+            setupGL(10,flagRight);
         }
 
+    }
+
+    private void setupGL(int y,boolean isRightArrow){
+        if (isRightArrow){
+            GlStateManager.translatef(0,+y/16F,0);
+            GlStateManager.rotatef(180,0,0,1);
+            GlStateManager.translatef(0,-y/16F,0);
+        }
     }
 }
