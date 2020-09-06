@@ -59,6 +59,7 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         this.model.renderSign(tileEntityIn);
         if (destroyStage<0){
+            renderBackground(tileEntityIn);
             //renderText(tileEntityIn);
         }
         GlStateManager.popMatrix();
@@ -70,6 +71,10 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
             GlStateManager.popMatrix();
             GlStateManager.matrixMode(5888);
         }
+    }
+
+    private void renderBackground(DirectionSignTileEntity tileEntityIn) {
+        //todo : function to add rendering of background !
     }
 
     private void renderText(EditingSignTileEntity tileEntity){

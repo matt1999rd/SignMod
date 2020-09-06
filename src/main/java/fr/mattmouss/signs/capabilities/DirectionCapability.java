@@ -37,6 +37,12 @@ public class DirectionCapability {
                     nbt4.putBoolean("bool",panelPlacement[i]);
                     nbt.add(nbt4);
                 }
+                for (int i=0;i<3;i++){
+                    CompoundNBT nbt5 = new CompoundNBT();
+                    nbt5.putInt("bg",instance.getBgColor(i+1));
+                    nbt5.putInt("lim",instance.getLimColor(i+1));
+                    nbt.add(nbt5);
+                }
                 return nbt;
             }
 
@@ -53,8 +59,13 @@ public class DirectionCapability {
                     allText[2*i+1]=Text.getTextFromNBT(nbt2);
                 }
                 for (int i=0;i<8;i++){
-                    CompoundNBT nbt3 = (CompoundNBT) listNBT.get(i);
+                    CompoundNBT nbt3 = (CompoundNBT) listNBT.get(5+i);
                     panelPlacement[i]=nbt3.getBoolean("bool");
+                }
+                for (int i=0;i<3;i++){
+                    CompoundNBT nbt1 = (CompoundNBT) listNBT.get(13+i);
+                    instance.setBgColor(nbt1.getInt("bg"),i+1);
+                    instance.setLimColor(nbt1.getInt("lim"),i+1);
                 }
                 instance.setPanelPlacement(panelPlacement);
                 instance.setAllTexts(allText);

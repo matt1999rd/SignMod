@@ -69,6 +69,24 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         storage.ifPresent(DirectionStorage::remove23connection);
     }
 
+    public int getColor(int ind,boolean isBackGround){
+        return storage.map(directionStorage -> {
+            if (isBackGround){
+                return directionStorage.getBgColor(ind);
+            }
+            return directionStorage.getLimColor(ind);
+        }).orElse(0);
+    }
+
+    public void setColor(int ind,boolean isBackGround,int color){
+        storage.ifPresent(directionStorage -> {
+            if (isBackGround){
+                directionStorage.setBgColor(color,ind);
+            }
+            directionStorage.setLimColor(color,ind);
+        });
+    }
+
     @Override
     public void renderOnScreen(int guiLeft, int guiTop, int selTextInd) {
     }
