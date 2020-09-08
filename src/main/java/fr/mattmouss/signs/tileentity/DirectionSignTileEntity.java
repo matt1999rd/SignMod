@@ -82,8 +82,9 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         storage.ifPresent(directionStorage -> {
             if (isBackGround){
                 directionStorage.setBgColor(color,ind);
+            }else {
+                directionStorage.setLimColor(color, ind);
             }
-            directionStorage.setLimColor(color,ind);
         });
     }
 

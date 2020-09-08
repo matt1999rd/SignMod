@@ -8,10 +8,13 @@ import fr.mattmouss.signs.gui.screenutils.ColorType;
 import fr.mattmouss.signs.gui.screenutils.PencilOption;
 import fr.mattmouss.signs.gui.widget.ColorSlider;
 import fr.mattmouss.signs.gui.widget.DirectionPartBox;
+import fr.mattmouss.signs.networking.Networking;
+import fr.mattmouss.signs.networking.PacketChangeColor;
 import fr.mattmouss.signs.tileentity.DirectionSignTileEntity;
 import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.tileentity.TileEntity;
@@ -67,7 +70,7 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         }
         for (int i=0;i<6;i++){
             ColorOption opt = (i<3)? backgroundColorOption : edgingColorOption;
-            sliders[i] = new ColorSlider(relX+60,relY+20+i*25,opt, ColorType.byIndex(i/3));
+            sliders[i] = new ColorSlider(relX+60,relY+20+i*25,opt, ColorType.byIndex(i%3));
             addButton(sliders[i]);
         }
         applyColorButton = new Button(relX+50,relY,100,20,"apply Color",b->applyColor());
@@ -85,7 +88,10 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         DirectionSignTileEntity tileEntity = getTileEntity();
         tileEntity.setColor(selPanel,false,edgingColorOption.getColor());
         tileEntity.setColor(selPanel,true,backgroundColorOption.getColor());
-        //add packet to send to server
+        Networking.INSTANCE.sendToServer(
+                new PacketChangeColor(panelPos,edgingColorOption.getColor(),false,selPanel));
+        Networking.INSTANCE.sendToServer(
+                new PacketChangeColor(panelPos,backgroundColorOption.getColor(),true,selPanel));
     }
 
     private boolean getPlacement(int i) {
@@ -104,6 +110,8 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         this.minecraft.getTextureManager().bindTexture(BACKGROUND);
         blit(relX, relY , 0, 0, LENGTH, HEIGHT);
         super.render(mouseX, mouseY, partialTicks);
+        AbstractGui.fill(relX+200,relY+200,relX+200+10,relY+200+10,edgingColorOption.getColor());
+        AbstractGui.fill(relX+200+10,relY+200,relX+200+20,relY+200+10,backgroundColorOption.getColor());
     }
 
     @Override

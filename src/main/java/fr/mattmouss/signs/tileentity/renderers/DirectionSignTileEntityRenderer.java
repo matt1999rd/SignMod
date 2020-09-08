@@ -164,6 +164,7 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
 
     private void renderRectangle(BufferBuilder builder,float x1,float y1,float x2,float y2,int color){
         float z= -0.001F/16F;
+        GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         int rColor = Functions.getRedValue(color);
         int gColor = Functions.getGreenValue(color);
         int bColor = Functions.getBlueValue(color);
