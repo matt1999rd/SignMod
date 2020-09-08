@@ -87,6 +87,29 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         });
     }
 
+    //boolean norms : L n for an arrow of length n P i (j) panels where to put the arrow
+    //the not values are here to prevent boolean of being used both
+    // (L1P1 != L3P12 != L5 and L1P2 != L3P12 != L3P23 != L5 and L1P3 != L3P23 != L5)
+    public int getLFlag(){
+        boolean L1P1 = hasPanel(1) && (!is12connected() || !hasPanel(2));
+        boolean L1P2 = hasPanel(2) && (!is12connected() || !hasPanel(1))
+                && (!is23connected() || !hasPanel(3));
+        boolean L1P3 = hasPanel(3) && (!is23connected() || !hasPanel(2));
+        boolean L3P12 = hasPanel(1) && hasPanel(2) && is12connected() &&
+                (!is23connected() || !hasPanel(3));
+        boolean L3P23 = hasPanel(2) && hasPanel(3) && is23connected() &&
+                (!is12connected() || !hasPanel(1));
+        boolean L5 = hasPanel(1) && hasPanel(2) && hasPanel(3) && is12connected() && is23connected();
+        int flag = 0;
+        if (L1P1)flag+=1;
+        if (L1P2)flag+=2;
+        if (L1P3)flag+=4;
+        if (L3P12)flag+=8;
+        if (L3P23)flag+=16;
+        if (L5)flag+=32;
+        return flag;
+    }
+
     @Override
     public void renderOnScreen(int guiLeft, int guiTop, int selTextInd) {
     }

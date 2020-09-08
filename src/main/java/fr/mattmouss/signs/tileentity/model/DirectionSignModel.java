@@ -95,26 +95,16 @@ public class DirectionSignModel extends Model {
     }
 
     private void renderArrow(DirectionSignTileEntity dste){
-        //boolean norms : L n for an arrow of length n P i (j) panels where to put the arrow
-        //the not values are here to prevent boolean of being used both
-        // (L1P1 != L3P12 != L5 and L1P2 != L3P12 != L3P23 != L5 and L1P3 != L3P23 != L5)
-        boolean L1P1 = dste.hasPanel(1) && (!dste.is12connected() || !dste.hasPanel(2));
-        boolean L1P2 = dste.hasPanel(2) && (!dste.is12connected() || !dste.hasPanel(1))
-                                             && (!dste.is23connected() || !dste.hasPanel(3));
-        boolean L1P3 = dste.hasPanel(3) && (!dste.is23connected() || !dste.hasPanel(2));
-        boolean L3P12 = dste.hasPanel(1) && dste.hasPanel(2) && dste.is12connected() &&
-                (!dste.is23connected() || !dste.hasPanel(3));
-        boolean L3P23 = dste.hasPanel(2) && dste.hasPanel(3) && dste.is23connected() &&
-                (!dste.is12connected() || !dste.hasPanel(1));
-        boolean L5 = dste.hasPanel(1) && dste.hasPanel(2) && dste.hasPanel(3) && dste.is12connected() && dste.is23connected();
+        //flag is a flag that indicate whether each possible panel are to be rendered
+        int flag = dste.getLFlag();
         boolean flagRight;
-        if (L1P1){
+        if ((flag&1) == 1){
             flagRight = dste.isRightArrow(1);
             setupGL(14,flagRight);
             arrow1.render(0.0625F);
             setupGL(14,flagRight);
         }
-        if (L1P2){
+        if ((flag&2) == 2){
             flagRight = dste.isRightArrow(2);
             GlStateManager.translatef(0,-4/16F,0);
             setupGL(14,flagRight);
@@ -122,7 +112,7 @@ public class DirectionSignModel extends Model {
             setupGL(14,flagRight);
             GlStateManager.translatef(0,+4/16F,0);
         }
-        if (L1P3){
+        if ((flag&4) == 4){
             flagRight= dste.isRightArrow(3);
             GlStateManager.translatef(0,-8/16F,0);
             setupGL(14,flagRight);
@@ -130,13 +120,13 @@ public class DirectionSignModel extends Model {
             setupGL(14,flagRight);
             GlStateManager.translatef(0,+8/16F,0);
         }
-        if (L3P12){
+        if ((flag&8) == 8){
             flagRight = dste.isRightArrow(1);
             setupGL(12,flagRight);
             arrow3.render(0.0625F);
             setupGL(12,flagRight);
         }
-        if (L3P23){
+        if ((flag&16) == 16){
             flagRight = dste.isRightArrow(2);
             GlStateManager.translatef(0,-4/16F,0);
             setupGL(12,flagRight);
@@ -144,7 +134,7 @@ public class DirectionSignModel extends Model {
             setupGL(12,flagRight);
             GlStateManager.translatef(0,+4/16F,0);
         }
-        if (L5){
+        if ((flag&32) == 32){
             flagRight = dste.isRightArrow(1);
             setupGL(10,flagRight);
             arrow5.render(0.0625F);

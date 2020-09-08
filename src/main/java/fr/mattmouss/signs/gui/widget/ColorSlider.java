@@ -11,15 +11,9 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 public class ColorSlider extends AbstractSlider {
     Option option;
     ColorType type;
-    public ColorSlider(int xIn, int yIn, PencilOption option, ColorType type) {
+    public ColorSlider(int xIn, int yIn, Option option, ColorType type) {
         super(xIn, yIn, 132, 20, option.getColor(type)/255.0);
         this.option = option;
-        this.type = type;
-    }
-
-    public ColorSlider(int xIn, int yIn, LimitSizeTextField field, ColorType type) {
-        super(xIn, yIn, 132, 20, field.getColor(type)/255.0);
-        this.option = field;
         this.type = type;
     }
 
