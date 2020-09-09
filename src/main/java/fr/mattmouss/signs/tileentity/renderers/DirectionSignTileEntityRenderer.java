@@ -102,6 +102,8 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
         float x2 = 7F/16F;
         int limColor;
         int bgColor;
+        int panelInd;
+        int panelLength;
         float y1,y2;
         switch (ind){
             case 0:
@@ -110,6 +112,8 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
                 bgColor = tileEntity.getColor(1,true);
                 y1 = 13F/16F;
                 y2 = 15F/16F;
+                panelInd = 1;
+                panelLength = 1;
                 break;
             case 1:
                 //L1P2
@@ -117,6 +121,8 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
                 bgColor = tileEntity.getColor(2,true);
                 y1 = 9F/16F;
                 y2 = 11F/16F;
+                panelInd = 2;
+                panelLength = 1;
                 break;
             case 2:
                 //L1P3
@@ -124,6 +130,8 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
                 bgColor = tileEntity.getColor(3,true);
                 y1 = 5F/16F;
                 y2 = 7F/16F;
+                panelInd = 3;
+                panelLength = 1;
                 break;
             case 3:
                 //L3P12
@@ -131,6 +139,8 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
                 bgColor = tileEntity.getColor(1,true);
                 y1 = 9F/16F;
                 y2 = 15F/16F;
+                panelInd = 1;
+                panelLength = 3;
                 break;
             case 4:
                 //L3P23
@@ -138,6 +148,8 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
                 bgColor = tileEntity.getColor(2,true);
                 y1 = 5F/16F;
                 y2 = 11F/16F;
+                panelInd = 2;
+                panelLength = 3;
                 break;
             case 5:
                 //L5
@@ -145,6 +157,8 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
                 bgColor = tileEntity.getColor(1,true);
                 y1 = 5F/16F;
                 y2 = 15F/16F;
+                panelInd = 1;
+                panelLength = 5;
                 break;
             default:
                 SignMod.LOGGER.warn("Rendering not done : skip bad value of case !");
@@ -156,11 +170,35 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
         renderRectangle(builder,x1,y1,x2,y1+limLength,limColor);
         //up limit
         renderRectangle(builder,x1,y2-limLength,x2,y2,limColor);
-        //left limit
-        renderRectangle(builder,x1,y1,x1+limLength,y2,limColor);
-        //right limit
-        renderRectangle(builder,x2-limLength,y1,x2,y2,limColor);
+        if (form == Form.ARROW){
+            boolean isRightArrow = tileEntity.isRightArrow(panelInd);
+            int rightColor = (isRightArrow) ? bgColor : limColor;
+            int leftColor= (isRightArrow) ? limColor  : bgColor;
+            float xDiff = -limLength;
+            //right limit
+            renderRectangle(builder, x1, y1+limLength, x1 + limLength, y2-limLength, rightColor);
+            //left limit
+            renderRectangle(builder, x2 - limLength, y1+limLength, x2, y2-limLength, leftColor);
+            float xCommon = 7F/16F;
+            float xSolo = xCommon+panelLength*1F/16F;
+            float ySolo = (y1+y2)/2;
+            if (isRightArrow){
+                xCommon *= -1;
+                xSolo *= -1;
+                xDiff *= -1;
+            }
+            //arrow of limit
+            renderTriangle(builder,xCommon,xSolo,y1,ySolo,y2,limColor,false);
+            //arrow of background
+            renderTriangle(builder,xCommon,xSolo+xDiff,y1+limLength,ySolo,y2-limLength,bgColor,true);
+        }else {
+            //left limit
+            renderRectangle(builder, x1, y1, x1 + limLength, y2, limColor);
+            //right limit
+            renderRectangle(builder, x2 - limLength, y1, x2, y2, limColor);
+        }
     }
+
 
     private void renderRectangle(BufferBuilder builder,float x1,float y1,float x2,float y2,int color){
         float z= -0.001F/16F;
@@ -173,6 +211,29 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
         builder.pos(x1,y2,z).color(rColor,gColor,bColor,aColor).endVertex();
         builder.pos(x2,y2,z).color(rColor,gColor,bColor,aColor).endVertex();
         builder.pos(x2,y1,z).color(rColor,gColor,bColor,aColor).endVertex();
+    }
+
+    //function to render triangle with a y axes direction as one of its three sides
+    private void renderTriangle(BufferBuilder builder,float xCommon,float xSolo,float yDown,float ySolo,float yUp,int color,boolean isBgColor){
+        float z = (isBgColor)? -0.002F/16F :-0.001F/16F;
+        GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
+        int rColor = Functions.getRedValue(color);
+        int gColor = Functions.getGreenValue(color);
+        int bColor = Functions.getBlueValue(color);
+        int aColor = Functions.getAlphaValue(color);
+
+        boolean startYUp = (xCommon<xSolo);
+        builder.pos(xCommon,yDown,z).color(rColor,gColor,bColor,aColor).endVertex();
+        if (startYUp){
+            builder.pos(xCommon,ySolo,z).color(rColor,gColor,bColor,aColor).endVertex();
+            builder.pos(xCommon,yUp,z).color(rColor,gColor,bColor,aColor).endVertex();
+            builder.pos(xSolo,ySolo,z).color(rColor,gColor,bColor,aColor).endVertex();
+        }else {
+            builder.pos(xSolo,ySolo,z).color(rColor,gColor,bColor,aColor).endVertex();
+            builder.pos(xCommon,yUp,z).color(rColor,gColor,bColor,aColor).endVertex();
+            builder.pos(xCommon,ySolo,z).color(rColor,gColor,bColor,aColor).endVertex();
+        }
+
     }
 
     private void renderText(DirectionSignTileEntity tileEntity){

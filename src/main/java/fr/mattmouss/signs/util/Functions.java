@@ -229,7 +229,8 @@ public class Functions {
     }
     @OnlyIn(Dist.CLIENT)
     public static int getAlphaValue(int color){
-        return (color & -2130706432) >> 24;
+        int res1 = (color & -16777216);
+        return res1 >> 24;
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -325,4 +326,5 @@ public class Functions {
     public static float distance(float x, float y) {
         return MathHelper.sqrt(x*x+y*y);
     }
+
 }
