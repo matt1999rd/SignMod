@@ -45,6 +45,10 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         storage.ifPresent(directionStorage -> directionStorage.changeArrowSide(ind));
     }
 
+    public void changeArrowSide(int ind,boolean newValue){
+        storage.ifPresent(directionStorage -> directionStorage.changeArrowSide(ind,newValue));
+    }
+
     public boolean is12connected(){
         return storage.map(DirectionStorage::is12connected).orElse(false);
     }
@@ -109,6 +113,23 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         if (L3P23)flag+=16;
         if (L5)flag+=32;
         return flag;
+    }
+
+    public void updateBoolean(int ind,boolean newBool){
+        if (ind==1){
+            if (newBool)add12connection();
+            else remove12connection();
+        }else if (ind==3){
+            if (newBool)add23connection();
+            else remove23connection();
+        } else if (ind<5){
+            int newInd= (ind+2)/2;
+            if (newBool)addPanel(newInd);
+            else removePanel(newInd);
+        } else {
+            int newInd = ind-4;
+            changeArrowSide(newInd,newBool);
+        }
     }
 
     @Override

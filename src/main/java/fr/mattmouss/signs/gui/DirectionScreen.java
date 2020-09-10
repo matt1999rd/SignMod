@@ -7,9 +7,11 @@ import fr.mattmouss.signs.gui.screenutils.ColorOption;
 import fr.mattmouss.signs.gui.screenutils.ColorType;
 import fr.mattmouss.signs.gui.screenutils.PencilOption;
 import fr.mattmouss.signs.gui.widget.ColorSlider;
+import fr.mattmouss.signs.gui.widget.DirectionCursorButton;
 import fr.mattmouss.signs.gui.widget.DirectionPartBox;
 import fr.mattmouss.signs.networking.Networking;
 import fr.mattmouss.signs.networking.PacketChangeColor;
+import fr.mattmouss.signs.networking.PacketSetBoolean;
 import fr.mattmouss.signs.tileentity.DirectionSignTileEntity;
 import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
 import fr.mattmouss.signs.util.Text;
@@ -28,8 +30,8 @@ import java.awt.*;
 
 public class DirectionScreen extends Screen implements IWithEditTextScreen {
 
-    private static final int LENGTH = 200;
-    private static final int HEIGHT = 200;
+    private static final int LENGTH = 324;
+    private static final int HEIGHT = 245;
     private int selPanel = 2;
     private static final int white = MathHelper.rgb(1.0F,1.0F,1.0F);
     private static ColorOption backgroundColorOption;
@@ -37,9 +39,9 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
 
     Form form ;
     BlockPos panelPos;
-    DirectionPartBox[] changeBool = new DirectionPartBox[8];
+    DirectionPartBox[] changeBool = new DirectionPartBox[5];
     ColorSlider[] sliders = new ColorSlider[6];
-
+    DirectionCursorButton[] arrowDirection = new DirectionCursorButton[3];
     Button applyColorButton;
     Button[] choiceButton = new Button[3];
 
@@ -63,17 +65,21 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         edgingColorOption = new ColorOption(Color.BLACK);
         int relX = (this.width-LENGTH) / 2;
         int relY = (this.height-HEIGHT) / 2;
-        for (int i=0;i<8;i++){
+        for (int i=0;i<5;i++){
             boolean b = getPlacement(i);
             changeBool[i] = new DirectionPartBox(i,this,relX,relY,b);
             addButton(changeBool[i]);
         }
+        for (int i=0;i<2;i++){
+            arrowDirection[i] = new DirectionCursorButton(relX,relY,b->{},this,i);
+            addButton(arrowDirection[i]);
+        }
         for (int i=0;i<6;i++){
             ColorOption opt = (i<3)? backgroundColorOption : edgingColorOption;
-            sliders[i] = new ColorSlider(relX+60,relY+20+i*25,opt, ColorType.byIndex(i%3));
+            sliders[i] = new ColorSlider(relX+160-(i/3)*156,relY+172+i%3*25,opt, ColorType.byIndex(i%3));
             addButton(sliders[i]);
         }
-        applyColorButton = new Button(relX+50,relY,100,20,"apply Color",b->applyColor());
+        applyColorButton = new Button(relX+109,relY+147,73,20,"apply Color",b->applyColor());
         addButton(applyColorButton);
         for (int i=0;i<3;i++){
             int finalI = i;
@@ -108,10 +114,11 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         int relX = (this.width-LENGTH) / 2;
         int relY = (this.height-HEIGHT) / 2;
         this.minecraft.getTextureManager().bindTexture(BACKGROUND);
-        blit(relX, relY , 0, 0, LENGTH, HEIGHT);
+        blit(relX, relY ,this.blitOffset,0.0F, 0.0F, LENGTH, HEIGHT,256,512);
         super.render(mouseX, mouseY, partialTicks);
-        AbstractGui.fill(relX+200,relY+200,relX+200+10,relY+200+10,edgingColorOption.getColor());
-        AbstractGui.fill(relX+200+10,relY+200,relX+200+20,relY+200+10,backgroundColorOption.getColor());
+        GlStateManager.enableBlend();
+        AbstractGui.fill(relX+76,relY+152,relX+76+9,relY+152+9,edgingColorOption.getColor());
+        AbstractGui.fill(relX+232,relY+152,relX+232+9,relY+152+9,backgroundColorOption.getColor());
     }
 
     @Override
@@ -123,20 +130,8 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         DirectionPartBox box = changeBool[ind];
         boolean newBool = box.func_212942_a();
         DirectionSignTileEntity dste = getTileEntity();
-        if (ind==1){
-            if (newBool)dste.add12connection();
-            else dste.remove12connection();
-        }else if (ind==3){
-            if (newBool)dste.add23connection();
-            else dste.remove23connection();
-        } else if (ind<5){
-            int newInd= (ind+2)/2;
-            if (newBool)dste.addPanel(newInd);
-            else dste.removePanel(newInd);
-        } else {
-            int newInd = ind-4;
-            dste.changeArrowSide(newInd);
-        }
+        Networking.INSTANCE.sendToServer(new PacketSetBoolean(panelPos,ind,newBool));
+        dste.updateBoolean(ind,newBool);
     }
 
     @Override
@@ -157,5 +152,11 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         }
         if (te == null)throw new NullPointerException("Tile entity at panelPos is not in desired place !");
         throw new IllegalStateException("Direction Screen need direction sign tile entity in place !");
+    }
+
+    public void changeArrowSide(int ind,boolean b){
+        DirectionSignTileEntity dste = getTileEntity();
+        dste.updateBoolean(ind+5,b);
+        Networking.INSTANCE.sendToServer(new PacketSetBoolean(panelPos,ind+5,b));
     }
 }

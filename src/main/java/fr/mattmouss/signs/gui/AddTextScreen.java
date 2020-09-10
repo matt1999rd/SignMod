@@ -27,7 +27,7 @@ public class AddTextScreen extends Screen {
     private static final int HEIGHT = 203;
     private static final int white =Color.WHITE.getRGB();
     ResourceLocation BACKGROUND = new ResourceLocation(SignMod.MODID, "textures/gui/add_text_gui.png");
-    ResourceLocation DYE_BUTTON = new ResourceLocation(SignMod.MODID, "textures/gui/pencil_buttons.png");
+    ResourceLocation DYE_BUTTON = new ResourceLocation(SignMod.MODID, "textures/gui/buttons.png");
 
     Button plusButton, moinsButton, addTextButton, cancelButton;
     LimitSizeTextField field;

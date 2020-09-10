@@ -110,6 +110,14 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
         panelPlacement[4+ind] = !b;
     }
 
+    public void changeArrowSide(int ind, boolean newValue) {
+        if (ind<1 || ind>3){
+            warn("changeArrowSide",ind);
+            return;
+        }
+        panelPlacement[4+ind] = newValue;
+    }
+
     //color of background and limit
 
     @Override
@@ -267,4 +275,6 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
     private void warn(String function, int ind){
         SignMod.LOGGER.warn("Bad usage of method "+function+" in Direction Storage. bad indice was given : "+ind);
     }
+
+
 }

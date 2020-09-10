@@ -46,7 +46,7 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
 
 
     ResourceLocation BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/gui/drawing_gui.png");
-    ResourceLocation PENCIL_BUTTONS = new ResourceLocation(SignMod.MODID,"textures/gui/pencil_buttons.png");
+    ResourceLocation PENCIL_BUTTONS = new ResourceLocation(SignMod.MODID,"textures/gui/buttons.png");
 
     protected DrawingScreen(Form form,BlockPos panelPos) {
         super(new StringTextComponent("Drawing Screen"));

@@ -59,6 +59,12 @@ public class Networking {
                 PacketChangeColor::new,
                 PacketChangeColor::handle);
 
+        INSTANCE.registerMessage(nextID(),
+                PacketSetBoolean.class,
+                PacketSetBoolean::toBytes,
+                PacketSetBoolean::new,
+                PacketSetBoolean::handle);
+
         /*
         INSTANCE.registerMessage(nextID(),
                 PacketOpenScreen.class,
