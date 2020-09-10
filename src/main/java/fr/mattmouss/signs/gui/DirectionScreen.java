@@ -70,8 +70,10 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
             changeBool[i] = new DirectionPartBox(i,this,relX,relY,b);
             addButton(changeBool[i]);
         }
-        for (int i=0;i<2;i++){
-            arrowDirection[i] = new DirectionCursorButton(relX,relY,b->{},this,i);
+        for (int i=0;i<3;i++){
+            DirectionSignTileEntity dste = getTileEntity();
+            boolean bool= dste.isRightArrow(i+1);
+            arrowDirection[i] = new DirectionCursorButton(relX,relY,b->{},this,i,bool);
             addButton(arrowDirection[i]);
         }
         for (int i=0;i<6;i++){
@@ -81,13 +83,6 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         }
         applyColorButton = new Button(relX+109,relY+147,73,20,"apply Color",b->applyColor());
         addButton(applyColorButton);
-        for (int i=0;i<3;i++){
-            int finalI = i;
-            choiceButton[i] = new Button(relX+100+10*i,relY+200,10,10,String.valueOf(i), b->{
-                selPanel = finalI+1;
-            });
-            addButton(choiceButton[i]);
-        }
     }
 
     private void applyColor() {

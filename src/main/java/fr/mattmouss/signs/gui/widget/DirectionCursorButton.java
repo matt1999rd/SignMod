@@ -12,16 +12,18 @@ public class DirectionCursorButton extends Button {
 
     ResourceLocation CURSOR_BUTTONS = new ResourceLocation(SignMod.MODID,"textures/gui/buttons.png");
     boolean isMoving = false;
-    boolean isRightPosition = false;
-    int cursorPos = 0;
+    boolean isRightPosition ;
+    int cursorPos ;
     int ind;
     DirectionScreen screen;
 
 
-    public DirectionCursorButton(int relX, int relY, IPressable onPress, DirectionScreen screen,int ind) {
-        super(40, 20, relX, relY, "", onPress);
+    public DirectionCursorButton(int relX, int relY, IPressable onPress, DirectionScreen screen,int ind,boolean isRightPosition) {
+        super(relX+234, relY+16+52*ind, 40, 20, "", onPress);
         this.screen = screen;
         this.ind = ind;
+        this.isRightPosition = isRightPosition;
+        cursorPos = (this.isRightPosition) ? 28 : 0;
     }
 
     @Override
@@ -34,13 +36,13 @@ public class DirectionCursorButton extends Button {
                 if (cursorPos == 28){
                     isMoving = false;
                 } else {
-                    cursorPos++;
+                    cursorPos+=4;
                 }
             } else {
                 if (cursorPos == 0){
                     isMoving = false;
                 } else {
-                    cursorPos--;
+                    cursorPos-=4;
                 }
             }
         }
@@ -49,8 +51,8 @@ public class DirectionCursorButton extends Button {
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         //rendering of background
         this.blit(this.x,this.y,0,50,this.width,this.height);
-        //rendering of th moving cursor
-        this.blit(this.x+cursorPos+1,this.y,0,70,11,18);
+        //rendering of the moving cursor
+        this.blit(this.x+cursorPos+1,this.y+1,0,70,11,18);
     }
 
     @Override

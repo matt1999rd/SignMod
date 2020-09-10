@@ -41,10 +41,6 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         return storage.map(directionStorage -> directionStorage.isArrowRight(ind)).orElse(false);
     }
 
-    public void changeArrowSide(int ind){
-        storage.ifPresent(directionStorage -> directionStorage.changeArrowSide(ind));
-    }
-
     public void changeArrowSide(int ind,boolean newValue){
         storage.ifPresent(directionStorage -> directionStorage.changeArrowSide(ind,newValue));
     }
