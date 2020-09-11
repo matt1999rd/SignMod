@@ -1,10 +1,15 @@
 package fr.mattmouss.signs.tileentity;
 
+import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.capabilities.DirectionStorage;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
+import fr.mattmouss.signs.util.Text;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraftforge.common.util.LazyOptional;
+
+import java.awt.*;
 
 public abstract class DirectionSignTileEntity extends PanelTileEntity{
     private LazyOptional<DirectionStorage> storage = LazyOptional.of(this::getStorage).cast();
@@ -88,6 +93,13 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         });
     }
 
+    public Text getText(int ind,boolean isEnd){
+        Text t = storage.map(directionStorage -> {
+            return directionStorage.getText(ind,isEnd);
+        }).orElse(Text.getDefaultText());
+        return t;
+    }
+
     //boolean norms : L n for an arrow of length n P i (j) panels where to put the arrow
     //the not values are here to prevent boolean of being used both
     // (L1P1 != L3P12 != L5 and L1P2 != L3P12 != L3P23 != L5 and L1P3 != L3P23 != L5)
@@ -129,6 +141,85 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
     }
 
     @Override
-    public void renderOnScreen(int guiLeft, int guiTop, int selTextInd) {
+    public void renderOnScreen(int guiLeft, int guiTop, int selTextInd){
+        int flag = getLFlag();
+        if (flag == 0)return;
+        for (int i=0;i<6;i++){
+            if (((flag>>i)&1) == 1){
+                renderPart(i,guiLeft,guiTop);
+            }
+        }
+        renderText(guiLeft,guiTop);
+    }
+
+    //render each of the 6 part 0->L1P1 1->L1P2 2->L1P3 3->L3P12 4->L3P23 5->L5
+    private void renderPart(int indFlag,int guiLeft,int guiTop){
+        if (indFlag<0 || indFlag>5)return;
+        int x1 = guiLeft+4,L = 126,y1 = guiTop,H,bgColor,limColor;
+        //start condition
+        //L1P1 or L3P12 or L5 -> start at 1
+        if (indFlag == 0 || indFlag == 3 || indFlag == 5){
+            y1+=14;
+            bgColor = getColor(1,true);
+            limColor = getColor(1,false);
+        //L1P2 or L3P23 -> start at 2
+        }else if (indFlag%3 == 1){
+            y1 += 65;
+            bgColor = getColor(2,true);
+            limColor = getColor(2,false);
+        //L1P3 -> start at 3
+        } else  {
+            y1 += 117;
+            bgColor = getColor(3, true);
+            limColor = getColor(3, false);
+        }
+        //length condition
+        //L1P1/2/3
+        if (indFlag<3){
+            H = 23;
+        //L2P12/23 not exactly the same length to get 128 * 128 square
+        }else if (indFlag != 5) {
+            H = 71 + indFlag;
+        }else {
+            H = 126;
+        }
+        AbstractGui.fill(x1+1,y1+1,x1+1+L,y1+1+H,bgColor);
+        //up limit
+        AbstractGui.fill(x1,y1,x1+L+2,y1+1,limColor);
+        //down limit
+        AbstractGui.fill(x1,y1+H+1,x1+L+2,y1+H+2,limColor);
+        //left limit
+        AbstractGui.fill(x1,y1+1,x1+1,y1+H+1,limColor);
+        //right limit
+        AbstractGui.fill(x1+L+1,y1+1,x1+L+2,y1+H+1,limColor);
+    }
+
+    private void renderText(int guiLeft,int guiTop){
+        for (int i=0;i<5;i++){
+            int finalI = i;
+            // flag indicates if we have to display the gray empty text rectangle
+            boolean flag = storage.map(directionStorage -> {
+                boolean[] panelPlacement = directionStorage.getPanelPlacement();
+                if (finalI == 1 || finalI == 3){
+                    return panelPlacement[finalI] && panelPlacement[finalI-1] && panelPlacement[finalI+1];
+                }
+                return panelPlacement[finalI];
+            }).orElse(false);
+            Text begText= getText(i,false);
+            Text endText= getText(i,true);
+            if (!begText.isEmpty()){
+                begText.renderOnScreen(guiLeft,guiTop);
+            }else if (flag)renderGrayRectangle(guiLeft, guiTop, i,false);
+            if (!endText.isEmpty()){
+                endText.renderOnScreen(guiLeft,guiTop);
+            }else if (flag)renderGrayRectangle(guiLeft, guiTop, i, true);
+        }
+    }
+
+    private void renderGrayRectangle(int guiLeft,int guiTop,int ind,boolean isEnd){
+        int x1 = guiLeft+ ((isEnd)?69:6);
+        //a gap of 25 and then 26
+        int y1 = guiTop+16+(25*ind)+ind-(ind==0?0:1);
+        AbstractGui.fill(x1,y1,x1+61,y1+21, Color.GRAY.getRGB());
     }
 }

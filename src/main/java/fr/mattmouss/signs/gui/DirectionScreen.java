@@ -27,12 +27,14 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DirectionScreen extends Screen implements IWithEditTextScreen {
 
     private static final int LENGTH = 324;
     private static final int HEIGHT = 245;
-    private int selPanel = 2;
+    private int selTextInd = 4;
     private static final int white = MathHelper.rgb(1.0F,1.0F,1.0F);
     private static ColorOption backgroundColorOption;
     private static ColorOption edgingColorOption;
@@ -43,7 +45,6 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
     ColorSlider[] sliders = new ColorSlider[6];
     DirectionCursorButton[] arrowDirection = new DirectionCursorButton[3];
     Button applyColorButton;
-    Button[] choiceButton = new Button[3];
 
     ResourceLocation BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/gui/direction_gui.png");
 
@@ -81,12 +82,14 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
             sliders[i] = new ColorSlider(relX+160-(i/3)*156,relY+172+i%3*25,opt, ColorType.byIndex(i%3));
             addButton(sliders[i]);
         }
-        applyColorButton = new Button(relX+109,relY+147,73,20,"apply Color",b->applyColor());
+        applyColorButton = new Button(relX+109,relY+147,74,20,"apply Color",b->applyColor());
         addButton(applyColorButton);
     }
 
     private void applyColor() {
+        if (selTextInd == -1)return;
         DirectionSignTileEntity tileEntity = getTileEntity();
+        int selPanel = selTextInd/4+1;
         tileEntity.setColor(selPanel,false,edgingColorOption.getColor());
         tileEntity.setColor(selPanel,true,backgroundColorOption.getColor());
         Networking.INSTANCE.sendToServer(
@@ -114,6 +117,8 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         GlStateManager.enableBlend();
         AbstractGui.fill(relX+76,relY+152,relX+76+9,relY+152+9,edgingColorOption.getColor());
         AbstractGui.fill(relX+232,relY+152,relX+232+9,relY+152+9,backgroundColorOption.getColor());
+        DirectionSignTileEntity dste = getTileEntity();
+        dste.renderOnScreen(relX,relY,selTextInd);
     }
 
     @Override
@@ -124,6 +129,10 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
     public void updateBoolean(int ind){
         DirectionPartBox box = changeBool[ind];
         boolean newBool = box.func_212942_a();
+        if (!newBool && selTextInd/2 == ind){
+            //unselect text if we remove the panel
+            selTextInd = -1;
+        }
         DirectionSignTileEntity dste = getTileEntity();
         Networking.INSTANCE.sendToServer(new PacketSetBoolean(panelPos,ind,newBool));
         dste.updateBoolean(ind,newBool);
@@ -153,5 +162,17 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         DirectionSignTileEntity dste = getTileEntity();
         dste.updateBoolean(ind+5,b);
         Networking.INSTANCE.sendToServer(new PacketSetBoolean(panelPos,ind+5,b));
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (isGrayCellOrTextClicked(mouseX,mouseY,button)){
+            SignMod.LOGGER.info("click on a gray cell !");
+        }
+        return super.mouseClicked(mouseX,mouseY,button);
+    }
+
+    private boolean isGrayCellOrTextClicked(double mouseX, double mouseY, int button) {
+        return false;
     }
 }

@@ -19,7 +19,7 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
 
     public DirectionStorage(){
         for (int i=0;i<5;i++){
-            panelPlacement[i] = (i==3);
+            panelPlacement[i] = (i==2);
             texts[i] = Text.getDefaultText();
             endTexts[i] = Text.getDefaultText();
         }
@@ -27,40 +27,40 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
         limit_color = new Color[]{Color.BLACK,Color.BLACK,Color.BLACK};
     }
 
-    //12 connection -> 0
+    //12 connection -> 1
     @Override
     public boolean is12connected() {
-        return panelPlacement[0];
-    }
-
-    @Override
-    public void remove12connection() {
-        panelPlacement[0] = false;
-    }
-
-    @Override
-    public void add12connection() {
-        panelPlacement[0] = true;
-    }
-
-    //23 connection -> 1
-
-    @Override
-    public boolean is23connected() {
         return panelPlacement[1];
     }
 
     @Override
-    public void remove23connection() {
+    public void remove12connection() {
         panelPlacement[1] = false;
     }
 
     @Override
-    public void add23connection() {
+    public void add12connection() {
         panelPlacement[1] = true;
     }
 
-    //panel is present 2->1st 3->2nd 4->3rd
+    //23 connection -> 3
+
+    @Override
+    public boolean is23connected() {
+        return panelPlacement[3];
+    }
+
+    @Override
+    public void remove23connection() {
+        panelPlacement[3] = false;
+    }
+
+    @Override
+    public void add23connection() {
+        panelPlacement[3] = true;
+    }
+
+    //panel is present 0->1st 2->2nd 4->3rd
 
     @Override
     public boolean hasPanel(int ind) {
@@ -68,7 +68,7 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
             warn("hasPanel",ind);
             return false;
         }
-        return panelPlacement[1+ind];
+        return panelPlacement[(ind-1)*2];
     }
 
     @Override
@@ -77,7 +77,7 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
             warn("removePanel",ind);
             return;
         }
-        panelPlacement[1+ind] = false;
+        panelPlacement[(ind-1)*2] = false;
     }
 
     @Override
@@ -86,7 +86,7 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
             warn("addPanel",ind);
             return;
         }
-        panelPlacement[1+ind] = true;
+        panelPlacement[(ind-1)*2] = true;
     }
 
     //is arrow on right
@@ -162,12 +162,15 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
     public Text getText(int ind,boolean isEnd) {
         if (ind<0 || ind>4){
             warn("getText",ind);
-            return null;
+            return Text.getDefaultText();
         }
-        if (isEnd){
-            return endTexts[ind];
+        if (panelPlacement[ind]) {
+            if (isEnd) {
+                return endTexts[ind];
+            }
+            return texts[ind];
         }
-        return texts[ind];
+        return Text.getDefaultText();
     }
 
     @Override
@@ -176,10 +179,12 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
             warn("setText",ind);
             return;
         }
-        if (isEnd){
-            endTexts[ind] = newText;
-        }else {
-            texts[ind] = newText;
+        if (panelPlacement[ind]) {
+            if (isEnd) {
+                endTexts[ind] = newText;
+            } else {
+                texts[ind] = newText;
+            }
         }
     }
 
