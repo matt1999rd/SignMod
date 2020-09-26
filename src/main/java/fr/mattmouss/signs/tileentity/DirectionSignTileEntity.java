@@ -194,17 +194,21 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         AbstractGui.fill(x1+L+1,y1+1,x1+L+2,y1+H+1,limColor);
     }
 
+    public boolean isCellPresent(int i){
+         return storage.map(directionStorage -> {
+            boolean[] panelPlacement = directionStorage.getPanelPlacement();
+            if (i == 1 || i == 3){
+                return panelPlacement[i] && panelPlacement[i-1] && panelPlacement[i+1];
+            }
+            return panelPlacement[i];
+         }).orElse(false);
+    }
+
+
     private void renderText(int guiLeft,int guiTop){
         for (int i=0;i<5;i++){
-            int finalI = i;
             // flag indicates if we have to display the gray empty text rectangle
-            boolean flag = storage.map(directionStorage -> {
-                boolean[] panelPlacement = directionStorage.getPanelPlacement();
-                if (finalI == 1 || finalI == 3){
-                    return panelPlacement[finalI] && panelPlacement[finalI-1] && panelPlacement[finalI+1];
-                }
-                return panelPlacement[finalI];
-            }).orElse(false);
+            boolean flag = isCellPresent(i);
             Text begText= getText(i,false);
             Text endText= getText(i,true);
             if (!begText.isEmpty()){

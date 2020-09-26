@@ -19,7 +19,7 @@ public class DirectionCursorButton extends Button {
 
 
     public DirectionCursorButton(int relX, int relY, IPressable onPress, DirectionScreen screen,int ind,boolean isRightPosition) {
-        super(relX+234, relY+16+52*ind, 40, 20, "", onPress);
+        super(relX+207, relY+16+52*ind, 40, 20, "", onPress);
         this.screen = screen;
         this.ind = ind;
         this.isRightPosition = isRightPosition;

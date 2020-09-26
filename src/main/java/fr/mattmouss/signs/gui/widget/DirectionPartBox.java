@@ -7,7 +7,7 @@ public class DirectionPartBox extends CheckboxButton {
     DirectionScreen screen;
     int ind;
     public DirectionPartBox(int ind, DirectionScreen screen,int relX,int relY,boolean initialPlace) {
-        super(relX+172, relY+16+26*ind,20,20, "", initialPlace);
+        super(relX+145, relY+16+26*ind,20,20, "", initialPlace);
         this.screen = screen;
         this.ind = ind;
     }

@@ -58,9 +58,9 @@ public class AddTextScreen extends Screen {
         });
 
 
-        RED_SLIDER = new ColorSlider(relX + 53, relY + 7, field, ColorType.RED);
-        GREEN_SLIDER = new ColorSlider(relX + 53, relY + 32, field, ColorType.GREEN);
-        BLUE_SLIDER = new ColorSlider(relX + 53, relY + 57, field, ColorType.BLUE);
+        RED_SLIDER = new ColorSlider(relX + 53, relY + 7, field, ColorType.RED,135);
+        GREEN_SLIDER = new ColorSlider(relX + 53, relY + 32, field, ColorType.GREEN,135);
+        BLUE_SLIDER = new ColorSlider(relX + 53, relY + 57, field, ColorType.BLUE,135);
 
         int x_dye_begining = relX + 36;
         int y_dye_begining = relY + 18;

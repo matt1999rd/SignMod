@@ -66,9 +66,9 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
         int BUTTON_LENGTH =25;
         int relX = (this.width-LENGTH) / 2;
         int relY = (this.height-HEIGHT) / 2;
-        RED_SLIDER  =  new ColorSlider(relX+181,relY+7 ,option,ColorType.RED);
-        GREEN_SLIDER = new ColorSlider(relX+181,relY+32,option,ColorType.GREEN);
-        BLUE_SLIDER  = new ColorSlider(relX+181,relY+57,option,ColorType.BLUE);
+        RED_SLIDER  =  new ColorSlider(relX+181,relY+7 ,option,ColorType.RED,135);
+        GREEN_SLIDER = new ColorSlider(relX+181,relY+32,option,ColorType.GREEN,135);
+        BLUE_SLIDER  = new ColorSlider(relX+181,relY+57,option,ColorType.BLUE,135);
         this.addButton(RED_SLIDER);
         this.addButton(BLUE_SLIDER);
         this.addButton(GREEN_SLIDER);
