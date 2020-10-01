@@ -35,7 +35,7 @@ public class AddTextScreen extends Screen {
     ImageButton[] dye_color_button = new ImageButton[16];
 
     protected AddTextScreen(IWithEditTextScreen parentScreen,Text textToEdit) {
-        super(new StringTextComponent("Drawing Screen"));
+        super(new StringTextComponent("Add Text Screen"));
         this.parentScreen = parentScreen;
         oldText = textToEdit;
     }
@@ -45,13 +45,23 @@ public class AddTextScreen extends Screen {
         int relX = (this.width - LENGTH) / 2;
         int relY = (this.height - HEIGHT) / 2;
         Form f = parentScreen.getForm();
-        field = new LimitSizeTextField(this.minecraft,relX,relY,f,oldText);
+        boolean isEnd = false;
+        if (f.isForDirection()){
+            isEnd = ((DirectionScreen)parentScreen).isEndSelected();
+        }
+        field = new LimitSizeTextField(this.minecraft,relX,relY,f,oldText,isEnd);
         field.setValidator(s -> {
             int n= s.length();
             for (int i=0;i<n;i++){
                 char c0 = s.charAt(i);
                 if (!Letter.isIn(c0) && c0 != ' '){
                     return false;
+                }
+                if (f.isForDirection()){
+                    DirectionScreen screen = (DirectionScreen)parentScreen;
+                    if (screen.isEndSelected() && !Letter.isNumber(c0)){
+                        return false;
+                    }
                 }
             }
             return true;

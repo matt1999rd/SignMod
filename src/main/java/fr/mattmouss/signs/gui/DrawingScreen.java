@@ -353,8 +353,8 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
                     Text t = dste.getText(option.getTextIndice());
                     int x_offset = (button == 0)? 1 : (button == 1) ? -1 : 0;
                     int y_offset = (button == 2)? 1 : (button == 3) ? -1 : 0;
-                    int x = t.getX() + x_offset;
-                    int y = t.getY() + y_offset;
+                    int x = (int)t.getX() + x_offset;
+                    int y = (int)t.getY() + y_offset;
                     transferActionToTE(ClientAction.MOVE_TEXT,x,y,option.getTextIndice(),1);
                 }
             }

@@ -65,7 +65,7 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
             GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
             GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
             renderBackground(tileEntityIn);
-            //renderText(tileEntityIn);
+            renderText(tileEntityIn);
         }
         GlStateManager.popMatrix();
         GlStateManager.depthMask(true);
@@ -237,15 +237,22 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
     }
 
     private void renderText(DirectionSignTileEntity tileEntity){
+        for (int i=0;i<5;i++) {
+            renderSpecificText(i,false,tileEntity);
+            renderSpecificText(i,true ,tileEntity);
+        }
+    }
+
+    private void renderSpecificText(int ind,boolean isEnd,DirectionSignTileEntity tileEntity){
         GlStateManager.pushMatrix();
         Functions.setWorldGLState();
-        //Text t = tileEntity.getText();
+        Text t = tileEntity.getText(ind,isEnd);
         GlStateManager.enableTexture();
         GlStateManager.enableBlend();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder builder = tessellator.getBuffer();
         builder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-        //t.render(builder);
+        t.render(builder);
         tessellator.draw();
         Functions.resetWorldGLState();
         GlStateManager.popMatrix();

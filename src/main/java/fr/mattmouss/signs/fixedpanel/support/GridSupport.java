@@ -23,13 +23,11 @@ import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
-import org.lwjgl.system.CallbackI;
-import sun.security.x509.EDIPartyName;
+
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import static fr.mattmouss.signs.util.Functions.isSupportOrGrid;
 
 public class GridSupport extends Block {
 

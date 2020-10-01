@@ -1,6 +1,7 @@
 package fr.mattmouss.signs.networking;
 
 import fr.mattmouss.signs.SignMod;
+import fr.mattmouss.signs.tileentity.DirectionSignTileEntity;
 import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
 import fr.mattmouss.signs.tileentity.EditingSignTileEntity;
 import fr.mattmouss.signs.util.Text;
@@ -42,6 +43,9 @@ public class PacketAddOrEditText {
             }else if (te instanceof EditingSignTileEntity){
                 EditingSignTileEntity este = (EditingSignTileEntity)te;
                 este.setText(t);
+            }else if (te instanceof DirectionSignTileEntity) {
+                DirectionSignTileEntity dste = (DirectionSignTileEntity)te;
+                dste.setText(ind/2,ind%2 == 0,t);
             }else {
                 SignMod.LOGGER.warn("unable to send packet to server : invalid position send");
             }

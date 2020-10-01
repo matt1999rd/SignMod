@@ -16,15 +16,15 @@ import javax.annotation.Nullable;
 import java.awt.*;
 
 public class LimitSizeTextField extends TextFieldWidget implements Option {
-    //todo : check copy paste for bugs are possible there
     int x,y;
     Form form;
     int scale;
     Color color;
-    public LimitSizeTextField(Minecraft mc, int relX, int relY, Form form,@Nullable Text oldText) {
+    boolean isEnd;
+    public LimitSizeTextField(Minecraft mc, int relX, int relY, Form form,@Nullable Text oldText,boolean isEnd) {
         super(mc.fontRenderer, relX+30, relY+118, 90, 12, " ");
-        int xText= (oldText != null) ? oldText.getX() : form.getXBegining(7);
-        int yText= (oldText != null) ? oldText.getY() : form.getYBegining(7);
+        int xText= (oldText != null) ? (int)oldText.getX() : form.getXBegining(7);
+        int yText= (oldText != null) ? (int)oldText.getY() : form.getYBegining(7);
         int scale = (oldText != null) ? oldText.getScale() : 1;
         String text = (oldText != null) ? oldText.getText() : "";
         color = (oldText != null) ? new Color(oldText.getColor(),true) : Color.WHITE;
@@ -33,6 +33,7 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
         this.y = yText ;
         this.form = form ;
         this.scale = scale;
+        this.isEnd = isEnd;
     }
 
     public int getX() {
@@ -65,7 +66,13 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
             String newText = text+c;
             int length = Functions.getLength(newText)*scale;
             int height = 7*scale;
-            if (form.rectangleIsIn(x,x+length-1,y,y+height-1)){
+            if (form.isForDirection()){
+                int lenlimit = isEnd ? 25 : 95;
+                if (length<=lenlimit){
+                    return super.charTyped(c,p_charTyped_2_);
+                }
+            }
+            else if (form.rectangleIsIn(x,x+length-1,y,y+height-1)){
                 return super.charTyped(c,p_charTyped_2_);
             }
         }

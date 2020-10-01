@@ -1,6 +1,5 @@
 package fr.mattmouss.signs.tileentity;
 
-import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.capabilities.DirectionStorage;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.mattmouss.signs.util.Text;
@@ -8,6 +7,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraftforge.common.util.LazyOptional;
+
 
 import java.awt.*;
 
@@ -100,6 +100,12 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         return t;
     }
 
+    public void setText(int ind, boolean isEnd, Text newText){
+        storage.ifPresent(d->{
+            d.setText(ind,newText,isEnd);
+        });
+    }
+
     //boolean norms : L n for an arrow of length n P i (j) panels where to put the arrow
     //the not values are here to prevent boolean of being used both
     // (L1P1 != L3P12 != L5 and L1P2 != L3P12 != L3P23 != L5 and L1P3 != L3P23 != L5)
@@ -155,10 +161,10 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
     //render each of the 6 part 0->L1P1 1->L1P2 2->L1P3 3->L3P12 4->L3P23 5->L5
     private void renderPart(int indFlag,int guiLeft,int guiTop){
         if (indFlag<0 || indFlag>5)return;
-        int x1 = guiLeft+4,L = 126,y1 = guiTop,H,bgColor,limColor;
+        int x1 = guiLeft,L = 126,y1 = guiTop-14,H,bgColor,limColor;
         //start condition
         //L1P1 or L3P12 or L5 -> start at 1
-        if (indFlag == 0 || indFlag == 3 || indFlag == 5){
+        if (indFlag==0 || indFlag == 3 || indFlag == 5){
             y1+=14;
             bgColor = getColor(1,true);
             limColor = getColor(1,false);
@@ -221,9 +227,10 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
     }
 
     private void renderGrayRectangle(int guiLeft,int guiTop,int ind,boolean isEnd){
-        int x1 = guiLeft+ ((isEnd)?69:6);
+        int x1 = guiLeft+ ((isEnd)?101:2);
         //a gap of 25 and then 26
-        int y1 = guiTop+16+(25*ind)+ind-(ind==0?0:1);
-        AbstractGui.fill(x1,y1,x1+61,y1+21, Color.GRAY.getRGB());
+        int y1 = guiTop+2+(25*ind)+ind-(ind==0?0:1);
+        int length = (isEnd)? 25:95;
+        AbstractGui.fill(x1,y1,x1+length,y1+21, Color.GRAY.getRGB());
     }
 }

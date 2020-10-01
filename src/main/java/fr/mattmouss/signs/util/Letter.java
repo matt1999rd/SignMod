@@ -40,7 +40,7 @@ public class Letter {
     }
 
 
-    public Letter(char letter,int x,int y){
+    public Letter(char letter,float x,float y){
         if (!isIn(letter)){
             throw new IllegalArgumentException("letter here is not implemented within glyph provider : "+letter);
         }
@@ -115,6 +115,10 @@ public class Letter {
             i.incrementAndGet();
         }
         return false;
+    }
+
+    public static boolean isNumber(char letter){
+        return (letter>='0' && letter<='9');
     }
 
 

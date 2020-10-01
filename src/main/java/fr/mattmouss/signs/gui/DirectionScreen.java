@@ -9,6 +9,7 @@ import fr.mattmouss.signs.gui.widget.ColorSlider;
 import fr.mattmouss.signs.gui.widget.DirectionCursorButton;
 import fr.mattmouss.signs.gui.widget.DirectionPartBox;
 import fr.mattmouss.signs.networking.Networking;
+import fr.mattmouss.signs.networking.PacketAddOrEditText;
 import fr.mattmouss.signs.networking.PacketChangeColor;
 import fr.mattmouss.signs.networking.PacketSetBoolean;
 import fr.mattmouss.signs.tileentity.DirectionSignTileEntity;
@@ -31,7 +32,7 @@ import java.awt.*;
 public class DirectionScreen extends Screen implements IWithEditTextScreen {
 
     private static final int LENGTH = 394;
-    private static final int HEIGHT = 155;
+    private static final int HEIGHT = 171;
     private int selTextInd = 4;
     private boolean isBgColorDisplayed = true;
     private static final int white = MathHelper.rgb(1.0F,1.0F,1.0F);
@@ -43,7 +44,7 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
     DirectionPartBox[] changeBool = new DirectionPartBox[5];
     ColorSlider[] sliders = new ColorSlider[6];
     DirectionCursorButton[] arrowDirection = new DirectionCursorButton[3];
-    Button applyColorButton;
+    Button applyColorButton,addOrSetTextButton;
 
     ResourceLocation BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/gui/direction_gui.png");
 
@@ -87,6 +88,9 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         updateSliderDisplay();
         applyColorButton = new Button(relX+260,relY+119,74,20,"apply Color",b->applyColor());
         addButton(applyColorButton);
+        addOrSetTextButton = new Button(relX+31,relY+145,74,20,"Add Text",b->openTextGui());
+        addButton(addOrSetTextButton);
+
     }
 
     private void updateSliderDisplay() {
@@ -124,14 +128,14 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         int relY = (this.height-HEIGHT) / 2;
         this.minecraft.getTextureManager().bindTexture(BACKGROUND);
         blit(relX, relY ,this.blitOffset,0.0F, 0.0F, LENGTH, HEIGHT,256,512);
-        super.render(mouseX, mouseY, partialTicks);
         GlStateManager.enableBlend();
+        int offset = (isBgColorDisplayed)? 25:0;
+        blit(relX+294,relY+85,this.blitOffset,394+offset,0,25,25,256,512);
+        super.render(mouseX, mouseY, partialTicks);
         ColorOption option = (isBgColorDisplayed)? backgroundColorOption : edgingColorOption;
         AbstractGui.fill(relX+351,relY+93,relX+351+9,relY+93+9,option.getColor());
-        int offset = (isBgColorDisplayed)? 27:0;
-        blit(relX+294,relY+85,this.blitOffset,396F+offset,6F,25,25,256,512);
         DirectionSignTileEntity dste = getTileEntity();
-        dste.renderOnScreen(relX,relY,selTextInd);
+        dste.renderOnScreen(relX+4,relY+14,selTextInd);
     }
 
     @Override
@@ -153,7 +157,13 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
 
     @Override
     public void addOrEditText(Text t) {
-
+        float x = (selTextInd%2)*99+2;
+        int ind= (selTextInd/2);
+        float y = ind+(25*ind)+ind-(ind==0?0:1);
+        t.setPosition(x,y);
+        DirectionSignTileEntity dste = getTileEntity();
+        dste.setText(selTextInd/2,isEndSelected(),t);
+        Networking.INSTANCE.sendToServer(new PacketAddOrEditText(panelPos,t,selTextInd));
     }
 
     @Override
@@ -180,15 +190,35 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         int ind = getCellClickedInd(mouseX,mouseY,button);
+        int guiLeft = (this.width-LENGTH) / 2;
+        int guiTop = (this.height-HEIGHT) / 2;
         if (ind != -1){
             SignMod.LOGGER.info("click on a gray cell : "+ ind);
             selTextInd = ind;
-        } else if (mouseX>294 && mouseX<318 && mouseY>85 && mouseY<109){
+            onChangeIndice();
+        } else if (mouseX>guiLeft+294 && mouseX<guiLeft+318 && mouseY>guiTop+85 && mouseY<guiTop+109){
             isBgColorDisplayed = !isBgColorDisplayed;
             Minecraft.getInstance().getSoundHandler().play(SimpleSound.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             updateSliderDisplay();
         }
         return super.mouseClicked(mouseX,mouseY,button);
+    }
+
+    private void onChangeIndice() {
+        if (selTextInd == -1){
+            addOrSetTextButton.active = false;
+            addOrSetTextButton.visible = false;
+        } else if (!getText().isEmpty()){
+            addOrSetTextButton.setMessage("Set Text");
+        }else {
+            addOrSetTextButton.setMessage("Add Text");
+        }
+    }
+
+    private Text getText() {
+        DirectionSignTileEntity dste = getTileEntity();
+        if (selTextInd == -1)return null;
+        return dste.getText(selTextInd/2,(selTextInd%2 == 1));
     }
 
     private int getCellClickedInd(double mouseX, double mouseY, int button) {
@@ -206,20 +236,23 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         int guiTop = (this.height-HEIGHT) / 2;
         boolean isEnd = (i%2 == 1);
         int ind = i/2;
-        int x1 = guiLeft+ ((isEnd)?69:6);
+        int x1 = guiLeft+ ((isEnd)?105:6);
         //a gap of 25 and then 26
         int y1 = guiTop+16+(25*ind)+ind-(ind==0?0:1);
-        return (mouseX>x1 && mouseX<x1+61) && (mouseY>y1 && mouseY<y1+21);
+        int length = (isEnd)? 25 : 95;
+        return (mouseX>x1 && mouseX<x1+length) && (mouseY>y1 && mouseY<y1+21);
     }
 
     private void openTextGui() {
         Minecraft.getInstance().displayGuiScreen(null);
         DirectionSignTileEntity dste = getTileEntity();
         if (selTextInd != -1){
-            Text t = dste.getText(selTextInd/2,(selTextInd%2 == 1));
+            Text t = getText();
             AddTextScreen.open(this,t);
-        }else {
-            AddTextScreen.open(this);
         }
+    }
+
+    public boolean isEndSelected(){
+        return selTextInd%2 == 1;
     }
 }

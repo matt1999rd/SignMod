@@ -18,11 +18,9 @@ import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkDirection;
-import sun.security.x509.EDIPartyName;
 
 public class PanelItem extends Item {
     public PanelItem(Properties properties) {

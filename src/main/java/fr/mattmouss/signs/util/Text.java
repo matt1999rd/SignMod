@@ -14,7 +14,7 @@ import net.minecraftforge.common.util.INBTSerializable;
 import java.awt.*;
 
 public class Text {
-    private int x,y;
+    private float x,y;
     private int scale;
     private String content;
     private Color color;
@@ -27,18 +27,25 @@ public class Text {
         this.scale = scale;
     }
 
+    public Text(float x,float y,String txt,Color color,int scale){
+        this.x = x;
+        this.y = y;
+        this.content = txt;
+        this.color = color;
+        this.scale = scale;
+    }
+
     public static Text getDefaultText(){
         return new Text(0,0,"",Color.WHITE,1);
     }
 
-    public int getX(){
+    public float getX(){
         return x;
     }
 
-    public int getY(){
+    public float getY(){
         return y;
     }
-
     public String getText(){
         return content;
     }
@@ -61,23 +68,16 @@ public class Text {
         scale +=incr;
     }
 
-    public void set(int x,int y,String newText,int color,int scale) {
-        if (Functions.isValidCoordinate(x,y)){
-            this.x = x;
-            this.y = y;
-            this.content = newText;
-            this.color = new Color(color,true);
-            this.scale = scale;
-        }else {
-            SignMod.LOGGER.warn("Set is unvalid : x : " + this.x + " / y : " + this.y + "\nSkip unvalid settlement !!");
-        }
-    }
-
     public void setPosition(int x,int y){
         if (Functions.isValidCoordinate(x,y)){
             this.x = x;
             this.y = y;
         }
+    }
+
+    public void setPosition(float x,float y){
+        this.x = x;
+        this.y = y;
     }
 
     public void render(BufferBuilder builder){
@@ -139,8 +139,8 @@ public class Text {
 
     public CompoundNBT serializeNBT() {
         CompoundNBT txtNBT = new CompoundNBT();
-        txtNBT.putInt("x_coor",getX());
-        txtNBT.putInt("y_coor",getY());
+        txtNBT.putFloat("x_coor",getX());
+        txtNBT.putFloat("y_coor",getY());
         txtNBT.putString("text_content",getText());
         txtNBT.putInt("color",color.getRGB());
         txtNBT.putInt("scale",scale);
@@ -149,29 +149,26 @@ public class Text {
 
 
     public void writeText(PacketBuffer buf){
-        byte[] bytes = new byte[2];
-        bytes[0] = (byte) x;
-        bytes[1] = (byte) y;
-        buf.writeByteArray(bytes);
+        buf.writeFloat(x);
+        buf.writeFloat(y);
         buf.writeInt(color.getRGB());
         buf.writeString(content);
         buf.writeInt(scale);
     }
 
     public static Text readText(PacketBuffer buf){
-        byte[] pos = buf.readByteArray();
+        float x,y;
+        x=buf.readFloat();
+        y=buf.readFloat();
         int color = buf.readInt();
         String content = buf.readString();
         int scale = buf.readInt();
-        if (Functions.isValidCoordinate(pos[0],pos[1])){
-            return new Text(pos[0],pos[1],content,new Color(color,true),scale);
-        }
-        throw new IllegalArgumentException("position are badly transmited : get text outside bound");
+        return new Text(x,y,content,new Color(color,true),scale);
     }
 
     public static Text getTextFromNBT(CompoundNBT nbt){
-        int x = nbt.getInt("x_coor");
-        int y = nbt.getInt("y_coor");
+        float x = nbt.getFloat("x_coor");
+        float y = nbt.getFloat("y_coor");
         String content = nbt.getString("text_content");
         int color =nbt.getInt("color");
         int scale =nbt.getInt("scale");
