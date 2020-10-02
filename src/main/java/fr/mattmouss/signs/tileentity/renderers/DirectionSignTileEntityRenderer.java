@@ -5,9 +5,7 @@ import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.support.GridSupport;
 import fr.mattmouss.signs.tileentity.DirectionSignTileEntity;
-import fr.mattmouss.signs.tileentity.EditingSignTileEntity;
 import fr.mattmouss.signs.tileentity.model.DirectionSignModel;
-import fr.mattmouss.signs.tileentity.model.SpecialSignModel;
 import fr.mattmouss.signs.util.Functions;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.block.BlockState;
@@ -18,7 +16,6 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL;
 
 public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> extends TileEntityRenderer<T> {
 
@@ -112,7 +109,7 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
                 bgColor = tileEntity.getColor(1,true);
                 y1 = 13F/16F;
                 y2 = 15F/16F;
-                panelInd = 1;
+                panelInd = 0;
                 panelLength = 1;
                 break;
             case 1:
@@ -130,7 +127,7 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
                 bgColor = tileEntity.getColor(3,true);
                 y1 = 5F/16F;
                 y2 = 7F/16F;
-                panelInd = 3;
+                panelInd = 4;
                 panelLength = 1;
                 break;
             case 3:
@@ -139,7 +136,7 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
                 bgColor = tileEntity.getColor(1,true);
                 y1 = 9F/16F;
                 y2 = 15F/16F;
-                panelInd = 1;
+                panelInd = 0;
                 panelLength = 3;
                 break;
             case 4:
@@ -157,7 +154,7 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
                 bgColor = tileEntity.getColor(1,true);
                 y1 = 5F/16F;
                 y2 = 15F/16F;
-                panelInd = 1;
+                panelInd = 0;
                 panelLength = 5;
                 break;
             default:
@@ -238,14 +235,16 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
 
     private void renderText(DirectionSignTileEntity tileEntity){
         for (int i=0;i<5;i++) {
-            renderSpecificText(i,false,tileEntity);
-            renderSpecificText(i,true ,tileEntity);
+            if (tileEntity.isCellPresent(i)) {
+                renderSpecificText(i, false, tileEntity);
+                renderSpecificText(i, true, tileEntity);
+            }
         }
     }
 
     private void renderSpecificText(int ind,boolean isEnd,DirectionSignTileEntity tileEntity){
         GlStateManager.pushMatrix();
-        Functions.setWorldGLState();
+        Functions.setWorldGLState(false);
         Text t = tileEntity.getText(ind,isEnd);
         GlStateManager.enableTexture();
         GlStateManager.enableBlend();

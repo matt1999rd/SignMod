@@ -8,10 +8,7 @@ import fr.mattmouss.signs.gui.screenutils.ColorType;
 import fr.mattmouss.signs.gui.widget.ColorSlider;
 import fr.mattmouss.signs.gui.widget.DirectionCursorButton;
 import fr.mattmouss.signs.gui.widget.DirectionPartBox;
-import fr.mattmouss.signs.networking.Networking;
-import fr.mattmouss.signs.networking.PacketAddOrEditText;
-import fr.mattmouss.signs.networking.PacketChangeColor;
-import fr.mattmouss.signs.networking.PacketSetBoolean;
+import fr.mattmouss.signs.networking.*;
 import fr.mattmouss.signs.tileentity.DirectionSignTileEntity;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.client.Minecraft;
@@ -74,7 +71,7 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         if (form == Form.ARROW) {
             for (int i = 0; i < 3; i++) {
                 DirectionSignTileEntity dste = getTileEntity();
-                boolean bool = dste.isRightArrow(i + 1);
+                boolean bool = dste.isRightArrow(i*2);
                 arrowDirection[i] = new DirectionCursorButton(relX, relY, b -> {
                 }, this, i, bool);
                 addButton(arrowDirection[i]);
@@ -118,7 +115,8 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         if (i==1)return dste.is12connected();
         if (i==3)return dste.is23connected();
         if (i<5) return dste.hasPanel((i+2)/2);
-        return dste.isRightArrow(i-4);
+        //placement is the union of the 5 slot and the 3 slot that are rserved for arrow direction
+        return dste.isRightArrow((i-5)*2);
     }
 
     @Override
@@ -157,11 +155,20 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
 
     @Override
     public void addOrEditText(Text t) {
-        float x = (selTextInd%2)*99+2;
-        int ind= (selTextInd/2);
-        float y = ind+(25*ind)+ind-(ind==0?0:1);
-        t.setPosition(x,y);
+        int text_length = t.getLength();
         DirectionSignTileEntity dste = getTileEntity();
+        int ind= (selTextInd/2);
+        int text_height = t.getHeight();
+        float x;
+        if (form == Form.RECTANGLE || dste.isRightArrow(ind)) {
+            x = (selTextInd % 2) * (124 - text_length) + 2;
+        }else {
+            x = ((selTextInd+1)%2)* (124 - text_length) + 2;
+        }
+        int y_offset = 25 * ind + ind / 2;
+        int height = (ind % 2 == 0) ? 25 : (ind == 1) ? 26 : 27;
+        float y = (height - text_height) / 2.0F + y_offset;
+        t.setPosition(x,y);
         dste.setText(selTextInd/2,isEndSelected(),t);
         Networking.INSTANCE.sendToServer(new PacketAddOrEditText(panelPos,t,selTextInd));
     }
@@ -183,6 +190,8 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
 
     public void changeArrowSide(int ind,boolean b){
         DirectionSignTileEntity dste = getTileEntity();
+        dste.flipText(ind);
+        Networking.INSTANCE.sendToServer(new PacketFlipText(panelPos,ind));
         dste.updateBoolean(ind+5,b);
         Networking.INSTANCE.sendToServer(new PacketSetBoolean(panelPos,ind+5,b));
     }
@@ -236,7 +245,13 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         int guiTop = (this.height-HEIGHT) / 2;
         boolean isEnd = (i%2 == 1);
         int ind = i/2;
-        int x1 = guiLeft+ ((isEnd)?105:6);
+        DirectionSignTileEntity dste =getTileEntity();
+        int x1;
+        if (form == Form.RECTANGLE || dste.isRightArrow(ind)){
+            x1 = guiLeft+ ((isEnd)?105:6);
+        } else {
+            x1 = guiLeft+ ((isEnd)?6:35);
+        }
         //a gap of 25 and then 26
         int y1 = guiTop+16+(25*ind)+ind-(ind==0?0:1);
         int length = (isEnd)? 25 : 95;

@@ -69,7 +69,7 @@ public class DrawingSignTileEntityRenderer<T extends DrawingSignTileEntity> exte
 
     private void renderPicture(DrawingSignTileEntity tileEntity) {
         GlStateManager.pushMatrix();
-        Functions.setWorldGLState();
+        Functions.setWorldGLState(true);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder builder = tessellator.getBuffer();
         builder.begin(7, DefaultVertexFormats.POSITION_COLOR);

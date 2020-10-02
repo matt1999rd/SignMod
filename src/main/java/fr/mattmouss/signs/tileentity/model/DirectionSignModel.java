@@ -99,7 +99,7 @@ public class DirectionSignModel extends Model {
         int flag = dste.getLFlag();
         boolean flagRight;
         if ((flag&1) == 1){
-            flagRight = dste.isRightArrow(1);
+            flagRight = dste.isRightArrow(0);
             setupGL(14,flagRight);
             arrow1.render(0.0625F);
             setupGL(14,flagRight);
@@ -113,7 +113,7 @@ public class DirectionSignModel extends Model {
             GlStateManager.translatef(0,+4/16F,0);
         }
         if ((flag&4) == 4){
-            flagRight= dste.isRightArrow(3);
+            flagRight= dste.isRightArrow(4);
             GlStateManager.translatef(0,-8/16F,0);
             setupGL(14,flagRight);
             arrow1.render(0.0625F);
@@ -121,7 +121,7 @@ public class DirectionSignModel extends Model {
             GlStateManager.translatef(0,+8/16F,0);
         }
         if ((flag&8) == 8){
-            flagRight = dste.isRightArrow(1);
+            flagRight = dste.isRightArrow(0);
             setupGL(12,flagRight);
             arrow3.render(0.0625F);
             setupGL(12,flagRight);
@@ -135,7 +135,7 @@ public class DirectionSignModel extends Model {
             GlStateManager.translatef(0,+4/16F,0);
         }
         if ((flag&32) == 32){
-            flagRight = dste.isRightArrow(1);
+            flagRight = dste.isRightArrow(0);
             setupGL(10,flagRight);
             arrow5.render(0.0625F);
             setupGL(10,flagRight);

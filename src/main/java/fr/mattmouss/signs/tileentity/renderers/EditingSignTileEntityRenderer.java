@@ -74,7 +74,7 @@ public class EditingSignTileEntityRenderer<T extends EditingSignTileEntity> exte
 
     private void renderText(EditingSignTileEntity tileEntity){
         GlStateManager.pushMatrix();
-        Functions.setWorldGLState();
+        Functions.setWorldGLState(true);
         Text t = tileEntity.getText();
         GlStateManager.enableTexture();
         GlStateManager.enableBlend();

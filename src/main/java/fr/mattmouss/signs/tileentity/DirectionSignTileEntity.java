@@ -2,6 +2,8 @@ package fr.mattmouss.signs.tileentity;
 
 import fr.mattmouss.signs.capabilities.DirectionStorage;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
+import fr.mattmouss.signs.tileentity.primary.ArrowSignTileEntity;
+import fr.mattmouss.signs.tileentity.primary.RectangleSignTileEntity;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.AbstractGui;
@@ -42,8 +44,23 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         storage.ifPresent(directionStorage -> directionStorage.removePanel(ind));
     }
 
-    public boolean isRightArrow(int ind){
+    //take three possible int value and return direct boolean in storage (1-2-3)
+    private boolean isArrowRight(int ind){
         return storage.map(directionStorage -> directionStorage.isArrowRight(ind)).orElse(false);
+    }
+
+    //take 5 possible value for each position to write (0-4)
+    public boolean isRightArrow(int ind){
+        if (ind%2==0){
+            //in the case of corresponding boolean : ok !
+            return isArrowRight((ind+2)/2);
+        }else if (ind == 1 || is12connected()){
+            //in the case of 12 gap or 23 with 12 connection get 1 arrow direction
+            return isArrowRight(1);
+        }else {
+            //in the case of 23 without 12 connection
+            return isArrowRight(2);
+        }
     }
 
     public void changeArrowSide(int ind,boolean newValue){
@@ -226,8 +243,55 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         }
     }
 
+    private void flipSpecifiedText(int ind){
+        Text beg = getText(ind,false);
+        if (!beg.isEmpty()){
+            int length = beg.getLength();
+            float x = (beg.getX()==2) ? 124-length : 2;
+            float y = beg.getY();
+            beg.setPosition(x,y);
+        }
+        Text end = getText(ind,false);
+        if (!end.isEmpty()){
+            int length = end.getLength();
+            float x = (end.getX()==2) ? 124-length : 2;
+            float y = end.getY();
+            end.setPosition(x,y);
+        }
+    }
+
+    //flip all text that are in area connected to this one 1 or 2 or 3
+    public void flipText(int ind){
+        if (this instanceof ArrowSignTileEntity){
+            if (ind == 0){
+                flipSpecifiedText(0);
+                if (is12connected()){
+                    flipSpecifiedText(1);
+                    flipSpecifiedText(2);
+                    if (is23connected()){
+                        flipSpecifiedText(3);
+                        flipSpecifiedText(4);
+                    }
+                }
+            } else if (ind == 1 && !is12connected()){
+                flipSpecifiedText(2);
+                if (is23connected()){
+                    flipSpecifiedText(3);
+                    flipSpecifiedText(4);
+                }
+            } else if (!is23connected()){
+                flipSpecifiedText(4);
+            }
+        }
+    }
+
     private void renderGrayRectangle(int guiLeft,int guiTop,int ind,boolean isEnd){
-        int x1 = guiLeft+ ((isEnd)?101:2);
+        int x1;
+        if (this instanceof RectangleSignTileEntity || this.isArrowRight(ind+1)){
+            x1 = guiLeft+ ((isEnd)?101:2);
+        } else {
+            x1 = guiLeft+ ((isEnd)?2 : 31);
+        }
         //a gap of 25 and then 26
         int y1 = guiTop+2+(25*ind)+ind-(ind==0?0:1);
         int length = (isEnd)? 25:95;

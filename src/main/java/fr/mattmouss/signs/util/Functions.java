@@ -275,12 +275,15 @@ public class Functions {
         }
     }
 
-    public static void setWorldGLState() {
+    public static void setWorldGLState(boolean needTranslation) {
         GlStateManager.enableDepthTest();
         GlStateManager.disableTexture();
         GlStateManager.disableLighting();
         GlStateManager.enableBlend();
-        GlStateManager.translatef(-5.0F/16,5.0F/16,-2.1F/16);
+        GlStateManager.translatef(-5.0F/16F,5.0F/16F,-0.2F/16F);
+        if (needTranslation){
+            GlStateManager.translatef(0,0,-1.9F/16F);
+        }
         GlStateManager.blendFuncSeparate(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO);
         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
     }
