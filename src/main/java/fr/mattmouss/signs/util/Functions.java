@@ -26,6 +26,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import java.awt.*;
 import java.util.List;
 
 public class Functions {
@@ -330,4 +331,14 @@ public class Functions {
         return MathHelper.sqrt(x*x+y*y);
     }
 
+    public static int getOppositeColor(Color color) {
+        int red,green,blue;
+        red = color.getRed();
+        green = color.getGreen();
+        blue = color.getBlue();
+        red = 256-red;
+        green = 256-green;
+        blue = 256-blue;
+        return new Color(red,green,blue).getRGB();
+    }
 }

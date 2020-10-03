@@ -1,5 +1,6 @@
 package fr.mattmouss.signs.gui.widget;
 
+import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.gui.DirectionScreen;
 import net.minecraft.client.gui.widget.button.CheckboxButton;
 
@@ -16,5 +17,6 @@ public class DirectionPartBox extends CheckboxButton {
     public void onPress() {
         super.onPress();
         this.screen.updateBoolean(ind);
+        if (screen.getForm() == Form.ARROW)this.screen.updateCursorAuthorisation(ind);
     }
 }

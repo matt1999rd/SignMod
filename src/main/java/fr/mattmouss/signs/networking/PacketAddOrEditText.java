@@ -45,7 +45,7 @@ public class PacketAddOrEditText {
                 este.setText(t);
             }else if (te instanceof DirectionSignTileEntity) {
                 DirectionSignTileEntity dste = (DirectionSignTileEntity)te;
-                dste.setText(ind/2,ind%2 == 0,t);
+                dste.setText(ind/2,ind%2 == 1,t);
             }else {
                 SignMod.LOGGER.warn("unable to send packet to server : invalid position send");
             }

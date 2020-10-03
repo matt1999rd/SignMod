@@ -3,12 +3,14 @@ package fr.mattmouss.signs.fixedpanel.panelblock;
 import fr.mattmouss.signs.enums.ExtendDirection;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.enums.ScreenType;
+import fr.mattmouss.signs.fixedpanel.PanelItem;
 import fr.mattmouss.signs.fixedpanel.PanelRegister;
 import fr.mattmouss.signs.fixedpanel.support.GridSupport;
 import fr.mattmouss.signs.fixedpanel.support.SignSupport;
 import fr.mattmouss.signs.networking.Networking;
 import fr.mattmouss.signs.networking.PacketChoicePanel;
 import fr.mattmouss.signs.networking.PacketOpenScreen;
+import fr.mattmouss.signs.setup.ModSetup;
 import fr.mattmouss.signs.util.Functions;
 import javafx.scene.layout.Pane;
 import net.minecraft.block.Block;
@@ -20,6 +22,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
@@ -30,6 +33,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
@@ -188,5 +192,8 @@ public abstract class AbstractPanelBlock extends Block {
         super.onBlockHarvested(world, pos, state, player);
     }
 
-
+    @Override
+    public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader world, BlockPos pos, PlayerEntity player) {
+        return new ItemStack(PanelItem.INSTANCE);
+    }
 }

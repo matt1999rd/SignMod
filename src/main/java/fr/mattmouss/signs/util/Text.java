@@ -35,6 +35,14 @@ public class Text {
         this.scale = scale;
     }
 
+    public Text(Text t){
+        this.x = t.getX();
+        this.y = t.getY();
+        this.content = t.getText();
+        this.color = new Color(t.getColor(),true);
+        this.scale = t.getScale();
+    }
+
     public static Text getDefaultText(){
         return new Text(0,0,"",Color.WHITE,1);
     }

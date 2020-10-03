@@ -245,19 +245,22 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
 
     private void flipSpecifiedText(int ind){
         Text beg = getText(ind,false);
-        if (!beg.isEmpty()){
+        if (!beg.isEmpty()) {
             int length = beg.getLength();
-            float x = (beg.getX()==2) ? 124-length : 2;
+            float x = (beg.getX() == 2) ? 124 - length : 2;
             float y = beg.getY();
-            beg.setPosition(x,y);
+            beg.setPosition(x, y);
         }
-        Text end = getText(ind,false);
-        if (!end.isEmpty()){
+        setText(ind,false,new Text(beg));
+
+        Text end = getText(ind,true);
+        if (!end.isEmpty()) {
             int length = end.getLength();
-            float x = (end.getX()==2) ? 124-length : 2;
+            float x = (end.getX() == 2) ? 124 - length : 2;
             float y = end.getY();
-            end.setPosition(x,y);
+            end.setPosition(x, y);
         }
+        setText(ind,true,new Text(end));
     }
 
     //flip all text that are in area connected to this one 1 or 2 or 3
@@ -287,7 +290,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
 
     private void renderGrayRectangle(int guiLeft,int guiTop,int ind,boolean isEnd){
         int x1;
-        if (this instanceof RectangleSignTileEntity || this.isArrowRight(ind+1)){
+        if (this instanceof RectangleSignTileEntity || this.isRightArrow(ind)){
             x1 = guiLeft+ ((isEnd)?101:2);
         } else {
             x1 = guiLeft+ ((isEnd)?2 : 31);

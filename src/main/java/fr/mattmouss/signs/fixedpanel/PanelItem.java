@@ -5,12 +5,12 @@ import fr.mattmouss.signs.fixedpanel.support.GridSupport;
 import fr.mattmouss.signs.fixedpanel.support.SignSupport;
 import fr.mattmouss.signs.networking.Networking;
 import fr.mattmouss.signs.networking.PacketChoicePanel;
+import fr.mattmouss.signs.setup.ModSetup;
 import fr.mattmouss.signs.util.Functions;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemUseContext;
 import net.minecraft.state.BooleanProperty;
@@ -23,6 +23,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkDirection;
 
 public class PanelItem extends Item {
+    public static final PanelItem INSTANCE = new PanelItem( new Item.Properties().group(ModSetup.itemGroup));
+
     public PanelItem(Properties properties) {
         super(properties);
         this.setRegistryName("panel_item");

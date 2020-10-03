@@ -115,7 +115,7 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         if (i==1)return dste.is12connected();
         if (i==3)return dste.is23connected();
         if (i<5) return dste.hasPanel((i+2)/2);
-        //placement is the union of the 5 slot and the 3 slot that are rserved for arrow direction
+        //placement is the union of the 5 slot and the 3 slot that are reserved for arrow direction
         return dste.isRightArrow((i-5)*2);
     }
 
@@ -269,5 +269,52 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
 
     public boolean isEndSelected(){
         return selTextInd%2 == 1;
+    }
+
+    //when ticking one of the 5 part direction we need to update cursor possibility
+    public void updateCursorAuthorisation(int ind) {
+        DirectionSignTileEntity dste = getTileEntity();
+        boolean isPartPresent = getPlacement(ind);
+        switch (ind){
+            //in all case if we connect two plain part we disable the last one
+            case 0:
+                //had panel 1 directly connected to panel 2
+                if (dste.is12connected()){
+                    arrowDirection[1].active = !isPartPresent;
+                }
+                break;
+            case 1:
+                if (dste.hasPanel(1)){
+                    //if we join the two panel and there are not on the same arrow direction
+                    if (isPartPresent && (getPlacement(5) != getPlacement(6))){
+                        arrowDirection[1].onPress();
+                    }
+                    arrowDirection[1].active = !isPartPresent;
+                }
+                break;
+            case 2:
+                if (dste.is23connected()){
+                    arrowDirection[2].active = !isPartPresent;
+                }
+                break;
+            case 3:
+                if (dste.hasPanel(2)){
+                    //same as case 1
+                    if (isPartPresent && (getPlacement(6) != getPlacement(7))) {
+                        arrowDirection[2].onPress();
+                    }
+                    arrowDirection[2].active = !isPartPresent;
+                }
+                break;
+        }
+    }
+
+    public void updateOtherArrowSide(int ind) {
+        DirectionSignTileEntity dste = getTileEntity();
+        if (ind == 0 && dste.is12connected()){
+            arrowDirection[1].onPress();
+        }else if (ind == 1 && dste.is23connected()){
+            arrowDirection[2].onPress();
+        }
     }
 }

@@ -68,7 +68,7 @@ public class SignMod
             Item.Properties properties = new Item.Properties().group(ModSetup.itemGroup);
             itemRegister.getRegistry().register(new SignSupportItem(properties));
             itemRegister.getRegistry().register(new GridSupportItem(properties));
-            itemRegister.getRegistry().register(new PanelItem(properties));
+            itemRegister.getRegistry().register(PanelItem.INSTANCE);
         }
 
         @SubscribeEvent

@@ -8,6 +8,7 @@ import fr.mattmouss.signs.util.Functions;
 import fr.mattmouss.signs.util.Letter;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.util.math.MathHelper;
@@ -58,6 +59,7 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
             x= 5+MathHelper.ceil(3.5f*scale-0.5);
         }
     }
+
 
     @Override
     public boolean charTyped(char c, int p_charTyped_2_) {
@@ -144,7 +146,6 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
             if (bColor>255)bColor=255;
         }
         this.color = new Color(rColor, gColor, bColor, 255);
-        this.setTextColor(color.getRGB());
     }
 
     public int getColor(ColorType type){

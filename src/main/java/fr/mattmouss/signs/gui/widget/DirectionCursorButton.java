@@ -59,6 +59,7 @@ public class DirectionCursorButton extends Button {
     public void onPress() {
         isMoving = true;
         isRightPosition = !isRightPosition;
+        screen.updateOtherArrowSide(ind);
         screen.changeArrowSide(ind,isRightPosition);
     }
 }
