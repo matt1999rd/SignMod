@@ -71,6 +71,12 @@ public class Networking {
                 PacketFlipText::new,
                 PacketFlipText::handle);
 
+        INSTANCE.registerMessage(nextID(),
+                PacketCenterText.class,
+                PacketCenterText::toBytes,
+                PacketCenterText::new,
+                PacketCenterText::handle);
+
         /*
         INSTANCE.registerMessage(nextID(),
                 PacketOpenScreen.class,

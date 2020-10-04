@@ -234,10 +234,11 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
     }
 
     private void renderText(DirectionSignTileEntity tileEntity){
+        boolean isTextCentered = tileEntity.isTextCentered();
         for (int i=0;i<5;i++) {
             if (tileEntity.isCellPresent(i)) {
                 renderSpecificText(i, false, tileEntity);
-                renderSpecificText(i, true, tileEntity);
+                if (!isTextCentered)renderSpecificText(i, true, tileEntity);
             }
         }
     }

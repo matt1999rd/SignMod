@@ -16,6 +16,7 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
     Text[] texts = new Text[5];
     Text[] endTexts = new Text[5];
     Color[] bg_color,limit_color;
+    boolean center_text;
 
     public DirectionStorage(){
         for (int i=0;i<5;i++){
@@ -25,6 +26,7 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
         }
         bg_color = new Color[]{Color.WHITE,Color.WHITE,Color.WHITE};
         limit_color = new Color[]{Color.BLACK,Color.BLACK,Color.BLACK};
+        center_text = false;
     }
 
     //12 connection -> 1
@@ -217,6 +219,16 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
         return panelPlacement;
     }
 
+    //for registering storage
+
+    public boolean isTextCentered(){
+        return this.center_text;
+    }
+
+    public void setCenterText(boolean center_text){
+        this.center_text = center_text;
+    }
+
     @Override
     public CompoundNBT serializeNBT() {
         CompoundNBT nbt = new CompoundNBT();
@@ -248,6 +260,7 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
         nbt.put("txts",textNBT);
         nbt.put("bool",boolNBT);
         nbt.put("color",colorNBT);
+        nbt.putBoolean("center",center_text);
         return nbt;
     }
 
@@ -272,6 +285,7 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
             bg_color[i] = new Color(nbt5.getInt("bg_color"),true);
             limit_color[i] = new Color(nbt5.getInt("lim_color"),true);
         }
+        center_text = nbt.getBoolean("center");
     }
 
 

@@ -16,6 +16,7 @@ import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.client.gui.widget.button.CheckboxButton;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvents;
@@ -32,6 +33,7 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
     private static final int HEIGHT = 171;
     private int selTextInd = 4;
     private boolean isBgColorDisplayed = true;
+    private boolean isTextCenter = false;
     private static final int white = MathHelper.rgb(1.0F,1.0F,1.0F);
     private static ColorOption backgroundColorOption;
     private static ColorOption edgingColorOption;
@@ -42,6 +44,7 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
     ColorSlider[] sliders = new ColorSlider[6];
     DirectionCursorButton[] arrowDirection = new DirectionCursorButton[3];
     Button applyColorButton,addOrSetTextButton;
+    CheckboxButton centerText;
 
     ResourceLocation BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/gui/direction_gui.png");
 
@@ -68,9 +71,9 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
             changeBool[i] = new DirectionPartBox(i,this,relX,relY,b);
             addButton(changeBool[i]);
         }
+        DirectionSignTileEntity dste = getTileEntity();
         if (form == Form.ARROW) {
             for (int i = 0; i < 3; i++) {
-                DirectionSignTileEntity dste = getTileEntity();
                 boolean bool = dste.isRightArrow(i*2);
                 arrowDirection[i] = new DirectionCursorButton(relX, relY, b -> {
                 }, this, i, bool);
@@ -87,6 +90,11 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         addButton(applyColorButton);
         addOrSetTextButton = new Button(relX+31,relY+145,74,20,"Add Text",b->openTextGui());
         addButton(addOrSetTextButton);
+        isTextCenter = dste.isTextCentered();
+        centerText = new CheckboxButton(relX+196,relY+146,20,20,"center_text",isTextCenter);
+        if (form == Form.RECTANGLE){
+            addButton(centerText);
+        }
 
     }
 
@@ -130,10 +138,23 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         int offset = (isBgColorDisplayed)? 25:0;
         blit(relX+294,relY+85,this.blitOffset,394+offset,0,25,25,256,512);
         super.render(mouseX, mouseY, partialTicks);
+        DirectionSignTileEntity dste = getTileEntity();
+        if (form == Form.RECTANGLE){
+            if (isTextCenter != centerText.func_212942_a()){
+                onTextCenterChange();
+            }
+        }
         ColorOption option = (isBgColorDisplayed)? backgroundColorOption : edgingColorOption;
         AbstractGui.fill(relX+351,relY+93,relX+351+9,relY+93+9,option.getColor());
-        DirectionSignTileEntity dste = getTileEntity();
         dste.renderOnScreen(relX+4,relY+14,selTextInd);
+    }
+
+    private void onTextCenterChange() {
+        DirectionSignTileEntity dste = getTileEntity();
+        isTextCenter = centerText.func_212942_a();
+        dste.centerText(isTextCenter);
+        dste.setCenterText(isTextCenter);
+        Networking.INSTANCE.sendToServer(new PacketCenterText(panelPos,isTextCenter));
     }
 
     @Override
@@ -158,13 +179,19 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         int text_length = t.getLength();
         DirectionSignTileEntity dste = getTileEntity();
         int ind= (selTextInd/2);
-        int text_height = t.getHeight();
         float x;
-        if (form == Form.RECTANGLE || dste.isRightArrow(ind)) {
+        if (isTextCenter){
+            if (isEndSelected()){
+                return;
+            }
+            x = (124 - text_length) / 2.0F;
+        } else if (form == Form.RECTANGLE || dste.isRightArrow(ind)) {
             x = (selTextInd % 2) * (124 - text_length) + 2;
         }else {
             x = ((selTextInd+1)%2)* (124 - text_length) + 2;
         }
+
+        int text_height = t.getHeight();
         int y_offset = 25 * ind + ind / 2;
         int height = (ind % 2 == 0) ? 25 : (ind == 1) ? 26 : 27;
         float y = (height - text_height) / 2.0F + y_offset;
@@ -230,6 +257,10 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         return dste.getText(selTextInd/2,(selTextInd%2 == 1));
     }
 
+    public boolean isTextCentered(){
+        return isTextCenter;
+    }
+
     private int getCellClickedInd(double mouseX, double mouseY, int button) {
         DirectionSignTileEntity dste = getTileEntity();
         for (int i=0;i<10;i++){
@@ -244,17 +275,27 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         int guiLeft = (this.width-LENGTH) / 2;
         int guiTop = (this.height-HEIGHT) / 2;
         boolean isEnd = (i%2 == 1);
-        int ind = i/2;
         DirectionSignTileEntity dste =getTileEntity();
         int x1;
-        if (form == Form.RECTANGLE || dste.isRightArrow(ind)){
-            x1 = guiLeft+ ((isEnd)?105:6);
+        int ind = i/2;
+        int length;
+        if (isTextCenter){
+            if (isEnd){
+                return false;
+            }
+            x1 = guiLeft+6;
+            length = 124;
         } else {
-            x1 = guiLeft+ ((isEnd)?6:35);
+            if (form == Form.RECTANGLE || dste.isRightArrow(ind)) {
+                x1 = guiLeft + ((isEnd) ? 105 : 6);
+            } else {
+                x1 = guiLeft + ((isEnd) ? 6 : 35);
+            }
+            length = (isEnd) ? 25 : 95;
         }
         //a gap of 25 and then 26
         int y1 = guiTop+16+(25*ind)+ind-(ind==0?0:1);
-        int length = (isEnd)? 25 : 95;
+
         return (mouseX>x1 && mouseX<x1+length) && (mouseY>y1 && mouseY<y1+21);
     }
 

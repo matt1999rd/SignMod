@@ -21,8 +21,8 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
     Form form;
     int scale;
     Color color;
-    boolean isEnd;
-    public LimitSizeTextField(Minecraft mc, int relX, int relY, Form form,@Nullable Text oldText,boolean isEnd) {
+    boolean isEnd,isTextCentered;
+    public LimitSizeTextField(Minecraft mc, int relX, int relY, Form form,@Nullable Text oldText) {
         super(mc.fontRenderer, relX+30, relY+118, 90, 12, " ");
         int xText= (oldText != null) ? (int)oldText.getX() : form.getXBegining(7);
         int yText= (oldText != null) ? (int)oldText.getY() : form.getYBegining(7);
@@ -34,7 +34,11 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
         this.y = yText ;
         this.form = form ;
         this.scale = scale;
+    }
+
+    public void defineVariableForDirection(boolean isEnd,boolean isTextCentered){
         this.isEnd = isEnd;
+        this.isTextCentered = isTextCentered;
     }
 
     public int getX() {
@@ -69,7 +73,12 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
             int length = Functions.getLength(newText)*scale;
             int height = 7*scale;
             if (form.isForDirection()){
-                int lenlimit = isEnd ? 25 : 95;
+                int lenlimit;
+                if (isTextCentered){
+                    lenlimit = 124;
+                }else {
+                    lenlimit = isEnd ? 25 : 95;
+                }
                 if (length<=lenlimit){
                     return super.charTyped(c,p_charTyped_2_);
                 }
@@ -106,7 +115,14 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
             int upperLength = (scale+1)*length;
             int upperHeight = (scale+1)*7;
             AddTextScreen addTextScreen = (AddTextScreen)screen;
-            if (!form.rectangleIsIn(x,x+length*scale-1,y,y+7*scale-1)){
+            if (form.isForDirection()){
+                int limlength = (isTextCentered) ? 124 : (isEnd) ? 35 : 95;
+                if (scale == 2 || upperLength>limlength){
+                    addTextScreen.disablePlusButton();
+                } else {
+                    addTextScreen.enablePlusButton();
+                }
+            } else if (!form.rectangleIsIn(x,x+length*scale-1,y,y+7*scale-1)){
                 this.setText("");
             }else if (!form.rectangleIsIn(x,x+upperLength-1,y,y+upperHeight-1)){
                 addTextScreen.disablePlusButton();

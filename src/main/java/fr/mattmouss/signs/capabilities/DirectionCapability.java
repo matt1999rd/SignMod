@@ -43,6 +43,9 @@ public class DirectionCapability {
                     nbt5.putInt("lim",instance.getLimColor(i+1));
                     nbt.add(nbt5);
                 }
+                CompoundNBT nbt6 = new CompoundNBT();
+                nbt6.putBoolean("center",instance.isTextCentered());
+                nbt.add(nbt6);
                 return nbt;
             }
 
@@ -67,6 +70,8 @@ public class DirectionCapability {
                     instance.setBgColor(nbt1.getInt("bg"),i+1);
                     instance.setLimColor(nbt1.getInt("lim"),i+1);
                 }
+                CompoundNBT nbt1 = (CompoundNBT) listNBT.get(16);
+                instance.setCenterText(nbt1.getBoolean("center"));
                 instance.setPanelPlacement(panelPlacement);
                 instance.setAllTexts(allText);
             }

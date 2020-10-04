@@ -123,6 +123,26 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         });
     }
 
+    //text center boolean
+
+    public boolean isTextCentered(){
+        return storage.map(DirectionStorage::isTextCentered).orElse(true);
+    }
+
+    public void setCenterText(boolean isTextCentered){
+        storage.ifPresent(directionStorage -> directionStorage.setCenterText(isTextCentered));
+    }
+
+    public void centerText(boolean center){
+        for (int i=0;i<5;i++){
+            Text beg = getText(i,false);
+            int text_length = beg.getLength();
+            float x = (center) ? (124-text_length)/2.0F: 2.0F;
+            float y = beg.getY();
+            beg.setPosition(x,y);
+        }
+    }
+
     //boolean norms : L n for an arrow of length n P i (j) panels where to put the arrow
     //the not values are here to prevent boolean of being used both
     // (L1P1 != L3P12 != L5 and L1P2 != L3P12 != L3P23 != L5 and L1P3 != L3P23 != L5)
@@ -232,14 +252,17 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         for (int i=0;i<5;i++){
             // flag indicates if we have to display the gray empty text rectangle
             boolean flag = isCellPresent(i);
+            if (!isTextCentered()){
+                Text endText= getText(i,true);
+                if (!endText.isEmpty()){
+                    endText.renderOnScreen(guiLeft,guiTop);
+                }else if (flag)renderGrayRectangle(guiLeft, guiTop, i, true);
+            }
             Text begText= getText(i,false);
-            Text endText= getText(i,true);
             if (!begText.isEmpty()){
                 begText.renderOnScreen(guiLeft,guiTop);
             }else if (flag)renderGrayRectangle(guiLeft, guiTop, i,false);
-            if (!endText.isEmpty()){
-                endText.renderOnScreen(guiLeft,guiTop);
-            }else if (flag)renderGrayRectangle(guiLeft, guiTop, i, true);
+
         }
     }
 
@@ -288,16 +311,21 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         }
     }
 
-    private void renderGrayRectangle(int guiLeft,int guiTop,int ind,boolean isEnd){
-        int x1;
-        if (this instanceof RectangleSignTileEntity || this.isRightArrow(ind)){
-            x1 = guiLeft+ ((isEnd)?101:2);
-        } else {
-            x1 = guiLeft+ ((isEnd)?2 : 31);
+    private void renderGrayRectangle(int guiLeft,int guiTop,int ind,boolean isEnd) {
+        int x1,length;
+        if (isTextCentered()) {
+            x1 = guiLeft + 2;
+            length = 124;
+        }else {
+            if (this instanceof RectangleSignTileEntity || this.isRightArrow(ind)) {
+                x1 = guiLeft + ((isEnd) ? 101 : 2);
+            } else {
+                x1 = guiLeft + ((isEnd) ? 2 : 31);
+            }
+            length = (isEnd) ? 25 : 95;
         }
         //a gap of 25 and then 26
         int y1 = guiTop+2+(25*ind)+ind-(ind==0?0:1);
-        int length = (isEnd)? 25:95;
         AbstractGui.fill(x1,y1,x1+length,y1+21, Color.GRAY.getRGB());
     }
 }

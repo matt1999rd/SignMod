@@ -23,6 +23,9 @@ public interface IDirectionStorage {
     //text treatment
     Text getText(int ind,boolean isEnd);
     void setText(int ind,Text newText,boolean isEnd);
+    //center text
+    boolean isTextCentered();
+    void setCenterText(boolean center_text);
 
     //for capability
     boolean[] getPanelPlacement();

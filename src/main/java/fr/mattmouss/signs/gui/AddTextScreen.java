@@ -45,11 +45,12 @@ public class AddTextScreen extends Screen {
         int relX = (this.width - LENGTH) / 2;
         int relY = (this.height - HEIGHT) / 2;
         Form f = parentScreen.getForm();
-        boolean isEnd = false;
+        field = new LimitSizeTextField(this.minecraft,relX,relY,f,oldText);
         if (f.isForDirection()){
-            isEnd = ((DirectionScreen)parentScreen).isEndSelected();
+            boolean isEnd = ((DirectionScreen)parentScreen).isEndSelected();
+            boolean isTextCentered = ((DirectionScreen)parentScreen).isTextCentered();
+            field.defineVariableForDirection(isEnd,isTextCentered);
         }
-        field = new LimitSizeTextField(this.minecraft,relX,relY,f,oldText,isEnd);
         field.setValidator(s -> {
             int n= s.length();
             for (int i=0;i<n;i++){
