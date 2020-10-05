@@ -14,6 +14,9 @@ import net.minecraftforge.common.util.LazyOptional;
 import java.awt.*;
 
 public abstract class DirectionSignTileEntity extends PanelTileEntity{
+    private static final int panelLength = 179;
+    private static final int endTextLength = 25;
+    private static final float xOrigin = -25.6F;
     private LazyOptional<DirectionStorage> storage = LazyOptional.of(this::getStorage).cast();
     public DirectionSignTileEntity(TileEntityType<?> tileEntityTypeIn) {
         super(tileEntityTypeIn);
@@ -137,7 +140,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         for (int i=0;i<5;i++){
             Text beg = getText(i,false);
             int text_length = beg.getLength();
-            float x = (center) ? (124-text_length)/2.0F: 2.0F;
+            float x = (center) ? (panelLength-text_length)/2.0F: 2.0F;
             float y = beg.getY();
             beg.setPosition(x,y);
         }
@@ -198,7 +201,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
     //render each of the 6 part 0->L1P1 1->L1P2 2->L1P3 3->L3P12 4->L3P23 5->L5
     private void renderPart(int indFlag,int guiLeft,int guiTop){
         if (indFlag<0 || indFlag>5)return;
-        int x1 = guiLeft,L = 126,y1 = guiTop-14,H,bgColor,limColor;
+        int x1 = guiLeft,y1 = guiTop-14,H,bgColor,limColor;
         //start condition
         //L1P1 or L3P12 or L5 -> start at 1
         if (indFlag==0 || indFlag == 3 || indFlag == 5){
@@ -226,15 +229,15 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         }else {
             H = 126;
         }
-        AbstractGui.fill(x1+1,y1+1,x1+1+L,y1+1+H,bgColor);
+        AbstractGui.fill(x1+1,y1+1,x1+panelLength-1,y1+1+H,bgColor);
         //up limit
-        AbstractGui.fill(x1,y1,x1+L+2,y1+1,limColor);
+        AbstractGui.fill(x1,y1,x1+panelLength,y1+1,limColor);
         //down limit
-        AbstractGui.fill(x1,y1+H+1,x1+L+2,y1+H+2,limColor);
+        AbstractGui.fill(x1,y1+H+1,x1+panelLength,y1+H+2,limColor);
         //left limit
         AbstractGui.fill(x1,y1+1,x1+1,y1+H+1,limColor);
         //right limit
-        AbstractGui.fill(x1+L+1,y1+1,x1+L+2,y1+H+1,limColor);
+        AbstractGui.fill(x1+panelLength-1,y1+1,x1+panelLength,y1+H+1,limColor);
     }
 
     public boolean isCellPresent(int i){
@@ -255,12 +258,12 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
             if (!isTextCentered()){
                 Text endText= getText(i,true);
                 if (!endText.isEmpty()){
-                    endText.renderOnScreen(guiLeft,guiTop);
+                    endText.renderOnScreen((int) (guiLeft-xOrigin),guiTop);
                 }else if (flag)renderGrayRectangle(guiLeft, guiTop, i, true);
             }
             Text begText= getText(i,false);
             if (!begText.isEmpty()){
-                begText.renderOnScreen(guiLeft,guiTop);
+                begText.renderOnScreen((int)(guiLeft-xOrigin),guiTop);
             }else if (flag)renderGrayRectangle(guiLeft, guiTop, i,false);
 
         }
@@ -270,7 +273,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         Text beg = getText(ind,false);
         if (!beg.isEmpty()) {
             int length = beg.getLength();
-            float x = (beg.getX() == 2) ? 124 - length : 2;
+            float x = xOrigin+ ((beg.getX() == 2+xOrigin) ? panelLength - length: 2);
             float y = beg.getY();
             beg.setPosition(x, y);
         }
@@ -279,7 +282,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         Text end = getText(ind,true);
         if (!end.isEmpty()) {
             int length = end.getLength();
-            float x = (end.getX() == 2) ? 124 - length : 2;
+            float x = xOrigin+((end.getX() == 2) ? panelLength - length : 2);
             float y = end.getY();
             end.setPosition(x, y);
         }
@@ -315,14 +318,14 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         int x1,length;
         if (isTextCentered()) {
             x1 = guiLeft + 2;
-            length = 124;
+            length = panelLength-4;
         }else {
             if (this instanceof RectangleSignTileEntity || this.isRightArrow(ind)) {
-                x1 = guiLeft + ((isEnd) ? 101 : 2);
+                x1 = guiLeft + ((isEnd) ? panelLength-2-endTextLength : 2);
             } else {
-                x1 = guiLeft + ((isEnd) ? 2 : 31);
+                x1 = guiLeft + ((isEnd) ? 2 : endTextLength+2+4);
             }
-            length = (isEnd) ? 25 : 95;
+            length = (isEnd) ? endTextLength : panelLength-endTextLength-8;
         }
         //a gap of 25 and then 26
         int y1 = guiTop+2+(25*ind)+ind-(ind==0?0:1);

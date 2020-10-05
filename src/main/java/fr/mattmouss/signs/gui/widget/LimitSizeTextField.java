@@ -22,6 +22,7 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
     int scale;
     Color color;
     boolean isEnd,isTextCentered;
+    private static final int panelLength = 179;
     public LimitSizeTextField(Minecraft mc, int relX, int relY, Form form,@Nullable Text oldText) {
         super(mc.fontRenderer, relX+30, relY+118, 90, 12, " ");
         int xText= (oldText != null) ? (int)oldText.getX() : form.getXBegining(7);
@@ -75,9 +76,9 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
             if (form.isForDirection()){
                 int lenlimit;
                 if (isTextCentered){
-                    lenlimit = 124;
+                    lenlimit = panelLength;
                 }else {
-                    lenlimit = isEnd ? 25 : 95;
+                    lenlimit = isEnd ? 25 : panelLength-25-8;
                 }
                 if (length<=lenlimit){
                     return super.charTyped(c,p_charTyped_2_);
@@ -116,7 +117,7 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
             int upperHeight = (scale+1)*7;
             AddTextScreen addTextScreen = (AddTextScreen)screen;
             if (form.isForDirection()){
-                int limlength = (isTextCentered) ? 124 : (isEnd) ? 35 : 95;
+                int limlength = (isTextCentered) ? panelLength : (isEnd) ? 25 : panelLength-25-8;
                 if (scale == 2 || upperLength>limlength){
                     addTextScreen.disablePlusButton();
                 } else {

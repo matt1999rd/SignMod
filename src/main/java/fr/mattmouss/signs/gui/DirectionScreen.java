@@ -29,8 +29,11 @@ import java.awt.*;
 
 public class DirectionScreen extends Screen implements IWithEditTextScreen {
 
-    private static final int LENGTH = 394;
+    private static final int LENGTH = 424;
     private static final int HEIGHT = 171;
+    private static final int panelLength = 179;
+    private static final int endTextLength = 25;
+    private static final float xOrigin = -25.6F;
     private int selTextInd = 4;
     private boolean isBgColorDisplayed = true;
     private boolean isTextCenter = false;
@@ -82,13 +85,13 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         }
         for (int i=0;i<6;i++){
             ColorOption opt = (i<3)? backgroundColorOption : edgingColorOption;
-            sliders[i] = new ColorSlider(relX+279,relY+7+i%3*25,opt, ColorType.byIndex(i%3),93);
+            sliders[i] = new ColorSlider(relX+323,relY+7+i%3*25,opt, ColorType.byIndex(i%3),93);
             addButton(sliders[i]);
         }
         updateSliderDisplay();
-        applyColorButton = new Button(relX+260,relY+119,74,20,"apply Color",b->applyColor());
+        applyColorButton = new Button(relX+304,relY+119,74,20,"apply Color",b->applyColor());
         addButton(applyColorButton);
-        addOrSetTextButton = new Button(relX+31,relY+145,74,20,"Add Text",b->openTextGui());
+        addOrSetTextButton = new Button(relX+70,relY+145,75,20,"Add Text",b->openTextGui());
         addButton(addOrSetTextButton);
         isTextCenter = dste.isTextCentered();
         centerText = new CheckboxButton(relX+196,relY+146,20,20,"center_text",isTextCenter);
@@ -136,7 +139,7 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         blit(relX, relY ,this.blitOffset,0.0F, 0.0F, LENGTH, HEIGHT,256,512);
         GlStateManager.enableBlend();
         int offset = (isBgColorDisplayed)? 25:0;
-        blit(relX+294,relY+85,this.blitOffset,394+offset,0,25,25,256,512);
+        blit(relX+338,relY+85,this.blitOffset,LENGTH+offset,0,25,25,256,512);
         super.render(mouseX, mouseY, partialTicks);
         DirectionSignTileEntity dste = getTileEntity();
         if (form == Form.RECTANGLE){
@@ -145,7 +148,7 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
             }
         }
         ColorOption option = (isBgColorDisplayed)? backgroundColorOption : edgingColorOption;
-        AbstractGui.fill(relX+351,relY+93,relX+351+9,relY+93+9,option.getColor());
+        AbstractGui.fill(relX+395,relY+93,relX+395+9,relY+93+9,option.getColor());
         dste.renderOnScreen(relX+4,relY+14,selTextInd);
     }
 
@@ -184,13 +187,13 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
             if (isEndSelected()){
                 return;
             }
-            x = (124 - text_length) / 2.0F;
+            x = (panelLength - text_length) / 2.0F;
         } else if (form == Form.RECTANGLE || dste.isRightArrow(ind)) {
-            x = (selTextInd % 2) * (124 - text_length) + 2;
+            x = (selTextInd % 2) * (panelLength - text_length) + 2;
         }else {
-            x = ((selTextInd+1)%2)* (124 - text_length) + 2;
+            x = ((selTextInd+1)%2)* (panelLength - text_length) + 2;
         }
-
+        x+=xOrigin;
         int text_height = t.getHeight();
         int y_offset = 25 * ind + ind / 2;
         int height = (ind % 2 == 0) ? 25 : (ind == 1) ? 26 : 27;
@@ -232,7 +235,7 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
             SignMod.LOGGER.info("click on a gray cell : "+ ind);
             selTextInd = ind;
             onChangeIndice();
-        } else if (mouseX>guiLeft+294 && mouseX<guiLeft+318 && mouseY>guiTop+85 && mouseY<guiTop+109){
+        } else if (mouseX>guiLeft+338 && mouseX<guiLeft+362 && mouseY>guiTop+85 && mouseY<guiTop+109){
             isBgColorDisplayed = !isBgColorDisplayed;
             Minecraft.getInstance().getSoundHandler().play(SimpleSound.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             updateSliderDisplay();
@@ -284,14 +287,14 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
                 return false;
             }
             x1 = guiLeft+6;
-            length = 124;
+            length = panelLength;
         } else {
             if (form == Form.RECTANGLE || dste.isRightArrow(ind)) {
-                x1 = guiLeft + ((isEnd) ? 105 : 6);
+                x1 = guiLeft + ((isEnd) ? panelLength-2-endTextLength : 6);
             } else {
-                x1 = guiLeft + ((isEnd) ? 6 : 35);
+                x1 = guiLeft + ((isEnd) ? 6 : endTextLength+2+4);
             }
-            length = (isEnd) ? 25 : 95;
+            length = (isEnd) ? endTextLength : panelLength-endTextLength-8;
         }
         //a gap of 25 and then 26
         int y1 = guiTop+16+(25*ind)+ind-(ind==0?0:1);
