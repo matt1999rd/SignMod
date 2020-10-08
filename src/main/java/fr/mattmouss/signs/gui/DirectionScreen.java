@@ -10,6 +10,7 @@ import fr.mattmouss.signs.gui.widget.DirectionCursorButton;
 import fr.mattmouss.signs.gui.widget.DirectionPartBox;
 import fr.mattmouss.signs.networking.*;
 import fr.mattmouss.signs.tileentity.DirectionSignTileEntity;
+import static fr.mattmouss.signs.util.Functions.*;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
@@ -31,9 +32,6 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
 
     private static final int LENGTH = 424;
     private static final int HEIGHT = 171;
-    private static final int panelLength = 179;
-    private static final int endTextLength = 25;
-    private static final float xOrigin = -25.6F;
     private int selTextInd = 4;
     private boolean isBgColorDisplayed = true;
     private boolean isTextCenter = false;
@@ -184,16 +182,19 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         int ind= (selTextInd/2);
         float x;
         if (isTextCenter){
+            centerText.active = (text_length<begTextLength);
+
             if (isEndSelected()){
                 return;
             }
             x = (panelLength - text_length) / 2.0F;
         } else if (form == Form.RECTANGLE || dste.isRightArrow(ind)) {
-            x = (selTextInd % 2) * (panelLength - text_length) + 2;
+            centerText.active = true;
+            x = (selTextInd % 2) * (panelLength - text_length - 2*st_gap) ;
         }else {
-            x = ((selTextInd+1)%2)* (panelLength - text_length) + 2;
+            x = ((selTextInd+1)%2)* (panelLength - text_length - 2*st_gap) ;
         }
-        x+=xOrigin;
+        x+=xOrigin+st_gap;
         int text_height = t.getHeight();
         int y_offset = 25 * ind + ind / 2;
         int height = (ind % 2 == 0) ? 25 : (ind == 1) ? 26 : 27;
@@ -286,13 +287,13 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
             if (isEnd){
                 return false;
             }
-            x1 = guiLeft+6;
-            length = panelLength;
+            x1 = guiLeft+st_gap;
+            length = panelLength-2*st_gap;
         } else {
             if (form == Form.RECTANGLE || dste.isRightArrow(ind)) {
-                x1 = guiLeft + ((isEnd) ? panelLength-2-endTextLength : 6);
+                x1 = guiLeft + ((isEnd) ? panelLength-st_gap-endTextLength : st_gap);
             } else {
-                x1 = guiLeft + ((isEnd) ? 6 : endTextLength+2+4);
+                x1 = guiLeft + ((isEnd) ? st_gap : endTextLength+st_gap+center_gap);
             }
             length = (isEnd) ? endTextLength : panelLength-endTextLength-8;
         }

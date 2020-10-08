@@ -1,22 +1,31 @@
 package fr.mattmouss.signs.tileentity;
 
+import fr.mattmouss.signs.capabilities.DirectionCapability;
 import fr.mattmouss.signs.capabilities.DirectionStorage;
+import fr.mattmouss.signs.capabilities.SignCapability;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.mattmouss.signs.tileentity.primary.ArrowSignTileEntity;
 import fr.mattmouss.signs.tileentity.primary.RectangleSignTileEntity;
+import fr.mattmouss.signs.util.Functions;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.Direction;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
 
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.awt.*;
 
+import static fr.mattmouss.signs.util.Functions.*;
+
 public abstract class DirectionSignTileEntity extends PanelTileEntity{
-    private static final int panelLength = 179;
-    private static final int endTextLength = 25;
-    private static final float xOrigin = -25.6F;
+
     private LazyOptional<DirectionStorage> storage = LazyOptional.of(this::getStorage).cast();
     public DirectionSignTileEntity(TileEntityType<?> tileEntityTypeIn) {
         super(tileEntityTypeIn);
@@ -140,7 +149,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         for (int i=0;i<5;i++){
             Text beg = getText(i,false);
             int text_length = beg.getLength();
-            float x = (center) ? (panelLength-text_length)/2.0F: 2.0F;
+            float x = xOrigin+((center) ? (panelLength-text_length)/2.0F: st_gap);
             float y = beg.getY();
             beg.setPosition(x,y);
         }
@@ -229,15 +238,15 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         }else {
             H = 126;
         }
-        AbstractGui.fill(x1+1,y1+1,x1+panelLength-1,y1+1+H,bgColor);
+        AbstractGui.fill(x1+1,y1+1,x1+ panelLength-1,y1+1+H,bgColor);
         //up limit
-        AbstractGui.fill(x1,y1,x1+panelLength,y1+1,limColor);
+        AbstractGui.fill(x1,y1,x1+ panelLength,y1+1,limColor);
         //down limit
-        AbstractGui.fill(x1,y1+H+1,x1+panelLength,y1+H+2,limColor);
+        AbstractGui.fill(x1,y1+H+1,x1+ panelLength,y1+H+2,limColor);
         //left limit
         AbstractGui.fill(x1,y1+1,x1+1,y1+H+1,limColor);
         //right limit
-        AbstractGui.fill(x1+panelLength-1,y1+1,x1+panelLength,y1+H+1,limColor);
+        AbstractGui.fill(x1+ panelLength-1,y1+1,x1+ panelLength,y1+H+1,limColor);
     }
 
     public boolean isCellPresent(int i){
@@ -273,7 +282,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         Text beg = getText(ind,false);
         if (!beg.isEmpty()) {
             int length = beg.getLength();
-            float x = xOrigin+ ((beg.getX() == 2+xOrigin) ? panelLength - length: 2);
+            float x = xOrigin+ ((beg.getX() == st_gap+xOrigin) ? panelLength - length - st_gap: st_gap);
             float y = beg.getY();
             beg.setPosition(x, y);
         }
@@ -282,7 +291,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         Text end = getText(ind,true);
         if (!end.isEmpty()) {
             int length = end.getLength();
-            float x = xOrigin+((end.getX() == 2) ? panelLength - length : 2);
+            float x = Functions.xOrigin+((end.getX() == st_gap+xOrigin) ? panelLength - length - st_gap: st_gap);
             float y = end.getY();
             end.setPosition(x, y);
         }
@@ -317,18 +326,47 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
     private void renderGrayRectangle(int guiLeft,int guiTop,int ind,boolean isEnd) {
         int x1,length;
         if (isTextCentered()) {
-            x1 = guiLeft + 2;
-            length = panelLength-4;
+            x1 = guiLeft + st_gap;
+            length = panelLength-2*st_gap;
         }else {
             if (this instanceof RectangleSignTileEntity || this.isRightArrow(ind)) {
-                x1 = guiLeft + ((isEnd) ? panelLength-2-endTextLength : 2);
+                x1 = guiLeft + st_gap + ((isEnd) ? begTextLength+center_gap : 0);
             } else {
-                x1 = guiLeft + ((isEnd) ? 2 : endTextLength+2+4);
+                x1 = guiLeft + st_gap + ((isEnd) ? 0 : endTextLength+center_gap);
             }
-            length = (isEnd) ? endTextLength : panelLength-endTextLength-8;
+            length = (isEnd) ? endTextLength : begTextLength;
         }
         //a gap of 25 and then 26
         int y1 = guiTop+2+(25*ind)+ind-(ind==0?0:1);
         AbstractGui.fill(x1,y1,x1+length,y1+21, Color.GRAY.getRGB());
+    }
+
+    @Nonnull
+    @Override
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+        if (cap == DirectionCapability.DIRECTION_STORAGE){
+            return storage.cast();
+        }
+        return super.getCapability(cap, side);
+    }
+
+    @Override
+    public void read(CompoundNBT compound) {
+        CompoundNBT storage_tag = compound.getCompound("direction");
+        getCapability(DirectionCapability.DIRECTION_STORAGE).ifPresent(s -> ((INBTSerializable<CompoundNBT>) s).deserializeNBT(storage_tag));
+        super.read(compound);
+    }
+
+    @Override
+    public CompoundNBT write(CompoundNBT tag) {
+        getCapability(DirectionCapability.DIRECTION_STORAGE).ifPresent(storage -> {
+            CompoundNBT compoundNBT = ((INBTSerializable<CompoundNBT>) storage).serializeNBT();
+            tag.put("direction", compoundNBT);
+        });
+        return super.write(tag);
+    }
+
+    public CompoundNBT getUpdateTag() {
+        return this.write(new CompoundNBT());
     }
 }

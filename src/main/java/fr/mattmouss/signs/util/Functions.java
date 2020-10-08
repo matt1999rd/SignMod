@@ -32,6 +32,14 @@ import java.util.List;
 public class Functions {
 
     public static BooleanProperty NORTH_WEST,NORTH_EAST,SOUTH_WEST,SOUTH_EAST;
+    //for disposition of text in direction panel : 1(limit) 2(st gap) 144(beg text) 4(larger gap) 25(end text) 2(st gap) 1(limit)
+    public static final int panelLength = 179;
+    public static final int endTextLength = 25;
+    public static final float xOrigin = -25.6F;
+    public static final int st_gap = 3; //st gap+limit
+    public static final int center_gap = 4; //larger gap
+    public static final int begTextLength = panelLength-endTextLength-2*st_gap-center_gap;
+
 
     static {
         NORTH_WEST = BooleanProperty.create("north_west");
@@ -281,9 +289,9 @@ public class Functions {
         GlStateManager.disableTexture();
         GlStateManager.disableLighting();
         GlStateManager.enableBlend();
-        GlStateManager.translatef(-5.0F/16F,5.0F/16F,-0.2F/16F);
+        GlStateManager.translatef(-5.0F/16F,5.0F/16F,-0.1F/16F);
         if (needTranslation){
-            GlStateManager.translatef(0,0,-1.9F/16F);
+            GlStateManager.translatef(0,0,-2F/16F);
         }
         GlStateManager.blendFuncSeparate(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO);
         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);

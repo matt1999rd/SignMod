@@ -152,8 +152,8 @@ public class AddTextScreen extends Screen {
                 field.getY(),
                 field.getText(),
                 new Color(field.getColor(null)),field.getScale());
-        parentScreen.addOrEditText(newText);
         Minecraft.getInstance().displayGuiScreen(parentScreen.getScreen());
+        parentScreen.addOrEditText(newText);
     }
 
     private void changeScale(boolean incr){

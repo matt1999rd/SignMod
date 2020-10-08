@@ -4,11 +4,10 @@ import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.gui.AddTextScreen;
 import fr.mattmouss.signs.gui.screenutils.ColorType;
 import fr.mattmouss.signs.gui.screenutils.Option;
-import fr.mattmouss.signs.util.Functions;
 import fr.mattmouss.signs.util.Letter;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
+import static fr.mattmouss.signs.util.Functions.*;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.util.math.MathHelper;
@@ -22,7 +21,6 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
     int scale;
     Color color;
     boolean isEnd,isTextCentered;
-    private static final int panelLength = 179;
     public LimitSizeTextField(Minecraft mc, int relX, int relY, Form form,@Nullable Text oldText) {
         super(mc.fontRenderer, relX+30, relY+118, 90, 12, " ");
         int xText= (oldText != null) ? (int)oldText.getX() : form.getXBegining(7);
@@ -71,14 +69,14 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
         String text = this.getText();
         if (Letter.isIn(c) || c == ' '){
             String newText = text+c;
-            int length = Functions.getLength(newText)*scale;
+            int length = getLength(newText)*scale;
             int height = 7*scale;
             if (form.isForDirection()){
                 int lenlimit;
                 if (isTextCentered){
-                    lenlimit = panelLength;
+                    lenlimit = panelLength-2*st_gap;
                 }else {
-                    lenlimit = isEnd ? 25 : panelLength-25-8;
+                    lenlimit = isEnd ? endTextLength : begTextLength;
                 }
                 if (length<=lenlimit){
                     return super.charTyped(c,p_charTyped_2_);
@@ -110,15 +108,15 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
     }
 
     public void updatePlusButton() {
-        int length = Functions.getLength(this.getText());
+        int length = getLength(this.getText());
         Screen screen = Minecraft.getInstance().currentScreen;
         if (screen instanceof AddTextScreen){
             int upperLength = (scale+1)*length;
             int upperHeight = (scale+1)*7;
             AddTextScreen addTextScreen = (AddTextScreen)screen;
             if (form.isForDirection()){
-                int limlength = (isTextCentered) ? panelLength : (isEnd) ? 25 : panelLength-25-8;
-                if (scale == 2 || upperLength>limlength){
+                int limlength = (isTextCentered) ? panelLength-2*st_gap : (isEnd) ? endTextLength : begTextLength;
+                if (scale == 3 || upperLength>limlength){
                     addTextScreen.disablePlusButton();
                 } else {
                     addTextScreen.enablePlusButton();
@@ -155,11 +153,11 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
                     break;
             }
         }else {
-            rColor = Functions.getRedValue(newColor);
+            rColor = getRedValue(newColor);
             if (rColor>255)rColor=255;
-            gColor = Functions.getGreenValue(newColor);
+            gColor = getGreenValue(newColor);
             if (gColor>255)gColor=255;
-            bColor = Functions.getBlueValue(newColor);
+            bColor = getBlueValue(newColor);
             if (bColor>255)bColor=255;
         }
         this.color = new Color(rColor, gColor, bColor, 255);
