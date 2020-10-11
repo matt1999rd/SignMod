@@ -13,6 +13,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUseContext;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.properties.BlockStateProperties;
@@ -348,5 +349,33 @@ public class Functions {
         green = 256-green;
         blue = 256-blue;
         return new Color(red,green,blue).getRGB();
+    }
+
+    //has 4 grid return true if the grid support at blockPos pos
+    public static boolean has4Grid(ItemUseContext context) {
+        BlockPos pos = context.getPos();
+        World world = context.getWorld();
+        BlockState state = world.getBlockState(pos);
+        Block block = state.getBlock();
+        if (!(block instanceof GridSupport)){
+            return false;
+        }
+        Direction.Axis axis = state.get(BlockStateProperties.HORIZONTAL_AXIS);
+        boolean isRotated = state.get(GridSupport.ROTATED);
+        ExtendDirection direction = ExtendDirection.getExtendedDirection(Direction.getFacingFromAxis(Direction.AxisDirection.POSITIVE,axis),isRotated);
+        for (int i=0;i<4;i++){
+            ExtendDirection testDir = (i%2 == 0)? direction : direction.getOpposite();
+            Direction YDir = (i/2==0)? Direction.UP : Direction.DOWN;
+            BlockState stateY = world.getBlockState(pos.offset(YDir));
+            BlockState stateCorner = world.getBlockState(testDir.offset(pos).offset(YDir));
+            BlockState stateHor = world.getBlockState(testDir.offset(pos));
+            Block blockY = stateY.getBlock();
+            Block blockCorner = stateCorner.getBlock();
+            Block blockHor = stateHor.getBlock();
+            if (blockY instanceof GridSupport && blockCorner instanceof GridSupport && blockHor instanceof GridSupport){
+                return true;
+            }
+        }
+        return false;
     }
 }

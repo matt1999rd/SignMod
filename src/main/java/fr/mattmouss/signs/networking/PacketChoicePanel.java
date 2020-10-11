@@ -12,28 +12,36 @@ public class PacketChoicePanel {
     private final BlockPos panelFuturePos;
     private final byte facing;
     private final boolean rotated;
+    private final boolean isGrid;
+    private final boolean has4Grid;
 
     public PacketChoicePanel(PacketBuffer buf){
         panelFuturePos = buf.readBlockPos();
         facing = buf.readByte();
         rotated = buf.readBoolean();
+        isGrid = buf.readBoolean();
+        has4Grid = buf.readBoolean();
     }
 
     public void toBytes(PacketBuffer buf){
         buf.writeBlockPos(panelFuturePos);
         buf.writeByte(facing);
         buf.writeBoolean(rotated);
+        buf.writeBoolean(isGrid);
+        buf.writeBoolean(has4Grid);
     }
 
-    public PacketChoicePanel(BlockPos pos, Direction facing,boolean rotated){
+    public PacketChoicePanel(BlockPos pos, Direction facing,boolean rotated,boolean isGrid,boolean has4Grid){
         panelFuturePos = pos;
         this.facing = (byte) facing.getHorizontalIndex();
         this.rotated = rotated;
+        this.isGrid = isGrid;
+        this.has4Grid = has4Grid;
 }
 
     public void handle(Supplier<NetworkEvent.Context> ctx){
         ctx.get().enqueueWork(()->{
-            ChoiceScreen.open(panelFuturePos,Direction.byHorizontalIndex(facing),rotated);
+            ChoiceScreen.open(panelFuturePos,Direction.byHorizontalIndex(facing),rotated,isGrid,has4Grid);
         });
         ctx.get().setPacketHandled(true);
     }

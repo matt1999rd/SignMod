@@ -25,15 +25,19 @@ public class ChoiceScreen extends Screen {
     private final BlockPos futurePanelPos ;
     private final Direction futureFacing ;
     private final boolean rotated;
+    private final boolean isGrid;
+    private final boolean has4Grid;
 
     private ResourceLocation GUI = new ResourceLocation(SignMod.MODID,"textures/gui/choice_gui.png");
     private ResourceLocation FORM = new ResourceLocation(SignMod.MODID, "textures/gui/choice_button.png");
 
-    public ChoiceScreen(BlockPos futurePanelPos,Direction futureFacing,boolean rotated) {
+    public ChoiceScreen(BlockPos futurePanelPos,Direction futureFacing,boolean rotated,boolean isGrid,boolean has4Grid) {
         super(new StringTextComponent("Choose form of signs"));
         this.futurePanelPos = futurePanelPos;
         this.futureFacing = futureFacing;
         this.rotated = rotated;
+        this.isGrid = isGrid;
+        this.has4Grid = has4Grid;
     }
 
     @Override
@@ -43,16 +47,19 @@ public class ChoiceScreen extends Screen {
         for (int i=0;i<3;i++){
             for (int j=0;j<3;j++){
                 int k = 3*i+j;
-                addButton(new ImageButton(relX+4+BUTTON_LENGTH*i, //PosX on gui
-                        relY+4+BUTTON_LENGTH*j, //PosY on gui
-                        BUTTON_LENGTH, //width
-                        BUTTON_LENGTH, //height
-                        BUTTON_LENGTH*(k%5), //PosX on button texture
-                        (k>4)?BUTTON_LENGTH*2:0, //PosY on button texture
-                        BUTTON_LENGTH, // y diff text when hovered
-                        FORM,
-                        button -> place(k)
-                ));
+                Form f = Form.byIndex(k);
+                if (!(isGrid && f.isForDirection()) && ((isGrid&&has4Grid)||f!=Form.PLAIN_SQUARE)) {
+                    addButton(new ImageButton(relX + 4 + BUTTON_LENGTH * i, //PosX on gui
+                            relY + 4 + BUTTON_LENGTH * j, //PosY on gui
+                            BUTTON_LENGTH, //width
+                            BUTTON_LENGTH, //height
+                            BUTTON_LENGTH * (k % 5), //PosX on button texture
+                            (k > 4) ? BUTTON_LENGTH * 2 : 0, //PosY on button texture
+                            BUTTON_LENGTH, // y diff text when hovered
+                            FORM,
+                            button -> place(k)
+                    ));
+                }
             }
         }
     }
@@ -83,8 +90,8 @@ public class ChoiceScreen extends Screen {
         super.render(mouseX, mouseY, partialTicks);
     }
 
-    public static void open(BlockPos futurePanelPos, Direction futureFacing, boolean rotated){
-        Minecraft.getInstance().displayGuiScreen(new ChoiceScreen(futurePanelPos,futureFacing,rotated));
+    public static void open(BlockPos futurePanelPos, Direction futureFacing, boolean rotated,boolean isGrid,boolean has4Grid){
+        Minecraft.getInstance().displayGuiScreen(new ChoiceScreen(futurePanelPos,futureFacing,rotated,isGrid,has4Grid));
     }
 
 

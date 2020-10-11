@@ -51,7 +51,9 @@ public class PanelItem extends Item {
         }
 
         if (player instanceof ServerPlayerEntity && (block instanceof SignSupport || block instanceof GridSupport)&& facing != null){
-            Networking.INSTANCE.sendTo(new PacketChoicePanel(pos,facing,rotated),((ServerPlayerEntity) player).connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
+            boolean isGrid = (block instanceof GridSupport);
+            boolean has4Grid = Functions.has4Grid(context);
+            Networking.INSTANCE.sendTo(new PacketChoicePanel(pos,facing,rotated,isGrid,has4Grid),((ServerPlayerEntity) player).connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
         }
         return super.onItemUse(context);
     }
