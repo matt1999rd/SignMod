@@ -2,6 +2,7 @@ package fr.mattmouss.signs.fixedpanel.panelblock;
 
 import fr.mattmouss.signs.enums.ExtendDirection;
 import fr.mattmouss.signs.enums.Form;
+import fr.mattmouss.signs.enums.PSDisplayMode;
 import fr.mattmouss.signs.enums.ScreenType;
 import fr.mattmouss.signs.fixedpanel.PanelItem;
 import fr.mattmouss.signs.fixedpanel.PanelRegister;
@@ -136,6 +137,23 @@ public abstract class AbstractPanelBlock extends Block {
     public static BlockState getBlockStateFromSupport(int form,BlockState supportState,int facing,boolean rotated){
         Form f = Form.byIndex(form);
         AbstractPanelBlock panelBlock = PanelRegister.asPanel(f);
+        BlockState panelState = panelBlock.getDefaultState();
+        boolean grid = (supportState.getBlock() instanceof GridSupport);
+        if (!grid){
+            for (ExtendDirection direction : ExtendDirection.values()){
+                BooleanProperty property = direction.getSupportProperty();
+                panelState = panelState.with(property,supportState.get(property));
+            }
+        }
+        return panelState.with(GridSupport.ROTATED,rotated)
+                .with(BlockStateProperties.HORIZONTAL_FACING, Direction.byHorizontalIndex(facing))
+                .with(GRID,grid);
+    }
+
+    //special function for plain square because we add multiple block with special displays
+    public static BlockState getBlockStateFromSupportForPS(int displayMode,BlockState supportState,int facing,boolean rotated){
+        PSDisplayMode m = PSDisplayMode.byIndex(displayMode);
+        AbstractPanelBlock panelBlock = PanelRegister.asPanel(Form.PLAIN_SQUARE);
         BlockState panelState = panelBlock.getDefaultState();
         boolean grid = (supportState.getBlock() instanceof GridSupport);
         if (!grid){

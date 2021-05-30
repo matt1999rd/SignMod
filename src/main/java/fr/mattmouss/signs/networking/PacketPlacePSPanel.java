@@ -2,7 +2,6 @@ package fr.mattmouss.signs.networking;
 
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
-import fr.mattmouss.signs.gui.PSDisplayModeScreen;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.Direction;
@@ -13,16 +12,16 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-public class PacketPlacePanel {
+public class PacketPlacePSPanel {
     private final BlockPos panelFuturePos;
-    private final int form;
+    private final int displayMode;
     private final byte facing;
     private final boolean rotated;
 
-    public PacketPlacePanel(PacketBuffer buf){
+    public PacketPlacePSPanel(PacketBuffer buf){
         panelFuturePos = buf.readBlockPos();
         byte[] array = buf.readByteArray();
-        form = array[0];
+        displayMode = array[0];
         facing = array[1];
         rotated = buf.readBoolean();
     }
@@ -30,29 +29,25 @@ public class PacketPlacePanel {
     public void toBytes(PacketBuffer buf){
         buf.writeBlockPos(panelFuturePos);
         byte[] array = new byte[2];
-        array[0] = (byte)form;
+        array[0] = (byte)displayMode;
         array[1] = facing;
         buf.writeByteArray(array);
         buf.writeBoolean(rotated);
     }
 
-    public PacketPlacePanel(BlockPos pos, int form, Direction facing,boolean rotated){
+    public PacketPlacePSPanel(BlockPos pos, int displayMode, Direction facing, boolean rotated){
         panelFuturePos = pos;
-        this.form = form;
+        this.displayMode = displayMode;
         this.facing = (byte) facing.getHorizontalIndex();
         this.rotated = rotated;
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctx){
         ctx.get().enqueueWork(()->{
-            if (form == Form.PLAIN_SQUARE.getMeta()){
-                PSDisplayModeScreen.open(panelFuturePos,Direction.byHorizontalIndex(facing),rotated);
-            }else {
-                ServerWorld world = Objects.requireNonNull(ctx.get().getSender()).getServerWorld();
-                BlockState supportState = world.getBlockState(panelFuturePos);
-                BlockState panelState = AbstractPanelBlock.getBlockStateFromSupport(form, supportState, facing, rotated);
-                world.setBlockState(panelFuturePos, panelState, 11);
-            }
+            ServerWorld world = Objects.requireNonNull(ctx.get().getSender()).getServerWorld();
+            BlockState supportState = world.getBlockState(panelFuturePos);
+            BlockState panelState = AbstractPanelBlock.getBlockStateFromSupportForPS(displayMode,supportState,facing,rotated);
+            world.setBlockState(panelFuturePos, panelState,11);
         });
         ctx.get().setPacketHandled(true);
     }

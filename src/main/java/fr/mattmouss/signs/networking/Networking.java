@@ -77,6 +77,19 @@ public class Networking {
                 PacketCenterText::new,
                 PacketCenterText::handle);
 
+        INSTANCE.registerMessage(nextID(),
+                PacketPlacePSPanel.class,
+                PacketPlacePSPanel::toBytes,
+                PacketPlacePSPanel::new,
+                PacketPlacePSPanel::handle);
+
+        INSTANCE.registerMessage(nextID(),
+                PacketPSChoicePanel.class,
+                PacketPSChoicePanel::toBytes,
+                PacketPSChoicePanel::new,
+                PacketPSChoicePanel::handle);
+
+
         /*
         INSTANCE.registerMessage(nextID(),
                 PacketOpenScreen.class,
