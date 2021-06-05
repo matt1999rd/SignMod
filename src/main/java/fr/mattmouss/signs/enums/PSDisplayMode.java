@@ -1,14 +1,18 @@
 package fr.mattmouss.signs.enums;
 
-public enum PSDisplayMode {
-    EXIT(0),
-    DIRECTION(1),
-    SCH_EXIT(2),
-    SCH_MUL_EXIT(3);
+import net.minecraft.util.IStringSerializable;
+
+public enum PSDisplayMode implements IStringSerializable {
+    EXIT(0,"exit"),
+    DIRECTION(1,"direction"),
+    SCH_EXIT(2,"scheme_exit"),
+    SCH_MUL_EXIT(3,"scheme_round_about");
 
     private final int meta;
-    PSDisplayMode(int mode){
+    private final String name;
+    PSDisplayMode(int mode,String name){
         this.meta = mode;
+        this.name = name;
     }
 
     public static PSDisplayMode byIndex(int meta){
@@ -17,5 +21,14 @@ public enum PSDisplayMode {
             return null;
         }
         return modes[meta];
+    }
+
+    public boolean is2by2(){
+        return this == EXIT;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

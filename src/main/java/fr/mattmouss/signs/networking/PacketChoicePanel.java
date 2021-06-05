@@ -37,7 +37,7 @@ public class PacketChoicePanel {
         this.rotated = rotated;
         this.isGrid = isGrid;
         this.has4Grid = has4Grid;
-}
+    }
 
     public void handle(Supplier<NetworkEvent.Context> ctx){
         ctx.get().enqueueWork(()->{

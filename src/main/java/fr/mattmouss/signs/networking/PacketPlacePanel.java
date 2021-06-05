@@ -3,6 +3,7 @@ package fr.mattmouss.signs.networking;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.mattmouss.signs.gui.PSDisplayModeScreen;
+import fr.mattmouss.signs.util.Functions;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.Direction;
@@ -46,7 +47,8 @@ public class PacketPlacePanel {
     public void handle(Supplier<NetworkEvent.Context> ctx){
         ctx.get().enqueueWork(()->{
             if (form == Form.PLAIN_SQUARE.getMeta()){
-                PSDisplayModeScreen.open(panelFuturePos,Direction.byHorizontalIndex(facing),rotated);
+                byte authoring = Functions.getAuthoring(ctx.get().getSender().getServerWorld(),panelFuturePos,Direction.byHorizontalIndex(facing));
+                PSDisplayModeScreen.open(panelFuturePos,Direction.byHorizontalIndex(facing),rotated,authoring);
             }else {
                 ServerWorld world = Objects.requireNonNull(ctx.get().getSender()).getServerWorld();
                 BlockState supportState = world.getBlockState(panelFuturePos);

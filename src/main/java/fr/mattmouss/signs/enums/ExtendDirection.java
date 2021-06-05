@@ -1,9 +1,7 @@
 package fr.mattmouss.signs.enums;
 
-import fr.mattmouss.signs.fixedpanel.support.GridSupport;
-import fr.mattmouss.signs.fixedpanel.support.SignSupport;
+
 import fr.mattmouss.signs.util.Functions;
-import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.properties.BlockStateProperties;

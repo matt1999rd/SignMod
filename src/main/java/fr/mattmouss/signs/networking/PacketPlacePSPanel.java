@@ -1,6 +1,5 @@
 package fr.mattmouss.signs.networking;
 
-import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketBuffer;

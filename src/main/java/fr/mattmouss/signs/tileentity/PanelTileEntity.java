@@ -38,7 +38,9 @@ public abstract class PanelTileEntity extends TileEntity implements ITickableTil
             boolean matchState = false;
             if (isGrid){
                 boolean isRotated = state1.get(GridSupport.ROTATED);
-                Direction.Axis axis = state1.get(BlockStateProperties.HORIZONTAL_AXIS);
+                Direction.Axis axis = (state1.getBlock() instanceof GridSupport) ?
+                        state1.get(BlockStateProperties.HORIZONTAL_AXIS) :
+                        state1.get(BlockStateProperties.HORIZONTAL_FACING).rotateY().getAxis();
                 matchState = (isRotated == dir.isRotated()) && (axis.test(dir.getDirection()));
             }
             //don't need to had isGrid because if isGrid is false matchState remain false.

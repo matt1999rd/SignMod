@@ -26,6 +26,7 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
     @Override
     public void renderOnScreen(int guiLeft, int guiTop,int selTextInd) {
 
+
     }
 
     private LazyOptional<SignStorage> storage = LazyOptional.of(this::getStorage).cast();
