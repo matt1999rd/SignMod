@@ -1,6 +1,9 @@
 package fr.mattmouss.signs.tileentity.primary;
 
+import fr.mattmouss.signs.capabilities.PSStorage;
 import fr.mattmouss.signs.capabilities.SignStorage;
+import fr.mattmouss.signs.enums.PSDisplayMode;
+import fr.mattmouss.signs.enums.PSPosition;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.mattmouss.signs.tileentity.PanelTileEntity;
 import fr.mattmouss.signs.tileentity.TEType;
@@ -26,13 +29,26 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
     @Override
     public void renderOnScreen(int guiLeft, int guiTop,int selTextInd) {
 
-
     }
 
-    private LazyOptional<SignStorage> storage = LazyOptional.of(this::getStorage).cast();
+    public void registerData(PSPosition position, PSDisplayMode mode){
+        storage.ifPresent(psStorage -> {
+            psStorage.setInternVariable(position,mode);
+        });
+    }
 
-    private SignStorage getStorage() {
-        return new SignStorage();
+    public PSPosition getPosition(){
+        return storage.map(PSStorage::getPosition).orElse(PSPosition.DOWN_LEFT);
+    }
+
+    public PSDisplayMode getMode(){
+        return storage.map(PSStorage::getDisplayMode).orElse(PSDisplayMode.DIRECTION);
+    }
+
+    private LazyOptional<PSStorage> storage = LazyOptional.of(this::getStorage).cast();
+
+    private PSStorage getStorage() {
+        return new PSStorage();
     }
 
 }

@@ -15,12 +15,16 @@ public enum PSDisplayMode implements IStringSerializable {
         this.name = name;
     }
 
-    public static PSDisplayMode byIndex(int meta){
+    public static PSDisplayMode byIndex(byte meta){
         PSDisplayMode[] modes = PSDisplayMode.values();
         if (meta>3 || meta<0){
             return null;
         }
         return modes[meta];
+    }
+
+    public byte getMeta(){
+        return (byte) meta;
     }
 
     public boolean is2by2(){

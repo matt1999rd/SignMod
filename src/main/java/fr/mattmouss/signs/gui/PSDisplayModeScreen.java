@@ -6,7 +6,6 @@ import fr.mattmouss.signs.networking.Networking;
 import fr.mattmouss.signs.networking.PacketPlacePSPanel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.ImageButton;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
@@ -14,7 +13,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
 
 public class PSDisplayModeScreen extends Screen{
-    private static final int LENGTH = 162;
+    private static final int LENGTH = 161;
+    private static final int TEX_WIDTH = 256;
+    private static final int TEX_HEIGHT = 316;
     private static final int BUTTON_LENGTH = 77;
     private final BlockPos futurePanelPos ;
     private final Direction futureFacing ;
@@ -44,8 +45,10 @@ public class PSDisplayModeScreen extends Screen{
                         BUTTON_LENGTH, //height
                         162*(1-i)+i*j*(BUTTON_LENGTH+1), //PosX on button texture
                         162*i+(1-i)*j*(BUTTON_LENGTH+1), //PosY on button texture
-                        0, // y diff text when hovered
+                        BUTTON_LENGTH*(2-i)+2*(1-i), // y diff text when hovered = b if hor and 2b+2 if vert
                         GUI,
+                        TEX_WIDTH,
+                        TEX_HEIGHT,
                         button -> place(k));
                 addButton(buttons[k]);
             }
@@ -73,7 +76,7 @@ public class PSDisplayModeScreen extends Screen{
         this.minecraft.getTextureManager().bindTexture(GUI);
         int relX = (this.width-LENGTH) / 2;
         int relY = (this.height-LENGTH) / 2;
-        this.blit(relX,relY,0,0,LENGTH, LENGTH);
+        this.blit(relX,relY,0,0,LENGTH, LENGTH,TEX_WIDTH,TEX_HEIGHT);
         super.render(mouseX, mouseY, partialTicks);
     }
 

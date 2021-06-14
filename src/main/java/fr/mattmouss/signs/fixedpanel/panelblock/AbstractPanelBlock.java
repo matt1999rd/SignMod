@@ -1,9 +1,6 @@
 package fr.mattmouss.signs.fixedpanel.panelblock;
 
-import fr.mattmouss.signs.enums.ExtendDirection;
-import fr.mattmouss.signs.enums.Form;
-import fr.mattmouss.signs.enums.PSDisplayMode;
-import fr.mattmouss.signs.enums.ScreenType;
+import fr.mattmouss.signs.enums.*;
 import fr.mattmouss.signs.fixedpanel.PanelItem;
 import fr.mattmouss.signs.fixedpanel.PanelRegister;
 import fr.mattmouss.signs.fixedpanel.support.GridSupport;
@@ -26,6 +23,8 @@ import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.BooleanProperty;
+import net.minecraft.state.EnumProperty;
+import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
@@ -57,9 +56,15 @@ public abstract class AbstractPanelBlock extends Block {
     }
 
     public static BooleanProperty GRID;
+    public static EnumProperty<PSDisplayMode> MODE;
+    public static EnumProperty<PSPosition> POSITION;
+    public static IntegerProperty TEST;
 
     static {
         GRID = BooleanProperty.create("grid");
+        MODE =  EnumProperty.create("mode",PSDisplayMode.class);
+        POSITION = EnumProperty.create("position",PSPosition.class);
+        TEST = IntegerProperty.create("test",0,3);
     }
 
     @Override
@@ -150,27 +155,9 @@ public abstract class AbstractPanelBlock extends Block {
                 .with(GRID,grid);
     }
 
-    //special function for plain square because we add multiple block with special displays
-    public static BlockState getBlockStateFromSupportForPS(int displayMode,BlockState supportState,int facing,boolean rotated){
-        PSDisplayMode m = PSDisplayMode.byIndex(displayMode);
-        AbstractPanelBlock panelBlock = PanelRegister.asPanel(Form.PLAIN_SQUARE);
-        BlockState panelState = panelBlock.getDefaultState();
-        boolean grid = (supportState.getBlock() instanceof GridSupport);
-        if (!grid){
-            for (ExtendDirection direction : ExtendDirection.values()){
-                BooleanProperty property = direction.getSupportProperty();
-                panelState = panelState.with(property,supportState.get(property));
-            }
-        }
-        if (m == null)return null;
-        return panelState.with(GridSupport.ROTATED,rotated)
-                .with(BlockStateProperties.HORIZONTAL_FACING, Direction.byHorizontalIndex(facing))
-                .with(PlainSquarePanelBlock.MODE,m)
-                .with(GRID,grid);
-    }
-
     @Override
     protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+        //add enumproperty cause stupid long time running without issuing a result -> bad minecraft implementation
         builder.add(
                 BlockStateProperties.HORIZONTAL_FACING,
                 GridSupport.ROTATED,

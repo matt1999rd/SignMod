@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.support.GridSupport;
+import fr.mattmouss.signs.tileentity.model.PSSignModel;
 import fr.mattmouss.signs.tileentity.model.SpecialSignModel;
 import fr.mattmouss.signs.tileentity.primary.PlainSquareSignTileEntity;
 import fr.mattmouss.signs.tileentity.primary.RectangleSignTileEntity;
@@ -17,8 +18,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainSquareSignTileEntity> {
-    private static final ResourceLocation SQUARE_BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/square.png");
-    private final SpecialSignModel model = new SpecialSignModel(Form.PLAIN_SQUARE);
+
+    private final PSSignModel model = new PSSignModel();
 
     public PlainSquareSignTileEntityRenderer() {
     }
@@ -41,7 +42,7 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
             GlStateManager.translatef(0.0625F, 0.0625F, 0.0625F);
             GlStateManager.matrixMode(5888);
         } else {
-            this.bindTexture(SQUARE_BACKGROUND);
+            this.bindTexture(getTexture(tileEntityIn));
         }
         GlStateManager.enableRescaleNormal();
         GlStateManager.pushMatrix();
@@ -57,6 +58,11 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
         }
 
 
+    }
+
+    private ResourceLocation getTexture(PlainSquareSignTileEntity tileEntityIn) {
+        String name = tileEntityIn.getMode().getName();
+        return new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/ps_"+name+".png");
     }
 
     private float getAngleFromBlockState(BlockState blockstate) {

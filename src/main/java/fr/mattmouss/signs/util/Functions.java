@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
 import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
 import fr.mattmouss.signs.enums.ExtendDirection;
+import fr.mattmouss.signs.enums.PSPosition;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.mattmouss.signs.fixedpanel.support.GridSupport;
 import fr.mattmouss.signs.fixedpanel.support.SignSupport;
@@ -386,71 +387,15 @@ public class Functions {
     //0 -> nothing, 1-> only 2 by 2, 2-> all
 
     public static byte getAuthoring(World world, BlockPos futurePos, Direction futureFacing) {
-        byte nearPlacement = extractByteOfPlacement(world, futurePos, futureFacing);
-        List<Byte> placementDir = getDirectionOfPlacement(nearPlacement);
+        List<PSPosition> placementDir = PSPosition.listPlaceable(world,futurePos,futureFacing,true);
         if (placementDir.isEmpty()){
             return 0;
         }
-        for (byte b: placementDir){
-            if (checkForeignGrid(b,world,futurePos,futureFacing)){
-                return 2;
-            }
+        List<PSPosition> placementDir2 = PSPosition.listPlaceable(world,futurePos,futureFacing,false);
+        if (placementDir2.isEmpty()){
+            return 1;
         }
-        return 1;
-    }
-
-    private static boolean checkForeignGrid(byte b,World world,BlockPos futurePos,Direction futureFacing) {
-        BlockPos posToTest = new BlockPos(futurePos);
-        if (b/2 == 0){ //right
-            posToTest = posToTest.offset(futureFacing.rotateYCCW(),2);
-        }else { //left
-            posToTest = posToTest.offset(futureFacing.rotateY(),2);
-        }
-        if (!(world.getBlockState(posToTest).getBlock() instanceof GridSupport)){
-            return false;
-        }
-        if (b%2  == 0){
-            posToTest = posToTest.up();
-        }else {
-            posToTest = posToTest.down();
-        }
-        return world.getBlockState(posToTest).getBlock() instanceof GridSupport;
-    }
-
-    //get the corner where we can find three grids
-    // 0-> UP-RIGHT (b=xxxxx111), 1-> DOWN-RIGHT (b=xxx111xx), 2-> UP-LEFT (b=11xxxxx1), 3-> DOWN-LEFT (b=x111xxxx)
-    private static List<Byte> getDirectionOfPlacement(byte nearPlacement) {
-        byte[] masks=new byte[]{0b00000111,0b00011100,(byte) 0b11000001,0b01110000};
-        List<Byte> directions = Lists.newArrayList();
-        for (byte k=0;k<4;k++){
-            if ((nearPlacement&masks[k]) == masks[k]){
-                directions.add(k);
-            }
-        }
-        return directions;
-    }
-
-    //make a byte b=(d4 l d3 d d2 r d1 u ) -> where each bit is a boolean that indicates if there is a grid in the direction
-    // u : up, r : right, l : left, d : down, d1 : u+r, d2 : d+r, d3 : d+l, d4 : u+l
-    public static byte extractByteOfPlacement(World world, BlockPos futurePos, Direction futureFacing){
-        byte b = 0;
-        for (int k=0;k<8;k++){
-            BlockPos posToTest = new BlockPos(futurePos);
-            if ((k+1)%8<3){
-                posToTest = posToTest.up();
-            }else if (k>=3 && k<=5){
-                posToTest = posToTest.down();
-            }
-            if (k>=1 && k<=3){ //right
-                posToTest = posToTest.offset(futureFacing.rotateYCCW());
-            }else if (k>=5){ //left
-                posToTest = posToTest.offset(futureFacing.rotateY());
-            }
-            if (world.getBlockState(posToTest).getBlock() instanceof GridSupport){
-                b += 1<<k;
-            }
-        }
-        return b;
+        return 2;
     }
 
 }
