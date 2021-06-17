@@ -27,6 +27,7 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
     @Override
     public void render(PlainSquareSignTileEntity tileEntityIn, double x, double y, double z, float partialTicks, int destroyStage) {
         BlockState blockstate = tileEntityIn.getBlockState();
+        model.setTextureSize(tileEntityIn.getMode());
         //code for display of background model
         GlStateManager.pushMatrix();
         //handle grid rotation for this block

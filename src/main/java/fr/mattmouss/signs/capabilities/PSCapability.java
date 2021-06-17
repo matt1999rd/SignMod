@@ -1,5 +1,7 @@
 package fr.mattmouss.signs.capabilities;
 
+import fr.mattmouss.signs.enums.PSDisplayMode;
+import fr.mattmouss.signs.enums.PSPosition;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
@@ -13,24 +15,16 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class PSCapability {
-    @CapabilityInject(ISignStorage.class)
-    public static Capability<ISignStorage> SIGN_STORAGE = null;
+    @CapabilityInject(IPSStorage.class)
+    public static Capability<IPSStorage> PS_STORAGE = null;
 
     public static void register()
     {
-        CapabilityManager.INSTANCE.register(ISignStorage.class, new Capability.IStorage<ISignStorage>() {
+        CapabilityManager.INSTANCE.register(IPSStorage.class, new Capability.IStorage<IPSStorage>() {
             @Nullable
             @Override
-            public INBT writeNBT(Capability<ISignStorage> capability, ISignStorage instance, Direction side) {
+            public INBT writeNBT(Capability<IPSStorage> capability, IPSStorage instance, Direction side) {
                 CompoundNBT tag = new CompoundNBT();
-                int[] pixels = instance.getAllPixel();
-                ListNBT pixelsNBT = new ListNBT();
-                for (int i : pixels){
-                    CompoundNBT pxlNBT = new CompoundNBT();
-                    pxlNBT.putInt("color",i);
-                    pixelsNBT.add(pxlNBT);
-                }
-                tag.put("pixels",pixelsNBT);
                 ListNBT textsNBT = new ListNBT();
                 List<Text> txts = instance.getTexts();
                 txts.forEach(text -> {
@@ -38,30 +32,28 @@ public class PSCapability {
                     textsNBT.add(txtNBT);
                 });
                 tag.put("texts",textsNBT);
+                tag.putInt("bg_color",instance.getBackgroundColor());
+                tag.putByte("display_mode",instance.getDisplayMode().getMeta());
+                tag.putByte("ps_position",instance.getPosition().getMeta());
                 return tag;
             }
 
             @Override
-            public void readNBT(Capability<ISignStorage> capability, ISignStorage instance, Direction side, INBT nbt) {
+            public void readNBT(Capability<IPSStorage> capability, IPSStorage instance, Direction side, INBT nbt) {
                 CompoundNBT tag = (CompoundNBT)nbt;
-                ListNBT pixelsNBT = (ListNBT)(tag.get("pixels"));
-                int[] pixels = new int[128*128];
-                int index = 0;
-                for (INBT inbt : pixelsNBT){
-                    CompoundNBT pxlNBT = (CompoundNBT)inbt;
-                    int pxl_color = pxlNBT.getInt("color");
-                    pixels[index] = pxl_color;
-                    index++;
-                }
-                instance.setAllPixel(pixels);
                 ListNBT textsNBT = (ListNBT)(tag.get("texts"));
                 for (INBT inbt : textsNBT){
                     CompoundNBT textNBT = (CompoundNBT)inbt;
                     Text t= Text.getTextFromNBT(textNBT);
-                    instance.addText(t);
+                    instance.addText(t,false);
                 }
+                int bg_color = tag.getInt("bg_color");
+                instance.setBackgroundColor(bg_color);
+                byte mode = tag.getByte("display_mode");
+                byte position = tag.getByte("ps_position");
+                instance.setInternVariable(PSPosition.byIndex(position), PSDisplayMode.byIndex(mode));
             }
-        },SignStorage::new);
+        },PSStorage::new);
     }
 
 }
