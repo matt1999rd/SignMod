@@ -85,4 +85,8 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         return super.write(tag);
     }
 
+    public CompoundNBT getUpdateTag() {
+        return this.write(new CompoundNBT());
+    }
+
 }

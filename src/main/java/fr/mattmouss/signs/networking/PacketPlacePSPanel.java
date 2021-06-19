@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import static fr.mattmouss.signs.fixedpanel.panelblock.PlainSquarePanelBlock.POSITION;
 
 public class PacketPlacePSPanel {
     private final BlockPos panelFuturePos;
