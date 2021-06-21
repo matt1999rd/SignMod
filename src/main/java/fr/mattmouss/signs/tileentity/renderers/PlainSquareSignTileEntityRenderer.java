@@ -8,6 +8,7 @@ import fr.mattmouss.signs.tileentity.model.PSSignModel;
 import fr.mattmouss.signs.tileentity.model.SpecialSignModel;
 import fr.mattmouss.signs.tileentity.primary.PlainSquareSignTileEntity;
 import fr.mattmouss.signs.tileentity.primary.RectangleSignTileEntity;
+import fr.mattmouss.signs.util.Functions;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.state.properties.BlockStateProperties;
@@ -27,7 +28,6 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
     @Override
     public void render(PlainSquareSignTileEntity tileEntityIn, double x, double y, double z, float partialTicks, int destroyStage) {
         BlockState blockstate = tileEntityIn.getBlockState();
-        model.setTextureSize(tileEntityIn.getMode());
         //code for display of background model
         GlStateManager.pushMatrix();
         //handle grid rotation for this block
@@ -47,6 +47,7 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
         }
         GlStateManager.enableRescaleNormal();
         GlStateManager.pushMatrix();
+        GlStateManager.scalef(0.5F,0.5F,0.5F);
         this.model.renderSign();
         GlStateManager.popMatrix();
         GlStateManager.depthMask(true);
@@ -62,8 +63,9 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
     }
 
     private ResourceLocation getTexture(PlainSquareSignTileEntity tileEntityIn) {
-        String name = tileEntityIn.getMode().getName();
-        return new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/ps_"+name+".png");
+        String mode_name = tileEntityIn.getMode().getName();
+        String position_name = tileEntityIn.getPosition().getAlias();
+        return new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/ps_"+mode_name+"_"+position_name+".png");
     }
 
     private float getAngleFromBlockState(BlockState blockstate) {

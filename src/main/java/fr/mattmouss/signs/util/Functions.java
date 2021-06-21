@@ -28,6 +28,7 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.lwjgl.stb.STBImageResize;
 import org.lwjgl.system.CallbackI;
 
 import java.awt.*;

@@ -29,6 +29,13 @@ public enum PSPosition implements IStringSerializable {
         return name;
     }
 
+    public String getAlias(){
+        int separator = name.indexOf("_");
+        String firstChar = String.valueOf(name.charAt(0));
+        String secondChar = String.valueOf(name.charAt(separator+1));
+        return firstChar.concat(secondChar);
+    }
+
     public static PSPosition[] list2by2(){
         PSPosition[] positions = new PSPosition[4];
         int k=0;
