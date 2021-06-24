@@ -1,9 +1,7 @@
 package fr.mattmouss.signs.tileentity.primary;
 
-import fr.mattmouss.signs.capabilities.DirectionCapability;
 import fr.mattmouss.signs.capabilities.PSCapability;
 import fr.mattmouss.signs.capabilities.PSStorage;
-import fr.mattmouss.signs.capabilities.SignStorage;
 import fr.mattmouss.signs.enums.PSDisplayMode;
 import fr.mattmouss.signs.enums.PSPosition;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
@@ -11,6 +9,8 @@ import fr.mattmouss.signs.tileentity.PanelTileEntity;
 import fr.mattmouss.signs.tileentity.TEType;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -44,6 +44,18 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
     @Override
     public void renderOnScreen(int guiLeft, int guiTop,int selTextInd) {
 
+    }
+
+    @Nullable
+    @Override
+    public SUpdateTileEntityPacket getUpdatePacket() {
+        return new SUpdateTileEntityPacket(this.pos, 9, this.getUpdateTag());
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
+        CompoundNBT nbt = pkt.getNbtCompound();
+        this.read(nbt);
     }
 
     public void registerData(PSPosition position, PSDisplayMode mode){
