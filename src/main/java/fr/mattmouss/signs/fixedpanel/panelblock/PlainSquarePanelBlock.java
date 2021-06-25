@@ -1,13 +1,24 @@
 package fr.mattmouss.signs.fixedpanel.panelblock;
 
 import fr.mattmouss.signs.enums.Form;
+import fr.mattmouss.signs.enums.PSDisplayMode;
+import fr.mattmouss.signs.enums.PSPosition;
 import fr.mattmouss.signs.enums.ScreenType;
+import fr.mattmouss.signs.fixedpanel.ModBlock;
+import fr.mattmouss.signs.fixedpanel.support.GridSupport;
 import fr.mattmouss.signs.tileentity.primary.PlainSquareSignTileEntity;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Direction;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockReader;
+import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
+import java.util.EnumMap;
 
 
 public class PlainSquarePanelBlock extends AbstractPanelBlock {
@@ -29,5 +40,30 @@ public class PlainSquarePanelBlock extends AbstractPanelBlock {
     @Override
     public TileEntity createTileEntity(BlockState state, IBlockReader world) {
         return new PlainSquareSignTileEntity();
+    }
+
+    @Override
+    public void onBlockHarvested(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+        TileEntity te = world.getTileEntity(pos);
+        PlainSquareSignTileEntity psste = te instanceof PlainSquareSignTileEntity ? ((PlainSquareSignTileEntity) te) : null;
+        if (psste == null)return;
+        PSPosition psPosition = psste.getPosition();
+        PSDisplayMode mode = psste.getMode();
+        Direction facing = state.get(BlockStateProperties.HORIZONTAL_FACING);
+        EnumMap<PSPosition,BlockPos> neiPos = psPosition.getNeighborPosition(pos,facing,mode.is2by2());
+        neiPos.remove(psPosition);
+        boolean grid = state.get(GRID);
+        BlockState oldState;
+        if (grid){
+            oldState = ModBlock.GRID_SUPPORT.getDefaultState().with(BlockStateProperties.HORIZONTAL_AXIS,facing.getAxis());
+        }else {
+            oldState = ModBlock.SIGN_SUPPORT.getDefaultState();
+        }
+        oldState = oldState.with(GridSupport.ROTATED,state.get(GridSupport.ROTATED));
+        for (PSPosition position : neiPos.keySet()){
+            world.setBlockState(neiPos.get(position), oldState);
+        }
+        super.onBlockHarvested(world, pos, state, player);
+        world.setBlockState(pos,oldState);
     }
 }

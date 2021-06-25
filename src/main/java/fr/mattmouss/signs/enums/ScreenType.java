@@ -10,7 +10,7 @@ public enum ScreenType {
     DIRECTION_SCREEN(2),
     //a more advanced screen than previous one which can add text and modify colour of the text and colour of background
     //and with others features
-    EDITING_AND_COLOURING_SCREEN(2);
+    EDITING_AND_COLOURING_SCREEN(3);
     int meta;
 
     ScreenType(int meta){
