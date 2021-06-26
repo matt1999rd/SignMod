@@ -48,7 +48,9 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
         GlStateManager.enableRescaleNormal();
         GlStateManager.pushMatrix();
         GlStateManager.scalef(0.5F,0.5F,0.5F);
+        GlStateManager.translatef(0.0F,2.0F,0.0F);
         this.model.renderSign();
+        GlStateManager.scalef(2.0F,2.0F,2.0F);
         GlStateManager.popMatrix();
         GlStateManager.depthMask(true);
         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);

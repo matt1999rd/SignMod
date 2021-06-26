@@ -1,9 +1,6 @@
 package fr.mattmouss.signs.fixedpanel.panelblock;
 
-import fr.mattmouss.signs.enums.Form;
-import fr.mattmouss.signs.enums.PSDisplayMode;
-import fr.mattmouss.signs.enums.PSPosition;
-import fr.mattmouss.signs.enums.ScreenType;
+import fr.mattmouss.signs.enums.*;
 import fr.mattmouss.signs.fixedpanel.ModBlock;
 import fr.mattmouss.signs.fixedpanel.support.GridSupport;
 import fr.mattmouss.signs.tileentity.primary.PlainSquareSignTileEntity;
@@ -15,6 +12,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -55,7 +53,7 @@ public class PlainSquarePanelBlock extends AbstractPanelBlock {
         boolean grid = state.get(GRID);
         BlockState oldState;
         if (grid){
-            oldState = ModBlock.GRID_SUPPORT.getDefaultState().with(BlockStateProperties.HORIZONTAL_AXIS,facing.getAxis());
+            oldState = ModBlock.GRID_SUPPORT.getDefaultState().with(BlockStateProperties.HORIZONTAL_AXIS,facing.rotateY().getAxis());
         }else {
             oldState = ModBlock.SIGN_SUPPORT.getDefaultState();
         }
@@ -65,5 +63,21 @@ public class PlainSquarePanelBlock extends AbstractPanelBlock {
         }
         super.onBlockHarvested(world, pos, state, player);
         world.setBlockState(pos,oldState);
+    }
+
+    @Override
+    public void onPlayerDestroy(IWorld worldIn, BlockPos pos, BlockState state) {
+        BlockState oldState = searchNeighBorGrid(worldIn.getWorld(),pos);
+        worldIn.setBlockState(pos,oldState,11);
+    }
+
+    private BlockState searchNeighBorGrid(World world,BlockPos pos){
+        for (ExtendDirection direction : ExtendDirection.values()){
+            BlockState neiState = world.getBlockState(direction.offset(pos));
+            if (neiState.getBlock() instanceof GridSupport){
+                return neiState;
+            }
+        }
+        return Blocks.AIR.getDefaultState();
     }
 }
