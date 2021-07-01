@@ -23,10 +23,12 @@ public class PSStorage implements IPSStorage, INBTSerializable<CompoundNBT> {
     PSDisplayMode mode;
     List<Text> texts ;
     Color backgroundColor;
+    Color foregroundColor;
 
     public PSStorage(){
         texts = new ArrayList<>();
-        backgroundColor = Color.BLUE;
+        backgroundColor = Color.BLACK;
+        foregroundColor = Color.WHITE;
     }
 
     @Override
@@ -124,7 +126,18 @@ public class PSStorage implements IPSStorage, INBTSerializable<CompoundNBT> {
     }
 
     @Override
-    public int getBackgroundColor() {
-        return backgroundColor.getRGB();
+    public Color getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    @Override
+    public void setForegroundColor(int color) {
+        Color newColor = new Color(color);
+        this.foregroundColor = newColor;
+    }
+
+    @Override
+    public Color getForegroundColor() {
+        return foregroundColor;
     }
 }

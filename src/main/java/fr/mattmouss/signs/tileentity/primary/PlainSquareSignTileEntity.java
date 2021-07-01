@@ -18,6 +18,7 @@ import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.awt.*;
 
 
 public class PlainSquareSignTileEntity extends PanelTileEntity {
@@ -71,6 +72,14 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
     public PSDisplayMode getMode(){
         return storage.map(PSStorage::getDisplayMode).orElse(PSDisplayMode.DIRECTION);
     }
+
+    public Color getBackgroundColor() { return storage.map(PSStorage::getBackgroundColor).orElse(Color.BLACK); }
+
+    public Color getForegroundColor() { return storage.map(PSStorage::getForegroundColor).orElse(Color.BLACK); }
+
+    public void setBackgroundColor(int color) { storage.ifPresent(psStorage -> psStorage.setBackgroundColor(color));}
+
+    public void setForegroundColor(int color) { storage.ifPresent(psStorage -> psStorage.setForegroundColor(color));}
 
     @Nonnull
     @Override

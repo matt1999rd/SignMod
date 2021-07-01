@@ -1,14 +1,11 @@
 package fr.mattmouss.signs.tileentity.model;
 
-import fr.mattmouss.signs.enums.PSDisplayMode;
 import net.minecraft.client.renderer.entity.model.RendererModel;
 import net.minecraft.client.renderer.model.Model;
 
 public class PSSignModel extends Model {
-    private final RendererModel panel = new RendererModel(this,-2,0);
+    private final RendererModel panel = new RendererModel(this,0,0);
     public PSSignModel() {
-        textureHeight = 32;
-        textureWidth = 65;
         initModel();
     }
 

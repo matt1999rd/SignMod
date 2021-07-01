@@ -32,7 +32,8 @@ public class PSCapability {
                     textsNBT.add(txtNBT);
                 });
                 tag.put("texts",textsNBT);
-                tag.putInt("bg_color",instance.getBackgroundColor());
+                tag.putInt("bg_color",instance.getBackgroundColor().getRGB());
+                tag.putInt("fg_color",instance.getForegroundColor().getRGB());
                 tag.putByte("display_mode",instance.getDisplayMode().getMeta());
                 tag.putByte("ps_position",instance.getPosition().getMeta());
                 return tag;
@@ -49,6 +50,8 @@ public class PSCapability {
                 }
                 int bg_color = tag.getInt("bg_color");
                 instance.setBackgroundColor(bg_color);
+                int fg_color = tag.getInt("fg_color");
+                instance.setForegroundColor(fg_color);
                 byte mode = tag.getByte("display_mode");
                 byte position = tag.getByte("ps_position");
                 instance.setInternVariable(PSPosition.byIndex(position), PSDisplayMode.byIndex(mode));
