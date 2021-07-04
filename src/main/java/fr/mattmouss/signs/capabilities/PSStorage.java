@@ -27,8 +27,8 @@ public class PSStorage implements IPSStorage, INBTSerializable<CompoundNBT> {
 
     public PSStorage(){
         texts = new ArrayList<>();
-        backgroundColor = Color.BLACK;
-        foregroundColor = Color.WHITE;
+        backgroundColor = Color.WHITE;
+        foregroundColor = Color.BLACK;
     }
 
     @Override

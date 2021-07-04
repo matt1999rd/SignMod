@@ -2,13 +2,13 @@ package fr.mattmouss.signs.tileentity.renderers;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import fr.mattmouss.signs.SignMod;
-import fr.mattmouss.signs.enums.Form;
+import fr.mattmouss.signs.enums.PSDisplayMode;
+import fr.mattmouss.signs.enums.PSPosition;
 import fr.mattmouss.signs.fixedpanel.support.GridSupport;
 import fr.mattmouss.signs.tileentity.model.PSSignModel;
-import fr.mattmouss.signs.tileentity.model.SpecialSignModel;
 import fr.mattmouss.signs.tileentity.primary.PlainSquareSignTileEntity;
-import fr.mattmouss.signs.tileentity.primary.RectangleSignTileEntity;
 import fr.mattmouss.signs.util.Functions;
+import fr.mattmouss.signs.util.TextPSPosition;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
@@ -20,7 +20,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-import java.awt.*;
+import java.awt.Color;
+import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainSquareSignTileEntity> {
@@ -86,29 +87,82 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
     private void renderPicture(PlainSquareSignTileEntity psste){
         GlStateManager.translatef(-3.5F/16F,-21F/16F,0);
         Functions.setWorldGLState(false);
+        Color color = psste.getBackgroundColor();
+        renderQuad(0,1,0,1,color,0); //background rendering
         renderLimit(psste);
+        if (psste.getPosition() == PSPosition.UP_LEFT){
+            renderText(psste);
+        }
         Functions.resetWorldGLState();
     }
 
     private void renderLimit(PlainSquareSignTileEntity psste){
         Color color = psste.getForegroundColor();
-        this.bindTexture(new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/background.png"));
+        PSPosition position = psste.getPosition();
+        float limitLength = 0.5F;
+        float panelLength = 16.0F;
+        if (position.isRight()){
+            renderQuad(0,limitLength,0,panelLength,color,1); //left limit
+        }
+        if (position.isLeft()){
+            renderQuad(panelLength-limitLength,panelLength,0,panelLength,color,1); //right limit
+        }
+        if (position.isUp()){
+            renderQuad(0, panelLength, panelLength - limitLength, panelLength, color,1); //down limit
+        }else {
+            renderQuad(0,panelLength,0,limitLength,color,1); //up limit
+        }
+    }
+
+    private void renderText(PlainSquareSignTileEntity psste){
+        Color color = psste.getForegroundColor();
+        PSDisplayMode mode = psste.getMode();
+        List<TextPSPosition> textPositions = mode.getTextPosition();
+        for (TextPSPosition textPosition : textPositions){
+            float xBase = textPosition.getPosition().x;
+            float yBase = textPosition.getPosition().y;
+            float maxLength = textPosition.getLengthMax();
+            int maxNumber = textPosition.getMaxText();
+            for (int i=0;i<maxNumber;i++){
+                renderQuad(xBase,xBase+maxLength,yBase+4.5F*(i-1),yBase+4.5F*(i-1)+3,color,1);
+            }
+        }
+    }
+
+    //when rendering quad be careful to use directly the value in the png folder (/2) and avoid dividing by 16
+    private void renderQuad(float x1,float x2,float y1,float y2,Color color,int layer){
+        float z = -0.06F-layer*0.001F;
         int red,green,blue,alpha;
         red = color.getRed();
         green = color.getGreen();
         blue = color.getBlue();
         alpha = color.getAlpha();
-        float z = -0.06F;
-        int texLength = 1;
-        float limitLength = 0.5F/16F;
-        float panelLength = 1.0F;
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder builder = tessellator.getBuffer();
+        builder.begin(7, DefaultVertexFormats.POSITION_COLOR);
+        builder.pos(x2/16.0F, y2/16.0F, z).color(red, green, blue, alpha).endVertex();
+        builder.pos(x2/16.0F, y1/16.0F, z).color(red, green, blue, alpha).endVertex();
+        builder.pos(x1/16.0F, y1/16.0F, z).color(red, green, blue, alpha).endVertex();
+        builder.pos(x1/16.0F, y2/16.0F, z).color(red, green, blue, alpha).endVertex();
+        tessellator.draw();
+    }
+
+
+    private void renderQuadWithTexture(float x1,float x2,float y1,float y2,float u1,float u2,float v1,float v2, Color color,int layer,ResourceLocation texture){
+        this.bindTexture(texture);
+        float z = -0.04F-layer*0.01F;
+        int red,green,blue,alpha;
+        red = color.getRed();
+        green = color.getGreen();
+        blue = color.getBlue();
+        alpha = color.getAlpha();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder builder = tessellator.getBuffer();
         builder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-        builder.pos(panelLength,panelLength,z).tex(0,texLength).color(red,green,blue,alpha).endVertex();
-        builder.pos(panelLength,0,z).tex(0,0).color(red,green,blue,alpha).endVertex();
-        builder.pos(0,0,z).tex(texLength,0).color(red,green,blue,alpha).endVertex();
-        builder.pos(0,panelLength,z).tex(texLength,texLength).color(red,green,blue,alpha).endVertex();
+        builder.pos(x2/16.0F, y2/16.0F, z).tex(u1, v2).color(red, green, blue, alpha).endVertex();
+        builder.pos(x2/16.0F, y1/16.0F, z).tex(u1, v1).color(red, green, blue, alpha).endVertex();
+        builder.pos(x1/16.0F, y1/16.0F, z).tex(u2, v1).color(red, green, blue, alpha).endVertex();
+        builder.pos(x1/16.0F, y2/16.0F, z).tex(u2, v2).color(red, green, blue, alpha).endVertex();
         tessellator.draw();
     }
 
