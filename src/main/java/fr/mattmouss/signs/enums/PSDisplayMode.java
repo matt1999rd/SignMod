@@ -44,20 +44,20 @@ public enum PSDisplayMode implements IStringSerializable {
         List<TextPSPosition> textPositions = new ArrayList<>();
         switch (this){
             case EXIT:
-                textPositions.add(new TextPSPosition(1.5F,1.5F,22.5F,2));
-                textPositions.add(new TextPSPosition(1.5F,11.5F,29.0F,4));
+                textPositions.add(new TextPSPosition(8.0F,21.5F,22.5F,2));
+                textPositions.add(new TextPSPosition(1.5F,1.5F,29.0F,4));
                 break;
             case DIRECTION:
-                textPositions.add(new TextPSPosition(2.0F,1.5F,44.0F,5));
+                textPositions.add(new TextPSPosition(2.0F,9.0F,44.0F,5));
                 break;
             case SCH_MUL_EXIT:
-                textPositions.add(new TextPSPosition(1.5F, 1.5F,19.5F,3));
-                textPositions.add(new TextPSPosition(1.5F,22.0F,19.5F,2));
-                textPositions.add(new TextPSPosition(27.5F,3.5F,19.5F,3));
+                textPositions.add(new TextPSPosition(27.0F, 21.0F,19.5F,3));
+                textPositions.add(new TextPSPosition(27.5F,4.0F,19.5F,2));
+                textPositions.add(new TextPSPosition(1.0F,19.0F,19.5F,3));
                 break;
             case SCH_EXIT:
-                textPositions.add(new TextPSPosition(4.5F,1.5F,19.0F,2));
-                textPositions.add(new TextPSPosition(26.0F,11.5F,19.0F,3));
+                textPositions.add(new TextPSPosition(24.5F,23.5F,19.0F,2));
+                textPositions.add(new TextPSPosition(3.0F,5.5F,19.0F,4));
                 break;
         }
         return textPositions;

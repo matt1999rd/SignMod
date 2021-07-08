@@ -88,9 +88,9 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
         GlStateManager.translatef(-3.5F/16F,-21F/16F,0);
         Functions.setWorldGLState(false);
         Color color = psste.getBackgroundColor();
-        renderQuad(0,1,0,1,color,0); //background rendering
+        renderQuad(0,16,0,16,color,0); //background rendering
         renderLimit(psste);
-        if (psste.getPosition() == PSPosition.UP_LEFT){
+        if (psste.getPosition() == PSPosition.DOWN_RIGHT){
             renderText(psste);
         }
         Functions.resetWorldGLState();
@@ -124,7 +124,7 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
             float maxLength = textPosition.getLengthMax();
             int maxNumber = textPosition.getMaxText();
             for (int i=0;i<maxNumber;i++){
-                renderQuad(xBase,xBase+maxLength,yBase+4.5F*(i-1),yBase+4.5F*(i-1)+3,color,1);
+                renderQuad(xBase,xBase+maxLength,yBase+4.5F*i,yBase+4.5F*i+3,color,1);
             }
         }
     }
