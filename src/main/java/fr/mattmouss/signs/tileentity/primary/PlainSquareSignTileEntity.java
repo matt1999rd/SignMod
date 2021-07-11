@@ -81,6 +81,10 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
 
     public void setForegroundColor(int color) { storage.ifPresent(psStorage -> psStorage.setForegroundColor(color));}
 
+    public int getArrowId(){ return storage.map(PSStorage::getArrowId).orElse(-1);}
+
+    public void setArrowId(int arrowId){ storage.ifPresent(psStorage -> psStorage.setArrowId(arrowId));}
+
     @Nonnull
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {

@@ -8,8 +8,10 @@ import fr.mattmouss.signs.fixedpanel.support.GridSupport;
 import fr.mattmouss.signs.tileentity.model.PSSignModel;
 import fr.mattmouss.signs.tileentity.primary.PlainSquareSignTileEntity;
 import fr.mattmouss.signs.util.Functions;
-import fr.mattmouss.signs.util.TextPSPosition;
+import fr.mattmouss.signs.util.QuadPSPosition;
+import fr.mattmouss.signs.util.Text;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
@@ -91,9 +93,47 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
         renderQuad(0,16,0,16,color,0); //background rendering
         renderLimit(psste);
         if (psste.getPosition() == PSPosition.DOWN_RIGHT){
+            GlStateManager.enableTexture();
             renderText(psste);
+            renderScheme(psste);
         }
         Functions.resetWorldGLState();
+    }
+
+    private void renderScheme(PlainSquareSignTileEntity psste) {
+        PSDisplayMode mode = psste.getMode();
+        Color color = psste.getForegroundColor();
+        ResourceLocation location = new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/ps_arrow.png");
+        float texLength = 60.0F;
+        float texHeight = 26.0F;
+        switch (mode){
+            case EXIT:
+                float length = 12.0F;
+                float xBase = 1.0F;
+                float yBase = 25.0F;
+                renderQuadWithTexture(xBase,xBase+length/2,yBase,yBase+length/2,0.0F,length/texLength,14.0F/texHeight,(14.0F+length)/texHeight,color,2,location);
+                break;
+            case DIRECTION:
+                //arrowId = 0 -> left arrow / 1 -> center arrow / 2 -> right arrow
+                int arrowId = psste.getArrowId();
+                if (arrowId == -1)return;
+                float u1 = 20.0F*arrowId;
+                float v1 = 0.0F;
+                float u2 = 20.0F*(arrowId+1);
+                float v2 = 14.0F;
+                xBase = 2.0F;
+                yBase = 1.5F;
+                renderQuadWithTexture(xBase,xBase+10.0F,yBase,yBase+7.0F,u1/texLength,u2/texLength,v1/texHeight,v2/texHeight,color,2,location);
+                xBase += 16.0F;
+                renderQuadWithTexture(xBase,xBase+10.0F,yBase,yBase+7.0F,u1/texLength,u2/texLength,v1/texHeight,v2/texHeight,color,2,location);
+                xBase += 16.0F;
+                renderQuadWithTexture(xBase,xBase+10.0F,yBase,yBase+7.0F,u1/texLength,u2/texLength,v1/texHeight,v2/texHeight,color,2,location);
+                break;
+            case SCH_EXIT:
+                break;
+            case SCH_MUL_EXIT:
+                break;
+        }
     }
 
     private void renderLimit(PlainSquareSignTileEntity psste){
@@ -117,12 +157,12 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
     private void renderText(PlainSquareSignTileEntity psste){
         Color color = psste.getForegroundColor();
         PSDisplayMode mode = psste.getMode();
-        List<TextPSPosition> textPositions = mode.getTextPosition();
-        for (TextPSPosition textPosition : textPositions){
-            float xBase = textPosition.getPosition().x;
-            float yBase = textPosition.getPosition().y;
-            float maxLength = textPosition.getLengthMax();
-            int maxNumber = textPosition.getMaxText();
+        List<QuadPSPosition> quadPositions = mode.getTextPosition();
+        for (QuadPSPosition quadPosition : quadPositions){
+            float xBase = quadPosition.getPosition().x;
+            float yBase = quadPosition.getPosition().y;
+            float maxLength = quadPosition.getLengthMax();
+            int maxNumber = quadPosition.getMaxText();
             for (int i=0;i<maxNumber;i++){
                 renderQuad(xBase,xBase+maxLength,yBase+4.5F*i,yBase+4.5F*i+3,color,1);
             }
@@ -149,20 +189,25 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
 
 
     private void renderQuadWithTexture(float x1,float x2,float y1,float y2,float u1,float u2,float v1,float v2, Color color,int layer,ResourceLocation texture){
-        this.bindTexture(texture);
-        float z = -0.04F-layer*0.01F;
+        Minecraft.getInstance().getTextureManager().bindTexture(texture);
+        GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
+        float z = -0.06F-layer*0.001F;
         int red,green,blue,alpha;
+
         red = color.getRed();
         green = color.getGreen();
         blue = color.getBlue();
         alpha = color.getAlpha();
+
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder builder = tessellator.getBuffer();
         builder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-        builder.pos(x2/16.0F, y2/16.0F, z).tex(u1, v2).color(red, green, blue, alpha).endVertex();
-        builder.pos(x2/16.0F, y1/16.0F, z).tex(u1, v1).color(red, green, blue, alpha).endVertex();
-        builder.pos(x1/16.0F, y1/16.0F, z).tex(u2, v1).color(red, green, blue, alpha).endVertex();
-        builder.pos(x1/16.0F, y2/16.0F, z).tex(u2, v2).color(red, green, blue, alpha).endVertex();
+
+        builder.pos(x2/16.0F, y2/16.0F, z).tex(u1, v1).color(red, green, blue, alpha).endVertex();
+        builder.pos(x2/16.0F, y1/16.0F, z).tex(u1, v2).color(red, green, blue, alpha).endVertex();
+        builder.pos(x1/16.0F, y1/16.0F, z).tex(u2, v2).color(red, green, blue, alpha).endVertex();
+        builder.pos(x1/16.0F, y2/16.0F, z).tex(u2, v1).color(red, green, blue, alpha).endVertex();
+
         tessellator.draw();
     }
 

@@ -36,6 +36,7 @@ public class PSCapability {
                 tag.putInt("fg_color",instance.getForegroundColor().getRGB());
                 tag.putByte("display_mode",instance.getDisplayMode().getMeta());
                 tag.putByte("ps_position",instance.getPosition().getMeta());
+                tag.putInt("arrow_id",instance.getArrowId());
                 return tag;
             }
 
@@ -52,6 +53,8 @@ public class PSCapability {
                 instance.setBackgroundColor(bg_color);
                 int fg_color = tag.getInt("fg_color");
                 instance.setForegroundColor(fg_color);
+                int arrowId = tag.getInt("arrow_id");
+                instance.setArrowId(arrowId);
                 byte mode = tag.getByte("display_mode");
                 byte position = tag.getByte("ps_position");
                 instance.setInternVariable(PSPosition.byIndex(position), PSDisplayMode.byIndex(mode));

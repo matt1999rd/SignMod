@@ -13,5 +13,7 @@ public interface IPSStorage extends ITextStorage {
     Color getBackgroundColor();
     void setForegroundColor(int color);
     Color getForegroundColor();
+    int getArrowId();
+    void setArrowId(int arrowId);
 
 }

@@ -24,11 +24,13 @@ public class PSStorage implements IPSStorage, INBTSerializable<CompoundNBT> {
     List<Text> texts ;
     Color backgroundColor;
     Color foregroundColor;
+    int arrowId;
 
     public PSStorage(){
         texts = new ArrayList<>();
         backgroundColor = Color.WHITE;
         foregroundColor = Color.BLACK;
+        arrowId = 1;
     }
 
     @Override
@@ -139,5 +141,15 @@ public class PSStorage implements IPSStorage, INBTSerializable<CompoundNBT> {
     @Override
     public Color getForegroundColor() {
         return foregroundColor;
+    }
+
+    @Override
+    public int getArrowId() {
+        return arrowId;
+    }
+
+    @Override
+    public void setArrowId(int arrowId) {
+        this.arrowId = arrowId;
     }
 }

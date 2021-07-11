@@ -1,6 +1,6 @@
 package fr.mattmouss.signs.enums;
 
-import fr.mattmouss.signs.util.TextPSPosition;
+import fr.mattmouss.signs.util.QuadPSPosition;
 import net.minecraft.util.IStringSerializable;
 
 import java.util.ArrayList;
@@ -40,24 +40,24 @@ public enum PSDisplayMode implements IStringSerializable {
         return name;
     }
 
-    public List<TextPSPosition> getTextPosition() {
-        List<TextPSPosition> textPositions = new ArrayList<>();
+    public List<QuadPSPosition> getTextPosition() {
+        List<QuadPSPosition> textPositions = new ArrayList<>();
         switch (this){
             case EXIT:
-                textPositions.add(new TextPSPosition(8.0F,21.0F,22.5F,2));
-                textPositions.add(new TextPSPosition(1.5F,3.0F,29.0F,4));
+                textPositions.add(new QuadPSPosition(8.0F,21.0F,22.5F,2));
+                textPositions.add(new QuadPSPosition(1.5F,3.0F,29.0F,4));
                 break;
             case DIRECTION:
-                textPositions.add(new TextPSPosition(2.0F,9.0F,44.0F,5));
+                textPositions.add(new QuadPSPosition(2.0F,9.0F,44.0F,5));
                 break;
             case SCH_MUL_EXIT:
-                textPositions.add(new TextPSPosition(14.5F, 27.5F,19.5F,1));
-                textPositions.add(new TextPSPosition(27.0F,3.5F,19.5F,1));
-                textPositions.add(new TextPSPosition(1.5F,3.5F,19.5F,1));
+                textPositions.add(new QuadPSPosition(14.5F, 27.5F,19.5F,1));
+                textPositions.add(new QuadPSPosition(27.0F,3.5F,19.5F,1));
+                textPositions.add(new QuadPSPosition(1.5F,3.5F,19.5F,1));
                 break;
             case SCH_EXIT:
-                textPositions.add(new TextPSPosition(25.0F,21.5F,19.5F,2));
-                textPositions.add(new TextPSPosition(3.0F,4.0F,19.5F,4));
+                textPositions.add(new QuadPSPosition(25.0F,21.5F,19.5F,2));
+                textPositions.add(new QuadPSPosition(3.0F,4.0F,19.5F,4));
                 break;
         }
         return textPositions;
