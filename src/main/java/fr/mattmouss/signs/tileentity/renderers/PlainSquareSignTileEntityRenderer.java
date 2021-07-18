@@ -104,13 +104,14 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
         PSDisplayMode mode = psste.getMode();
         Color color = psste.getForegroundColor();
         ResourceLocation location = new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/ps_arrow.png");
-        float texLength = 60.0F;
-        float texHeight = 26.0F;
+        float texLength = 84.0F;
+        float texHeight = 61.0F;
         switch (mode){
             case EXIT:
                 float length = 12.0F;
                 float xBase = 1.0F;
                 float yBase = 25.0F;
+                //rendering of the arrow
                 renderQuadWithTexture(xBase,xBase+length/2,yBase,yBase+length/2,0.0F,length/texLength,14.0F/texHeight,(14.0F+length)/texHeight,color,2,location);
                 break;
             case DIRECTION:
@@ -130,8 +131,24 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
                 renderQuadWithTexture(xBase,xBase+10.0F,yBase,yBase+7.0F,u1/texLength,u2/texLength,v1/texHeight,v2/texHeight,color,2,location);
                 break;
             case SCH_EXIT:
+                xBase = 26.0F;
+                yBase = 0.5F;
+                u1= 12.0F;
+                u2= 32.0F;
+                v1= 14.0F;
+                v2= 52.0F;
+                //render of scheme
+                renderQuadWithTexture(xBase,xBase+10.0F,yBase,yBase+19.0F,u1/texLength,u2/texLength,v1/texHeight,v2/texHeight,color,2,location);
                 break;
             case SCH_MUL_EXIT:
+                xBase = 10.5F;
+                yBase = 0.5F;
+                u1= 32.0F;
+                u2= 84.0F;
+                v1= 14.0F;
+                v2= 61.0F;
+                //render of scheme
+                renderQuadWithTexture(xBase,xBase+26.0F,yBase,yBase+23.5F,u1/texLength,u2/texLength,v1/texHeight,v2/texHeight,color,2,location);
                 break;
         }
     }
