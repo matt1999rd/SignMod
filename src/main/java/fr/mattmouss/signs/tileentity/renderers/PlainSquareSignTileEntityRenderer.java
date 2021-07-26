@@ -141,7 +141,7 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
                 renderQuadWithTexture(xBase,xBase+10.0F,yBase,yBase+19.0F,u1/texLength,u2/texLength,v1/texHeight,v2/texHeight,color,2,location);
                 break;
             case SCH_MUL_EXIT:
-                xBase = 10.5F;
+                xBase = 11.0F;
                 yBase = 0.5F;
                 u1= 32.0F;
                 u2= 84.0F;
@@ -188,7 +188,7 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
 
     //when rendering quad be careful to use directly the value in the png folder (/2) and avoid dividing by 16
     private void renderQuad(float x1,float x2,float y1,float y2,Color color,int layer){
-        float z = -0.06F-layer*0.001F;
+        float z = -0.061F-layer*0.001F;
         int red,green,blue,alpha;
         red = color.getRed();
         green = color.getGreen();
