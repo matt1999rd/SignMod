@@ -88,7 +88,7 @@ public class Text {
         this.y = y;
     }
 
-    public void render(BufferBuilder builder){
+    public void render(BufferBuilder builder,float xOrigin, float yOrigin, float zOrigin, float pixelLength, float pixelHeight){
         Minecraft.getInstance().getTextureManager().bindTexture(TEXT);
         GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
         int n=content.length();
@@ -99,7 +99,7 @@ public class Text {
                 shift+=4*scale;
             }else {
                 Letter l = new Letter(c0,x+shift,y);
-                l.render(builder,color.getRed(),color.getGreen(),color.getBlue(),color.getAlpha(), scale);
+                l.render(builder,color.getRed(),color.getGreen(),color.getBlue(),color.getAlpha(), scale,xOrigin,yOrigin,zOrigin,pixelLength,pixelHeight);
                 shift+=l.length*scale;
                 char followingChar = (i!=n-1)?content.charAt(i+1):' ';
                 if (followingChar>97){

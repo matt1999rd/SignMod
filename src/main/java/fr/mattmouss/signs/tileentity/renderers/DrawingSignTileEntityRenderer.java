@@ -86,9 +86,11 @@ public class DrawingSignTileEntityRenderer<T extends DrawingSignTileEntity> exte
         GlStateManager.enableBlend();
         builder.begin(7,DefaultVertexFormats.POSITION_TEX_COLOR);
         int n= tileEntity.getNumberOfText();
+        float completeLength = 10.0F/16;
+        float pixelLength = completeLength / 128.0F;
         for (int i=0;i<n;i++){
             Text t = tileEntity.getText(i);
-            t.render(builder);
+            t.render(builder,completeLength,completeLength,0.005F,pixelLength,pixelLength);
         }
         tessellator.draw();
         Functions.resetWorldGLState();

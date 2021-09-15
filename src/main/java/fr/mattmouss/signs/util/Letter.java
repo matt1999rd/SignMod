@@ -51,22 +51,19 @@ public class Letter {
         beg = new Vec2f(x,y);
     }
 
-    public void render(BufferBuilder builder,int red,int green,int blue,int alpha,int scale){
-        float completeLength = 10.0F/16;
-        float pixelLength = completeLength/128;
-        float x1 = completeLength-beg.x*pixelLength;
-        float y1 = completeLength-beg.y*pixelLength;
-        float x2 = completeLength-(beg.x+length*scale)*pixelLength;
-        float y2 = completeLength-(beg.y+7*scale)*pixelLength;
+    public void render(BufferBuilder builder,int red,int green,int blue,int alpha,int scale,float xOrigin, float yOrigin,float zOrigin, float pixelLength,float pixelHeight){
+        float x1 = xOrigin-beg.x*pixelLength;
+        float y1 = yOrigin-beg.y*pixelHeight;
+        float x2 = xOrigin-(beg.x+length*scale)*pixelLength;
+        float y2 = yOrigin-(beg.y+7*scale)*pixelHeight;
         float u = getUMapping()/256.0F;
         float v = getVMapping()/256.0F;
         float du = length/256.0F;
         float dv = 7/256.0F;
-        float z = 0.005F;
-        builder.pos(x1,y1,z).tex(u,v).color(red, green, blue, alpha).endVertex();
-        builder.pos(x1,y2,z).tex(u,v+dv).color(red, green, blue, alpha).endVertex();
-        builder.pos(x2,y2,z).tex(u+du,v+dv).color(red, green, blue, alpha).endVertex();
-        builder.pos(x2,y1,z).tex(u+du,v).color(red, green, blue, alpha).endVertex();
+        builder.pos(x1,y1,zOrigin).tex(u,v).color(red, green, blue, alpha).endVertex();
+        builder.pos(x1,y2,zOrigin).tex(u,v+dv).color(red, green, blue, alpha).endVertex();
+        builder.pos(x2,y2,zOrigin).tex(u+du,v+dv).color(red, green, blue, alpha).endVertex();
+        builder.pos(x2,y1,zOrigin).tex(u+du,v).color(red, green, blue, alpha).endVertex();
     }
 
     public void renderOnScreen(BufferBuilder builder,int red,int green,int blue,int alpha,int guiLeft,int guiTop,int scale){

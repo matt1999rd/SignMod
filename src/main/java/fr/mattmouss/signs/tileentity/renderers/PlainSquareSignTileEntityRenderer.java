@@ -172,18 +172,29 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
     }
 
     private void renderText(PlainSquareSignTileEntity psste){
+        GlStateManager.pushMatrix();
+        float z = -0.061F- 2 *0.001F;
+        float pixelLength = 1.0F/32.0F;
+        //GlStateManager.enableTexture();
+        GlStateManager.enableBlend();
         Color color = psste.getForegroundColor();
         PSDisplayMode mode = psste.getMode();
         List<QuadPSPosition> quadPositions = mode.getTextPosition();
         for (QuadPSPosition quadPosition : quadPositions){
             float xBase = quadPosition.getPosition().x;
             float yBase = quadPosition.getPosition().y;
-            float maxLength = quadPosition.getLengthMax();
             int maxNumber = quadPosition.getMaxText();
+            float xOrigin = (mode.is2by2())? 2 : 3;
             for (int i=0;i<maxNumber;i++){
-                renderQuad(xBase,xBase+maxLength,yBase+4.5F*i,yBase+4.5F*i+3,color,1);
+                Text t = new Text(xBase,yBase+9.0F*i,"This is a test text",color,1);
+                Tessellator tessellator = Tessellator.getInstance();
+                BufferBuilder builder = tessellator.getBuffer();
+                builder.begin(7,DefaultVertexFormats.POSITION_TEX_COLOR);
+                t.render(builder,xOrigin,2,z,pixelLength,pixelLength);
+                tessellator.draw();
             }
         }
+        GlStateManager.popMatrix();
     }
 
     //when rendering quad be careful to use directly the value in the png folder (/2) and avoid dividing by 16

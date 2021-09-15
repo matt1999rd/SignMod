@@ -44,20 +44,20 @@ public enum PSDisplayMode implements IStringSerializable {
         List<QuadPSPosition> textPositions = new ArrayList<>();
         switch (this){
             case EXIT:
-                textPositions.add(new QuadPSPosition(8.0F,21.0F,22.5F,2));
-                textPositions.add(new QuadPSPosition(1.5F,3.0F,29.0F,4));
+                textPositions.add(new QuadPSPosition(3.0F,6.0F,45.0F,2));
+                textPositions.add(new QuadPSPosition(3.0F,24.0F,58.0F,4));
                 break;
             case DIRECTION:
-                textPositions.add(new QuadPSPosition(2.0F,9.0F,44.0F,5));
+                textPositions.add(new QuadPSPosition(4.0F,3.0F,88.0F,5));
                 break;
             case SCH_MUL_EXIT:
-                textPositions.add(new QuadPSPosition(14.5F, 27.5F,19.5F,1));
-                textPositions.add(new QuadPSPosition(27.0F,3.5F,19.5F,1));
-                textPositions.add(new QuadPSPosition(1.5F,3.5F,19.5F,1));
+                textPositions.add(new QuadPSPosition(28.0F, 2.0F,39.0F,1));
+                textPositions.add(new QuadPSPosition(3.0F,50.0F,39.0F,1));
+                textPositions.add(new QuadPSPosition(54.0F,50.0F,39.0F,1));
                 break;
             case SCH_EXIT:
-                textPositions.add(new QuadPSPosition(25.0F,21.5F,19.5F,2));
-                textPositions.add(new QuadPSPosition(3.0F,4.0F,19.5F,4));
+                textPositions.add(new QuadPSPosition(7.0F,5.0F,39.0F,2));
+                textPositions.add(new QuadPSPosition(51.0F,22.0F,39.0F,4));
                 break;
         }
         return textPositions;
