@@ -26,7 +26,7 @@ public class PlainSquarePanelBlock extends AbstractPanelBlock {
 
     @Override
     public ScreenType getScreenType() {
-        return ScreenType.EDITING_AND_COLOURING_SCREEN;
+        return ScreenType.PLAIN_SQUARE_SCREEN;
     }
 
     @Override

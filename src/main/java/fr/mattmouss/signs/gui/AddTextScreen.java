@@ -4,47 +4,43 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.gui.screenutils.ColorType;
+import fr.mattmouss.signs.gui.screenutils.Option;
 import fr.mattmouss.signs.gui.widget.ColorSlider;
 import fr.mattmouss.signs.gui.widget.LimitSizeTextField;
 import fr.mattmouss.signs.util.Functions;
 import fr.mattmouss.signs.util.Letter;
 import fr.mattmouss.signs.util.Text;
+import fr.mattmouss.signs.util.Vec2i;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.gui.widget.button.ImageButton;
-import net.minecraft.item.DyeColor;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
 
 import java.awt.*;
 
-public class AddTextScreen extends Screen {
+public class AddTextScreen extends withColorSliderScreen {
     IWithEditTextScreen parentScreen;
     Text oldText;
-    private static final int LENGTH = 197;
-    private static final int HEIGHT = 203;
     private static final int white =Color.WHITE.getRGB();
     ResourceLocation BACKGROUND = new ResourceLocation(SignMod.MODID, "textures/gui/add_text_gui.png");
-    ResourceLocation DYE_BUTTON = new ResourceLocation(SignMod.MODID, "textures/gui/buttons.png");
 
-    Button plusButton, moinsButton, addTextButton, cancelButton;
+    Button plusButton, minusButton, addTextButton, cancelButton;
     LimitSizeTextField field;
     ColorSlider RED_SLIDER, GREEN_SLIDER, BLUE_SLIDER;
-    ImageButton[] dye_color_button = new ImageButton[16];
 
     protected AddTextScreen(IWithEditTextScreen parentScreen,Text textToEdit) {
         super(new StringTextComponent("Add Text Screen"));
         this.parentScreen = parentScreen;
         oldText = textToEdit;
+        this.DIMENSION = new Vec2i(197,203);
     }
 
     @Override
     protected void init() {
-        int relX = (this.width - LENGTH) / 2;
-        int relY = (this.height - HEIGHT) / 2;
+        int relX = (this.width - DIMENSION.getX()) / 2;
+        int relY = (this.height - DIMENSION.getY()) / 2;
         Form f = parentScreen.getForm();
+        assert this.minecraft != null;
         field = new LimitSizeTextField(this.minecraft,relX,relY,f,oldText);
         if (f.isForDirection()){
             boolean isEnd = ((DirectionScreen)parentScreen).isEndSelected();
@@ -68,41 +64,17 @@ public class AddTextScreen extends Screen {
             return true;
         });
 
-
-        RED_SLIDER = new ColorSlider(relX + 53, relY + 7, field, ColorType.RED,135);
-        GREEN_SLIDER = new ColorSlider(relX + 53, relY + 32, field, ColorType.GREEN,135);
-        BLUE_SLIDER = new ColorSlider(relX + 53, relY + 57, field, ColorType.BLUE,135);
-
-        int x_dye_begining = relX + 36;
-        int y_dye_begining = relY + 18;
-        int dye_button_length = 6;
-        for (DyeColor color : DyeColor.values()) {
-            int i = color.getId();
-            dye_color_button[i] = new ImageButton(
-                    x_dye_begining + i % 2 * 6,
-                    y_dye_begining + i / 2 * 6,
-                    dye_button_length, dye_button_length,
-                    6 * 25 + i * dye_button_length,
-                    0,
-                    dye_button_length, DYE_BUTTON,
-                    b -> {
-                        fixColor(color.getColorValue());
-                    });
-            this.addButton(dye_color_button[i]);
-        }
+        super.init();
         cancelButton = new Button(relX + 44, relY + 165, 74, 20, "Cancel", b -> cancel());
         addTextButton = new Button(relX + 44, relY + 142, 74, 20, "Done", b -> addText());
         plusButton = new Button(relX + 162,relY+109,21,20,"+",b->changeScale(true));
-        moinsButton = new Button(relX+162,relY+129,21,20,"-",b->changeScale(false));
-        moinsButton.active = (field.getScale() != 1);
+        minusButton = new Button(relX+162,relY+129,21,20,"-",b->changeScale(false));
+        minusButton.active = (field.getScale() != 1);
         if (oldText != null)field.updatePlusButton();
         this.addButton(cancelButton);
         this.addButton(addTextButton);
-        this.addButton(RED_SLIDER);
-        this.addButton(BLUE_SLIDER);
-        this.addButton(GREEN_SLIDER);
         this.addButton(plusButton);
-        this.addButton(moinsButton);
+        this.addButton(minusButton);
         this.addButton(field);
     }
 
@@ -114,14 +86,29 @@ public class AddTextScreen extends Screen {
     @Override
     public void render(int mouseX, int mouseY, float partialTicks) {
         GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
-        int relX = (this.width-LENGTH) / 2;
-        int relY = (this.height-HEIGHT) / 2;
+        int relX = getGuiStartXPosition();
+        int relY = getGuiStartYPosition();
+        assert this.minecraft != null;
         this.minecraft.getTextureManager().bindTexture(BACKGROUND);
-        blit(relX, relY,this.blitOffset , 0.0F, 0.0F, LENGTH, HEIGHT, 256, 256);
+        blit(relX, relY,this.blitOffset , 0.0F, 0.0F, DIMENSION.getX(), DIMENSION.getY(), 256, 256);
         super.render(mouseX, mouseY, partialTicks);
+        //AbstractGui.fill(relX + 143, relY + 93, relX + 143 + 9, relY + 93 + 9, field.getColor());
         int gap = (field.getScale()>9) ? 6:0;
         this.drawString(Minecraft.getInstance().fontRenderer,""+field.getScale(),relX+144-gap,relY+126,white);
-        AbstractGui.fill(relX + 143, relY + 93, relX + 143 + 9, relY + 93 + 9, field.getColor(null));
+    }
+
+    void fixColor(int color) {
+        Option option = getColorOption();
+        option.setColor(color,null);
+        ColorSlider[] sliders = getActiveSliders();
+        sliders[0].updateSlider(Functions.getRedValue(color));
+        sliders[1].updateSlider(Functions.getGreenValue(color));
+        sliders[2].updateSlider(Functions.getBlueValue(color));
+    }
+
+    //@Override
+    Vec2i getDyeButtonsBeginning() {
+        return new Vec2i(36,18);
     }
 
     public static void open(IWithEditTextScreen screen,Text text){
@@ -132,11 +119,43 @@ public class AddTextScreen extends Screen {
         Minecraft.getInstance().displayGuiScreen(new AddTextScreen(screen,null));
     }
 
-    private void fixColor(int color) {
-        field.setColor(color,null);
-        RED_SLIDER.updateSlider(Functions.getRedValue(color));
-        GREEN_SLIDER.updateSlider(Functions.getGreenValue(color));
-        BLUE_SLIDER.updateSlider(Functions.getBlueValue(color));
+    Option getColorOption() {
+        return field;
+    }
+
+    @Override
+    ColorSlider[] getActiveSliders() {
+        return new ColorSlider[]{RED_SLIDER, GREEN_SLIDER, BLUE_SLIDER};
+    }
+
+    @Override
+    void initSlider() {
+        int relX = getGuiStartXPosition();
+        int relY = getGuiStartYPosition();
+        RED_SLIDER = new ColorSlider(relX + 53, relY + 7, field, ColorType.RED,135);
+        GREEN_SLIDER = new ColorSlider(relX + 53, relY + 32, field, ColorType.GREEN,135);
+        BLUE_SLIDER = new ColorSlider(relX + 53, relY + 57, field, ColorType.BLUE,135);
+        this.addButton(RED_SLIDER);
+        this.addButton(BLUE_SLIDER);
+        this.addButton(GREEN_SLIDER);
+    }
+
+    protected int getGuiStartXPosition(){
+        return (this.width-DIMENSION.getX()) / 2;
+    }
+
+    protected int getGuiStartYPosition(){
+        return (this.height-DIMENSION.getY()) / 2;
+    }
+
+    @Override
+    boolean renderColor() {
+        return true;
+    }
+
+    @Override
+    Vec2i getColorDisplayBeginning() {
+        return new Vec2i(143,93);
     }
 
     private void cancel() {
@@ -151,22 +170,22 @@ public class AddTextScreen extends Screen {
         Text newText = new Text(field.getX(),
                 field.getY(),
                 field.getText(),
-                new Color(field.getColor(null)),field.getScale());
+                new Color(field.getColor()),field.getScale());
         Minecraft.getInstance().displayGuiScreen(parentScreen.getScreen());
         parentScreen.addOrEditText(newText);
     }
 
-    private void changeScale(boolean incr){
-        if (field.getScale() == 2 && !incr){
-            moinsButton.active = false;
-        }else if (field.getScale() == 1 && incr){
-            moinsButton.active = true;
+    private void changeScale(boolean increment){
+        if (field.getScale() == 2 && !increment){
+            minusButton.active = false;
+        }else if (field.getScale() == 1 && increment){
+            minusButton.active = true;
         }
-        field.incrementScale(incr);
+        field.incrementScale(increment);
         field.updatePlusButton();
     }
 
-    /** for textfield update done when text is written **/
+    /** for text file update done when text is written **/
 
     public void disablePlusButton() {
         if (plusButton.active)plusButton.active = false;

@@ -164,9 +164,6 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
     }
 
     public int getColor(ColorType type){
-        if (type == null){
-            return color.getRGB();
-        }
         switch (type){
             case RED:
                 return color.getRed();
@@ -177,5 +174,10 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
             default:
                 return -1;
         }
+    }
+
+    @Override
+    public int getColor() {
+        return color.getRGB();
     }
 }

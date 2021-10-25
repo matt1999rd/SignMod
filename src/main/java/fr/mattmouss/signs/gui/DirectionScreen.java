@@ -5,16 +5,16 @@ import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.gui.screenutils.ColorOption;
 import fr.mattmouss.signs.gui.screenutils.ColorType;
+import fr.mattmouss.signs.gui.screenutils.Option;
 import fr.mattmouss.signs.gui.widget.ColorSlider;
 import fr.mattmouss.signs.gui.widget.DirectionCursorButton;
 import fr.mattmouss.signs.gui.widget.DirectionPartBox;
 import fr.mattmouss.signs.networking.*;
 import fr.mattmouss.signs.tileentity.DirectionSignTileEntity;
-import static fr.mattmouss.signs.util.Functions.*;
 import fr.mattmouss.signs.util.Text;
+import fr.mattmouss.signs.util.Vec2i;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
-import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.CheckboxButton;
@@ -22,20 +22,17 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 
 import java.awt.*;
 
-public class DirectionScreen extends Screen implements IWithEditTextScreen {
+import static fr.mattmouss.signs.util.Functions.*;
 
-    private static final int LENGTH = 424;
-    private static final int HEIGHT = 171;
+public class DirectionScreen extends withColorSliderScreen implements IWithEditTextScreen {
     private int selTextInd = 4;
     private boolean isBgColorDisplayed = true;
     private boolean isTextCenter = false;
-    private static final int white = MathHelper.rgb(1.0F,1.0F,1.0F);
     private static ColorOption backgroundColorOption;
     private static ColorOption edgingColorOption;
 
@@ -53,6 +50,7 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         super(new StringTextComponent("Direction Screen"));
         this.form = form;
         this.panelPos = panelPos;
+        this.DIMENSION = new Vec2i(424,171);
     }
 
     /** initial function of opening **/
@@ -62,11 +60,52 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
     }
 
     @Override
+    Vec2i getDyeButtonsBeginning() {
+        return new Vec2i(321,83);
+    }
+
+    @Override
+    Option getColorOption() {
+        return (isBgColorDisplayed)? backgroundColorOption : edgingColorOption;
+    }
+
+    @Override
+    ColorSlider[] getActiveSliders() {
+        if (isBgColorDisplayed){
+            return new ColorSlider[]{sliders[0], sliders[1], sliders[2]};
+        }else {
+            return new ColorSlider[]{sliders[3], sliders[4], sliders[5]};
+        }
+    }
+
+    @Override
+    void initSlider() {
+        int relX = getGuiStartXPosition();
+        int relY = getGuiStartYPosition();
+        for (int i=0;i<6;i++){
+            ColorOption opt = (i<3)? backgroundColorOption : edgingColorOption;
+            sliders[i] = new ColorSlider(relX+323,relY+7+i%3*25,opt, ColorType.byIndex(i%3),93);
+            addButton(sliders[i]);
+        }
+        updateSliderDisplay();
+    }
+
+    @Override
+    boolean renderColor() {
+        return true;
+    }
+
+    @Override
+    Vec2i getColorDisplayBeginning() {
+        return new Vec2i(395,93);
+    }
+
+    @Override
     protected void init() {
         backgroundColorOption = new ColorOption(Color.WHITE);
         edgingColorOption = new ColorOption(Color.BLACK);
-        int relX = (this.width-LENGTH) / 2;
-        int relY = (this.height-HEIGHT) / 2;
+        int relX = getGuiStartXPosition();
+        int relY = getGuiStartYPosition();
         for (int i=0;i<5;i++){
             boolean b = getPlacement(i);
             changeBool[i] = new DirectionPartBox(i,this,relX,relY,b);
@@ -81,13 +120,7 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
                 addButton(arrowDirection[i]);
             }
         }
-        for (int i=0;i<6;i++){
-            ColorOption opt = (i<3)? backgroundColorOption : edgingColorOption;
-            sliders[i] = new ColorSlider(relX+323,relY+7+i%3*25,opt, ColorType.byIndex(i%3),93);
-            addButton(sliders[i]);
-        }
-        updateSliderDisplay();
-        applyColorButton = new Button(relX+304,relY+119,74,20,"apply Color",b->applyColor());
+        applyColorButton = new Button(relX+330,relY+145,75,20,"apply Color",b->applyColor());
         addButton(applyColorButton);
         addOrSetTextButton = new Button(relX+70,relY+145,75,20,"Add Text",b->openTextGui());
         addButton(addOrSetTextButton);
@@ -96,7 +129,7 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         if (form == Form.RECTANGLE){
             addButton(centerText);
         }
-
+        super.init();
     }
 
     private void updateSliderDisplay() {
@@ -131,13 +164,15 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
     @Override
     public void render(int mouseX, int mouseY, float partialTicks) {
         GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
-        int relX = (this.width-LENGTH) / 2;
-        int relY = (this.height-HEIGHT) / 2;
+        int relX = getGuiStartXPosition();
+        int relY = getGuiStartYPosition();
+        assert this.minecraft != null;
         this.minecraft.getTextureManager().bindTexture(BACKGROUND);
-        blit(relX, relY ,this.blitOffset,0.0F, 0.0F, LENGTH, HEIGHT,256,512);
-        GlStateManager.enableBlend();
+        //display of background gui
+        blit(relX, relY ,this.blitOffset,0.0F, 0.0F, DIMENSION.getX(), DIMENSION.getY(),256,512);
         int offset = (isBgColorDisplayed)? 25:0;
-        blit(relX+338,relY+85,this.blitOffset,LENGTH+offset,0,25,25,256,512);
+        //display of button for the color to define (using color slider) choice between background and foreground color
+        blit(relX+338,relY+85,this.blitOffset,DIMENSION.getX()+offset,0,25,25,256,512);
         super.render(mouseX, mouseY, partialTicks);
         DirectionSignTileEntity dste = getTileEntity();
         if (form == Form.RECTANGLE){
@@ -145,8 +180,6 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
                 onTextCenterChange();
             }
         }
-        ColorOption option = (isBgColorDisplayed)? backgroundColorOption : edgingColorOption;
-        AbstractGui.fill(relX+395,relY+93,relX+395+9,relY+93+9,option.getColor());
         dste.renderOnScreen(relX+4,relY+14,selTextInd);
     }
 
@@ -210,9 +243,10 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
     }
 
     private DirectionSignTileEntity getTileEntity(){
+        assert this.minecraft != null;
         World world = this.minecraft.world;
         TileEntity te = world.getTileEntity(panelPos);
-        if (te != null && te instanceof DirectionSignTileEntity){
+        if (te instanceof DirectionSignTileEntity){
             return (DirectionSignTileEntity) te;
         }
         if (te == null)throw new NullPointerException("Tile entity at panelPos is not in desired place !");
@@ -229,13 +263,12 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        int ind = getCellClickedInd(mouseX,mouseY,button);
-        int guiLeft = (this.width-LENGTH) / 2;
-        int guiTop = (this.height-HEIGHT) / 2;
+        int ind = getCellClickedInd(mouseX,mouseY);
+        int guiLeft = getGuiStartXPosition();
+        int guiTop = getGuiStartYPosition();
         if (ind != -1){
-            SignMod.LOGGER.info("click on a gray cell : "+ ind);
             selTextInd = ind;
-            onChangeIndice();
+            onChangeIndices();
         } else if (mouseX>guiLeft+338 && mouseX<guiLeft+362 && mouseY>guiTop+85 && mouseY<guiTop+109){
             isBgColorDisplayed = !isBgColorDisplayed;
             Minecraft.getInstance().getSoundHandler().play(SimpleSound.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
@@ -244,14 +277,18 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         return super.mouseClicked(mouseX,mouseY,button);
     }
 
-    private void onChangeIndice() {
+    private void onChangeIndices() {
+        Text text = getText();
         if (selTextInd == -1){
             addOrSetTextButton.active = false;
             addOrSetTextButton.visible = false;
-        } else if (!getText().isEmpty()){
-            addOrSetTextButton.setMessage("Set Text");
-        }else {
-            addOrSetTextButton.setMessage("Add Text");
+        } else {
+            assert text != null;
+            if (!text.isEmpty()){
+                addOrSetTextButton.setMessage("Set Text");
+            }else {
+                addOrSetTextButton.setMessage("Add Text");
+            }
         }
     }
 
@@ -265,7 +302,7 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
         return isTextCenter;
     }
 
-    private int getCellClickedInd(double mouseX, double mouseY, int button) {
+    private int getCellClickedInd(double mouseX, double mouseY) {
         DirectionSignTileEntity dste = getTileEntity();
         for (int i=0;i<10;i++){
             if (isInCell(i,mouseX,mouseY) && dste.isCellPresent(i/2)){
@@ -276,8 +313,8 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
     }
 
     private boolean isInCell(int i,double mouseX,double mouseY) {
-        int guiLeft = (this.width-LENGTH) / 2;
-        int guiTop = (this.height-HEIGHT) / 2;
+        int guiLeft = getGuiStartXPosition();
+        int guiTop = getGuiStartYPosition();
         boolean isEnd = (i%2 == 1);
         DirectionSignTileEntity dste =getTileEntity();
         int x1;
@@ -305,7 +342,6 @@ public class DirectionScreen extends Screen implements IWithEditTextScreen {
 
     private void openTextGui() {
         Minecraft.getInstance().displayGuiScreen(null);
-        DirectionSignTileEntity dste = getTileEntity();
         if (selTextInd != -1){
             Text t = getText();
             AddTextScreen.open(this,t);

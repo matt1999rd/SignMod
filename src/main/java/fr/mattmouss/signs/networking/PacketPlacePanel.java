@@ -4,12 +4,15 @@ import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.mattmouss.signs.gui.PSDisplayModeScreen;
 import fr.mattmouss.signs.util.Functions;
+import net.java.games.input.Controller;
+import net.java.games.input.Mouse;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.network.NetworkEvent;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.Objects;
 import java.util.function.Supplier;

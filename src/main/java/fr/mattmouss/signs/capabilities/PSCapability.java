@@ -26,11 +26,11 @@ public class PSCapability {
             public INBT writeNBT(Capability<IPSStorage> capability, IPSStorage instance, Direction side) {
                 CompoundNBT tag = new CompoundNBT();
                 ListNBT textsNBT = new ListNBT();
-                List<Text> txts = instance.getTexts();
-                txts.forEach(text -> {
+                Text[] txts = instance.getTexts();
+                for (Text text : txts) {
                     CompoundNBT txtNBT = text.serializeNBT();
                     textsNBT.add(txtNBT);
-                });
+                }
                 tag.put("texts",textsNBT);
                 tag.putInt("bg_color",instance.getBackgroundColor().getRGB());
                 tag.putInt("fg_color",instance.getForegroundColor().getRGB());
@@ -44,10 +44,12 @@ public class PSCapability {
             public void readNBT(Capability<IPSStorage> capability, IPSStorage instance, Direction side, INBT nbt) {
                 CompoundNBT tag = (CompoundNBT)nbt;
                 ListNBT textsNBT = (ListNBT)(tag.get("texts"));
+                int increment =0;
                 for (INBT inbt : textsNBT){
                     CompoundNBT textNBT = (CompoundNBT)inbt;
                     Text t= Text.getTextFromNBT(textNBT);
-                    instance.addText(t,false);
+                    instance.setText(t,increment);
+                    increment++;
                 }
                 int bg_color = tag.getInt("bg_color");
                 instance.setBackgroundColor(bg_color);

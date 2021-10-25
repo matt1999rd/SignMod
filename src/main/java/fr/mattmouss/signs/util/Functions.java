@@ -1,6 +1,5 @@
 package fr.mattmouss.signs.util;
 
-import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
 import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
@@ -17,7 +16,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
 import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -28,12 +26,8 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.lwjgl.stb.STBImageResize;
-import org.lwjgl.system.CallbackI;
 
-import java.awt.*;
 import java.util.List;
-import java.util.function.BinaryOperator;
 
 public class Functions {
 
@@ -54,7 +48,7 @@ public class Functions {
         SOUTH_WEST = BooleanProperty.create("south_west");
     }
 
-    //give the direction after placement for updating blockstate
+    //give the direction after placement for updating block state
 
     public static Direction getDirectionFromEntity(LivingEntity placer, BlockPos pos) {
         Vec3d vec = placer.getPositionVec();
@@ -65,23 +59,19 @@ public class Functions {
         return d;
     }
 
-    //notify if the block is a support or a grid for checking before placement of grid or support in world
-
-    public static boolean isSupportOrGrid(Block block){
-        return (block instanceof SignSupport || block instanceof GridSupport || block instanceof AbstractPanelBlock);
-    }
-
-    //give a boolean table corresponding to the position of grid in blockstate state of a support-like block
+    //give a boolean table corresponding to the position of grid in object state of class BlockState of a support-like block
 
     public static boolean[] getFlagsFromState(BlockState state) {
         boolean[] flags= new boolean[8];
         for (int i=0;i<8;i++){
-            flags[i] = state.get(ExtendDirection.byIndex(i).getSupportProperty());
+            ExtendDirection direction = ExtendDirection.byIndex(i);
+            assert direction != null;
+            flags[i] = state.get(direction.getSupportProperty());
         }
         return flags;
     }
 
-    //usefull in support-like block to update the blockstate given in the position of grids into the flags table
+    //useful in support-like block to update the block state given in the position of grids into the flags table
 
     public static void setBlockState(World world,BlockPos pos, BlockState state, boolean[] flags) {
         world.setBlockState(pos,state
@@ -96,14 +86,14 @@ public class Functions {
         );
     }
 
-    //convert a blockpos into vec3d and adding an offset on x and z coordinate
-    // (use in the convertion to vec3d of support and grid center blockpos)
+    //convert a block position into vec3d and adding an offset on x and z coordinate
+    // (use in the conversion to vec3d of support and grid center block position)
 
     public static Vec3d getVecFromBlockPos (BlockPos pos,float horOffset){
         return new Vec3d(pos.getX()+horOffset,pos.getY(),pos.getZ()+horOffset);
     }
 
-    //usefull if we need to convert to degree (use for openGL rotation)
+    //useful if we need to convert to degree (use for openGL rotation)
 
     public static double toDegree(double radianAngle){
         double degreeAngle = (180.0/Math.PI)*radianAngle;
@@ -113,7 +103,7 @@ public class Functions {
         return degreeAngle;
     }
 
-    //usefull if we need to convert to radian
+    //useful if we need to convert to radian
 
     public static float toRadian(double degreeAngle){
         double radianAngle = (Math.PI/180.0)*degreeAngle;
@@ -123,7 +113,7 @@ public class Functions {
         return (float)radianAngle;
     }
 
-    //usefull for text coordinate will be changed in the future
+    //useful for text coordinate will be changed in the future
 
     public static boolean isValidCoordinate(int x, int y) {
         return (x>-1 && y>-1 && x<128 && y<128);
@@ -211,7 +201,7 @@ public class Functions {
         world.setBlockState(pos, Blocks.AIR.getDefaultState(),35);
     }
 
-    //usefull to delete the other grid of a grid or a
+    //useful to delete the other grid of a grid or a
 
     public static void deleteOtherGrid(BlockPos pos, World worldIn, PlayerEntity player,BlockState state) {
         boolean isRotated = state.get(GridSupport.ROTATED);
@@ -229,7 +219,9 @@ public class Functions {
             ExtendDirection negDir = ExtendDirection.getExtendedDirection(
                     Direction.getFacingFromAxisDirection(axis, Direction.AxisDirection.NEGATIVE),
                     false);
+            assert posDir != null;
             Functions.deleteGridRow(posDir,pos,worldIn,player);
+            assert negDir != null;
             Functions.deleteGridRow(negDir,pos,worldIn,player);
         }else {
             Direction posDir1 = Direction.getFacingFromAxisDirection(axis, Direction.AxisDirection.POSITIVE);
@@ -238,7 +230,9 @@ public class Functions {
             Direction negDir1 = Direction.getFacingFromAxisDirection(axis, Direction.AxisDirection.NEGATIVE);
             Direction negDir2 = negDir1.rotateYCCW();
             ExtendDirection negExtDir = ExtendDirection.getExtendedDirection(negDir1,negDir2);
+            assert posExtDir != null;
             Functions.deleteGridRow(posExtDir,pos,worldIn,player);
+            assert negExtDir != null;
             Functions.deleteGridRow(negExtDir,pos,worldIn,player);
         }
     }
@@ -345,17 +339,6 @@ public class Functions {
         return MathHelper.sqrt(x*x+y*y);
     }
 
-    public static int getOppositeColor(Color color) {
-        int red,green,blue;
-        red = color.getRed();
-        green = color.getGreen();
-        blue = color.getBlue();
-        red = 256-red;
-        green = 256-green;
-        blue = 256-blue;
-        return new Color(red,green,blue).getRGB();
-    }
-
     //has 4 grid return true if the grid support at blockPos pos
     public static boolean has4Grid(ItemUseContext context) {
         BlockPos pos = context.getPos();
@@ -372,6 +355,7 @@ public class Functions {
             ExtendDirection testDir = (i%2 == 0)? direction : direction.getOpposite();
             Direction YDir = (i/2==0)? Direction.UP : Direction.DOWN;
             BlockState stateY = world.getBlockState(pos.offset(YDir));
+            assert testDir != null;
             BlockState stateCorner = world.getBlockState(testDir.offset(pos).offset(YDir));
             BlockState stateHor = world.getBlockState(testDir.offset(pos));
             Block blockY = stateY.getBlock();

@@ -6,6 +6,7 @@ import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.enums.ClientAction;
 import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.gui.screenutils.ColorType;
+import fr.mattmouss.signs.gui.screenutils.Option;
 import fr.mattmouss.signs.gui.screenutils.PencilMode;
 import fr.mattmouss.signs.gui.screenutils.PencilOption;
 import fr.mattmouss.signs.gui.widget.ColorSlider;
@@ -14,10 +15,9 @@ import fr.mattmouss.signs.networking.PacketAddOrEditText;
 import fr.mattmouss.signs.networking.PacketDelText;
 import fr.mattmouss.signs.networking.PacketDrawingAction;
 import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
-import fr.mattmouss.signs.util.Functions;
 import fr.mattmouss.signs.util.Text;
+import fr.mattmouss.signs.util.Vec2i;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
@@ -29,11 +29,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
-import org.apache.logging.log4j.core.config.yaml.YamlConfiguration;
 
-public class DrawingScreen extends Screen implements IWithEditTextScreen {
-    private static final int LENGTH = 325;
-    private static final int HEIGHT = 203;
+public class DrawingScreen extends withColorSliderScreen implements IWithEditTextScreen {
     private static final int white = MathHelper.rgb(1.0F,1.0F,1.0F);
 
     Form form ;
@@ -41,10 +38,8 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
     private static PencilOption option ;
     ColorSlider RED_SLIDER,GREEN_SLIDER,BLUE_SLIDER;
     ImageButton[] pencil_button = new ImageButton[6];
-    ImageButton[] dye_color_button = new ImageButton[16];
     ImageButton chBgButton ;
-    Button plusButton,moinsButton,addTextButton,delTextButton;
-
+    Button plusButton, minusButton,addTextButton,delTextButton;
 
     ResourceLocation BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/gui/drawing_gui.png");
     ResourceLocation PENCIL_BUTTONS = new ResourceLocation(SignMod.MODID,"textures/gui/buttons.png");
@@ -53,6 +48,7 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
         super(new StringTextComponent("Drawing Screen"));
         this.form = form;
         this.panelPos = panelPos;
+        this.DIMENSION = new Vec2i(325,203);
     }
 
     /** initial function of opening **/
@@ -65,14 +61,8 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
     protected void init() {
         option = PencilOption.getDefaultOption();
         int BUTTON_LENGTH =25;
-        int relX = (this.width-LENGTH) / 2;
-        int relY = (this.height-HEIGHT) / 2;
-        RED_SLIDER  =  new ColorSlider(relX+181,relY+7 ,option,ColorType.RED,135);
-        GREEN_SLIDER = new ColorSlider(relX+181,relY+32,option,ColorType.GREEN,135);
-        BLUE_SLIDER  = new ColorSlider(relX+181,relY+57,option,ColorType.BLUE,135);
-        this.addButton(RED_SLIDER);
-        this.addButton(BLUE_SLIDER);
-        this.addButton(GREEN_SLIDER);
+        int relX = getGuiStartXPosition();
+        int relY = getGuiStartYPosition();
         for (int i=0;i<5;i++){
             int finalI = i;
             pencil_button[i] = new ImageButton(relX+4, //PosX on gui
@@ -83,9 +73,7 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
                     0, //PosY on button texture
                     BUTTON_LENGTH, // y diff text when hovered
                     PENCIL_BUTTONS,
-                    button -> {
-                        this.changePencilMode(PencilMode.getPencilMode(finalI));
-            });
+                    button -> this.changePencilMode(PencilMode.getPencilMode(finalI)));
             this.addButton(pencil_button[i]);
         }
         chBgButton = new ImageButton(relX+75,
@@ -95,44 +83,23 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
                 5*BUTTON_LENGTH,
                 0,BUTTON_LENGTH,
                 PENCIL_BUTTONS,
-                button -> {
-                    this.chBgButton(option.getColor());
-                });
+                button -> this.chBgButton(option.getColor()));
         this.addButton(chBgButton);
         pencil_button[0].visible = false;
         pencil_button[0].active = false;
-        plusButton = new Button(relX+290,relY+109,21,20,"+",button->{
-            this.increaseLength();
-        });
-        moinsButton = new Button(relX+290,relY+129,21,20,"-",button->{
-            this.decreaseLength();
-        });
+        plusButton = new Button(relX+290,relY+109,21,20,"+",button-> this.increaseLength());
+        minusButton = new Button(relX+290,relY+129,21,20,"-", button-> this.decreaseLength());
         this.addButton(plusButton);
-        this.addButton(moinsButton);
-        int x_dye_begining = relX+164;
-        int y_dye_begining = relY+18;
-        int dye_button_length = 6;
-        for (DyeColor color : DyeColor.values()){
-            int i=color.getId();
-            dye_color_button[i] = new ImageButton(
-                    x_dye_begining+i%2*6,
-                    y_dye_begining+i/2*6,
-                    dye_button_length,dye_button_length,
-                    6*BUTTON_LENGTH+i*dye_button_length,
-                    0,
-                    dye_button_length,PENCIL_BUTTONS,
-                    b->{
-                        fixColor(color.getColorValue());
-            });
-            this.addButton(dye_color_button[i]);
-        }
+        this.addButton(minusButton);
+
         addTextButton = new Button(relX+132,relY+142,74,20,"Add Text",b->openTextGui());
         delTextButton = new Button(relX+132,relY+165,74,20,"Delete Text",b->deleteSelText());
         this.addButton(addTextButton);
         this.addButton(delTextButton);
         addTextButton.active = false;
         delTextButton.active = false;
-        moinsButton.active = false;
+        minusButton.active = false;
+        super.init();
     }
 
     /** display function **/
@@ -140,11 +107,13 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
     @Override
     public void render(int mouseX, int mouseY, float partialTicks) {
         GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
-        int relX = (this.width-LENGTH) / 2;
-        int relY = (this.height-HEIGHT) / 2;
+        int relX = getGuiStartXPosition();
+        int relY = getGuiStartYPosition();
+        assert this.minecraft != null;
         this.minecraft.getTextureManager().bindTexture(BACKGROUND);
-        blit(relX, relY,this.blitOffset , 0.0F, 0.0F, LENGTH, HEIGHT, 256, 512);
+        blit(relX, relY,this.blitOffset , 0.0F, 0.0F, DIMENSION.getX(), DIMENSION.getY(), 256, 512);
         super.render(mouseX, mouseY, partialTicks);
+        // rendering of color is done before following action -> not the case before
         FontRenderer renderer = this.minecraft.fontRenderer;
         int length = option.getLength();
         int gap = (length>9) ? 6:0;
@@ -153,11 +122,6 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
         this.drawString(renderer,""+length,relX+272-gap,relY+126,white);
         DrawingSignTileEntity dste = getTileEntity();
         dste.renderOnScreen(relX+30,relY+4,option.getTextIndice());
-        GlStateManager.enableBlend();
-        if (option.getMode().enableSlider()) {
-            AbstractGui.fill(relX + 271, relY + 93, relX + 271 + 9, relY + 93 + 9, option.getColor());
-        }
-
     }
 
     /** IPressable Consumer object for button in drawing screen **/
@@ -168,9 +132,8 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
             delText(n);
             option.unselectText();
             addTextButton.setMessage("Add Text");
-            delTextButton.active = false;
         }
-        else delTextButton.active = false;
+        delTextButton.active = false;
     }
 
     private void openTextGui() {
@@ -184,16 +147,46 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
         }
     }
 
-    private void fixColor(int color) {
-        option.setColor(color,null);
-        RED_SLIDER.updateSlider(Functions.getRedValue(color));
-        GREEN_SLIDER.updateSlider(Functions.getGreenValue(color));
-        BLUE_SLIDER.updateSlider(Functions.getBlueValue(color));
+    @Override
+    Vec2i getDyeButtonsBeginning() {
+        return new Vec2i(164,18);
+    }
+
+    @Override
+    Option getColorOption() {
+        return option;
+    }
+
+    @Override
+    ColorSlider[] getActiveSliders() {
+        return new ColorSlider[]{ RED_SLIDER, GREEN_SLIDER, BLUE_SLIDER};
+    }
+
+    @Override
+    void initSlider() {
+        int relX = getGuiStartXPosition();
+        int relY = getGuiStartYPosition();
+        RED_SLIDER  =  new ColorSlider(relX+181,relY+7 ,option,ColorType.RED,135);
+        GREEN_SLIDER = new ColorSlider(relX+181,relY+32,option,ColorType.GREEN,135);
+        BLUE_SLIDER  = new ColorSlider(relX+181,relY+57,option,ColorType.BLUE,135);
+        this.addButton(RED_SLIDER);
+        this.addButton(BLUE_SLIDER);
+        this.addButton(GREEN_SLIDER);
+    }
+
+    @Override
+    boolean renderColor() {
+        return option.getMode().enableSlider();
+    }
+
+    @Override
+    Vec2i getColorDisplayBeginning() {
+        return new Vec2i(271,93);
     }
 
     private void decreaseLength() {
         if (option.getLength() == 2){
-            moinsButton.active = false;
+            minusButton.active = false;
         }else if (option.getLength() == 64){
             plusButton.active = true;
         }
@@ -202,7 +195,7 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
 
     private void increaseLength() {
         if (option.getLength() == 1){
-            moinsButton.active = true;
+            minusButton.active = true;
         }else if (option.getLength() == 63){
             plusButton.active = false;
         }
@@ -277,7 +270,7 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
             DrawingSignTileEntity te = getTileEntity();
             color = te.getPixelColor(x,y);
             if (color != option.getColor()){
-                fixColor(color);
+                super.fixColor(color);
             }
             length = 0;
             makeAction = false;
@@ -306,8 +299,8 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
 
     private int getTextClicked(double mouseX, double mouseY) {
         DrawingSignTileEntity dste = getTileEntity();
-        int relX = (this.width-LENGTH) / 2;
-        int relY = (this.height-HEIGHT) / 2;
+        int relX = getGuiStartXPosition();
+        int relY = getGuiStartYPosition();
         int n= dste.getNumberOfText();
         for (int i=0;i<n;i++){
             Text t = dste.getText(i);
@@ -319,14 +312,14 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
     }
 
     private int getYOnScreen(double mouseY) {
-        int relY = (this.height-HEIGHT) / 2;
+        int relY = getGuiStartYPosition();
         float screenTop = relY + 4;
         double offsetMouseY = mouseY-screenTop;
         return MathHelper.fastFloor(offsetMouseY);
     }
 
     private int getXOnScreen(double mouseX) {
-        int relX = (this.width-LENGTH) / 2;
+        int relX = getGuiStartXPosition();
         float screenLeft = relX + 30;
         double offsetMouseX = mouseX-screenLeft;
         return MathHelper.fastFloor(offsetMouseX);
@@ -343,7 +336,7 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
     @Override
     public boolean keyPressed(int button, int p_keyPressed_2_, int p_keyPressed_3_) {
         if (option.getMode() == PencilMode.SELECT && button>259 && button<266) {
-            if (button == 260) { // button inser
+            if (button == 260) { // button insert
                 openTextGui();
             }else if (option.isTextSelected()) {
                 if (button == 261) { // button suppr
@@ -368,9 +361,10 @@ public class DrawingScreen extends Screen implements IWithEditTextScreen {
 
 
     private DrawingSignTileEntity getTileEntity(){
+        assert this.minecraft != null;
         World world = this.minecraft.world;
         TileEntity te = world.getTileEntity(panelPos);
-        if (te != null && te instanceof DrawingSignTileEntity){
+        if (te instanceof DrawingSignTileEntity){
             return (DrawingSignTileEntity)te;
         }
         if (te == null)throw new NullPointerException("Tile entity at panelPos is not in desired place !");

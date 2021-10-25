@@ -9,8 +9,8 @@ public enum ScreenType {
     //direction screen is a screen for direction indicating panel which has feature of adding and removing part of panel
     DIRECTION_SCREEN(2),
     //a more advanced screen than previous one which can add text and modify colour of the text and colour of background
-    //and with others features
-    EDITING_AND_COLOURING_SCREEN(3);
+    //and with others features -> used only for the plain square panel
+    PLAIN_SQUARE_SCREEN(3);
     int meta;
 
     ScreenType(int meta){
@@ -20,7 +20,7 @@ public enum ScreenType {
         return meta;
     }
     public static ScreenType getType(int meta){
-        if (meta>2 || meta<0){
+        if (meta>3 || meta<0){
             return null;
         }else {
             ScreenType[] types = ScreenType.values();

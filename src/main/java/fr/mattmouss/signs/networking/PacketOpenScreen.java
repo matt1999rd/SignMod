@@ -4,7 +4,7 @@ import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.enums.ScreenType;
 import fr.mattmouss.signs.gui.DirectionScreen;
 import fr.mattmouss.signs.gui.DrawingScreen;
-import fr.mattmouss.signs.gui.EditingAdvScreen;
+import fr.mattmouss.signs.gui.PlainSquareScreen;
 import fr.mattmouss.signs.gui.EditingScreen;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
@@ -39,8 +39,8 @@ public class PacketOpenScreen {
         ctx.get().enqueueWork(()->{
             ScreenType type = ScreenType.getType(screenType);
             switch (type){
-                case EDITING_AND_COLOURING_SCREEN:
-                    EditingAdvScreen.open(Form.byIndex(form),panelPos);
+                case PLAIN_SQUARE_SCREEN:
+                    PlainSquareScreen.open(panelPos);
                     break;
                 case EDITING_SCREEN:
                     EditingScreen.open(Form.byIndex(form),panelPos);

@@ -175,7 +175,7 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
         GlStateManager.pushMatrix();
         float z = -0.061F- 2 *0.001F;
         float pixelLength = 1.0F/32.0F;
-        //GlStateManager.enableTexture();
+        GlStateManager.enableTexture();
         GlStateManager.enableBlend();
         Color color = psste.getForegroundColor();
         PSDisplayMode mode = psste.getMode();
