@@ -83,7 +83,6 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
         }
     }
 
-    @Override
     public void renderOnScreen(int guiLeft, int guiTop,int selTextInd) {
         Form form = getForm();
         for (int i=0;i<128;i++){

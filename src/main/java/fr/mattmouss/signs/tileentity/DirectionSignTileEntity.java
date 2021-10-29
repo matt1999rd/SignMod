@@ -195,8 +195,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         }
     }
 
-    @Override
-    public void renderOnScreen(int guiLeft, int guiTop, int selTextInd){
+    public void renderOnScreen(int guiLeft, int guiTop){
         int flag = getLFlag();
         if (flag == 0)return;
         for (int i=0;i<6;i++){

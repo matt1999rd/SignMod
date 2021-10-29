@@ -97,15 +97,6 @@ public class AddTextScreen extends withColorSliderScreen {
         this.drawString(Minecraft.getInstance().fontRenderer,""+field.getScale(),relX+144-gap,relY+126,white);
     }
 
-    void fixColor(int color) {
-        Option option = getColorOption();
-        option.setColor(color,null);
-        ColorSlider[] sliders = getActiveSliders();
-        sliders[0].updateSlider(Functions.getRedValue(color));
-        sliders[1].updateSlider(Functions.getGreenValue(color));
-        sliders[2].updateSlider(Functions.getBlueValue(color));
-    }
-
     //@Override
     Vec2i getDyeButtonsBeginning() {
         return new Vec2i(36,18);

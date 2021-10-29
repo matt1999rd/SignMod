@@ -181,12 +181,12 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
         PSDisplayMode mode = psste.getMode();
         List<QuadPSPosition> quadPositions = mode.getTextPosition();
         for (QuadPSPosition quadPosition : quadPositions){
-            float xBase = quadPosition.getPosition().x;
-            float yBase = quadPosition.getPosition().y;
+            int xBase = quadPosition.getPosition().getX();
+            int yBase = quadPosition.getPosition().getY();
             int maxNumber = quadPosition.getMaxText();
-            float xOrigin = (mode.is2by2())? 2 : 3;
+            int xOrigin = (mode.is2by2())? 2 : 3;
             for (int i=0;i<maxNumber;i++){
-                Text t = new Text(xBase,yBase+9.0F*i,"This is a test text",color,1);
+                Text t = new Text(xBase,yBase+9*i,"This is a test text",color,1);
                 Tessellator tessellator = Tessellator.getInstance();
                 BufferBuilder builder = tessellator.getBuffer();
                 builder.begin(7,DefaultVertexFormats.POSITION_TEX_COLOR);
@@ -217,6 +217,7 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
 
 
     private void renderQuadWithTexture(float x1,float x2,float y1,float y2,float u1,float u2,float v1,float v2, Color color,int layer,ResourceLocation texture){
+        //todo : change the argument place and position information to have a better understanding of the action made
         Minecraft.getInstance().getTextureManager().bindTexture(texture);
         GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
         float z = -0.06F-layer*0.001F;

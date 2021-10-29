@@ -48,8 +48,5 @@ public abstract class PanelTileEntity extends TileEntity implements ITickableTil
         }
         Functions.setBlockState(world,pos,state,flags);
     }
-
-
-    public abstract void renderOnScreen(int guiLeft, int guiTop,int selTextInd);
     
 }

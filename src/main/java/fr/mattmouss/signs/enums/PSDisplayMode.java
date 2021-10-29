@@ -44,20 +44,20 @@ public enum PSDisplayMode implements IStringSerializable {
         List<QuadPSPosition> textPositions = new ArrayList<>();
         switch (this){
             case EXIT:
-                textPositions.add(new QuadPSPosition(3.0F,6.0F,45.0F,2));
-                textPositions.add(new QuadPSPosition(3.0F,24.0F,58.0F,4));
+                textPositions.add(new QuadPSPosition(3,6,45,2));
+                textPositions.add(new QuadPSPosition(3,24,58,4));
                 break;
             case DIRECTION:
-                textPositions.add(new QuadPSPosition(4.0F,3.0F,88.0F,5));
+                textPositions.add(new QuadPSPosition(4,3,88,5));
                 break;
             case SCH_MUL_EXIT:
-                textPositions.add(new QuadPSPosition(28.0F, 2.0F,39.0F,1));
-                textPositions.add(new QuadPSPosition(3.0F,50.0F,39.0F,1));
-                textPositions.add(new QuadPSPosition(54.0F,50.0F,39.0F,1));
+                textPositions.add(new QuadPSPosition(28, 2,39,1));
+                textPositions.add(new QuadPSPosition(3,50,39,1));
+                textPositions.add(new QuadPSPosition(54,50,39,1));
                 break;
             case SCH_EXIT:
-                textPositions.add(new QuadPSPosition(7.0F,5.0F,39.0F,2));
-                textPositions.add(new QuadPSPosition(51.0F,22.0F,39.0F,4));
+                textPositions.add(new QuadPSPosition(7,5,39,2));
+                textPositions.add(new QuadPSPosition(51,22,39,4));
                 break;
         }
         return textPositions;

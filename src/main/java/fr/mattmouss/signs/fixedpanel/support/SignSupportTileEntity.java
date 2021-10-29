@@ -15,8 +15,4 @@ public class SignSupportTileEntity extends PanelTileEntity {
     public SignSupportTileEntity() {
         super(ModBlock.SIGN_SUPPORT_TE_TYPE);
     }
-
-    @Override
-    public void renderOnScreen(int guiLeft, int guiTop,int selTextInd) {
-    }
 }

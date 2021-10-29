@@ -50,7 +50,7 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
         super(new StringTextComponent("Direction Screen"));
         this.form = form;
         this.panelPos = panelPos;
-        this.DIMENSION = new Vec2i(424,171);
+        this.DIMENSION = new Vec2i(424,172);
     }
 
     /** initial function of opening **/
@@ -180,7 +180,7 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
                 onTextCenterChange();
             }
         }
-        dste.renderOnScreen(relX+4,relY+14,selTextInd);
+        dste.renderOnScreen(relX+4,relY+14);
     }
 
     private void onTextCenterChange() {

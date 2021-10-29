@@ -62,7 +62,7 @@ public class EditingScreen extends Screen implements IWithEditTextScreen{
         super.render(p_render_1_,p_render_2_,p_render_3_);
         EditingSignTileEntity este = getTileEntity();
         int dec = (form == Form.OCTOGONE)? 8 : 4;
-        este.renderOnScreen(relX+dec,relY+dec,-1);
+        este.renderOnScreen(relX+dec,relY+dec);
         GlStateManager.enableBlend();
     }
 

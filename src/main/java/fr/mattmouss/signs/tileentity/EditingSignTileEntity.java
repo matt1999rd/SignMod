@@ -48,8 +48,8 @@ public abstract class EditingSignTileEntity extends PanelTileEntity {
     public void setText(Text newText){
         storage.ifPresent(textStorage -> textStorage.setText(newText,0));
     }
-    @Override
-    public void renderOnScreen(int guiLeft, int guiTop, int selTextInd) {
+
+    public void renderOnScreen(int guiLeft, int guiTop) {
         Text t = getText();
         t.renderOnScreen(guiLeft,guiTop);
     }
