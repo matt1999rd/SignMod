@@ -43,7 +43,7 @@ public class PlainSquareScreen extends withColorSliderScreen {
     protected PlainSquareScreen(BlockPos panelPos) {
         super(new StringTextComponent("Plain Square screen"));
         this.panelPos = panelPos;
-        this.DIMENSION = new Vec2i(424,148);
+        this.DIMENSION = new Vec2i(424,149);
     }
 
     @Override
@@ -164,7 +164,7 @@ public class PlainSquareScreen extends withColorSliderScreen {
         blit(relX+241,relY+113,this.blitOffset,DIMENSION.getX()+offset,0,25,25,256,512);
         super.render(mouseX, mouseY, partialTicks);
         PlainSquareSignTileEntity psste = getTileEntity();
-        psste.renderOnScreen(relX+6,relY+6);
+        psste.renderOnScreen(relX+10,relY+10);
     }
 
     @Override

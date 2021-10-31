@@ -73,6 +73,7 @@ public class PSDisplayModeScreen extends Screen{
     @Override
     public void render(int mouseX, int mouseY, float partialTicks) {
         GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
+        assert this.minecraft != null;
         this.minecraft.getTextureManager().bindTexture(GUI);
         int relX = (this.width-LENGTH) / 2;
         int relY = (this.height-LENGTH) / 2;

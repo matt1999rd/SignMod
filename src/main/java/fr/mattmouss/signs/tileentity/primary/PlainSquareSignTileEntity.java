@@ -38,7 +38,7 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
 
     private LazyOptional<PSStorage> storage = LazyOptional.of(this::getStorage).cast();
 
-    private final int SCREEN_LENGTH = 137;
+    private final int SCREEN_LENGTH = 128;
 
     public PlainSquareSignTileEntity() {
         super(TEType.PLAIN_SQUARE_SIGN);
@@ -67,39 +67,35 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
 
     private void renderLimit(int guiLeft, int guiTop){
         int fg_color = getForegroundColor().getRGB();
-        //optimised so that no bar are recovered (bar of size sl-1 and 1)
+        int limitLength = 2;
+        //optimised so that no bar are recovered (bar of size sl-2 and 2)
         //top
-        AbstractGui.fill(guiLeft,guiTop,guiLeft+SCREEN_LENGTH-1,guiTop+1,fg_color);
+        AbstractGui.fill(guiLeft,guiTop,guiLeft+SCREEN_LENGTH-limitLength,guiTop+limitLength,fg_color);
         //right
-        AbstractGui.fill(guiLeft+SCREEN_LENGTH-1,guiTop,guiLeft+SCREEN_LENGTH,guiTop+SCREEN_LENGTH-1,fg_color);
+        AbstractGui.fill(guiLeft+SCREEN_LENGTH-limitLength,guiTop,guiLeft+SCREEN_LENGTH,guiTop+SCREEN_LENGTH-limitLength,fg_color);
         //bottom
-        AbstractGui.fill(guiLeft+1,guiTop+SCREEN_LENGTH-1,guiLeft+SCREEN_LENGTH,guiTop+SCREEN_LENGTH,fg_color);
+        AbstractGui.fill(guiLeft+limitLength,guiTop+SCREEN_LENGTH-limitLength,guiLeft+SCREEN_LENGTH,guiTop+SCREEN_LENGTH,fg_color);
         //left
-        AbstractGui.fill(guiLeft,guiTop+1,guiLeft+1,guiTop+SCREEN_LENGTH,fg_color);
+        AbstractGui.fill(guiLeft,guiTop+limitLength,guiLeft+limitLength,guiTop+SCREEN_LENGTH,fg_color);
     }
 
     private void renderText(int guiLeft, int guiTop){
         PSDisplayMode mode = getMode();
         GlStateManager.enableBlend();
-        List<QuadPSPosition> positions = mode.getTextPosition();
-        int scaleX = 1;
-        int scaleY = 1;
-        int textIndex = 0;
-        for (QuadPSPosition position : positions){
-            for (int i=0; i<position.getMaxText();i++){
-                Text t = getText(textIndex);
-                Vec2i origin = position.getPosition();
-                t.renderOnScreen(guiLeft+origin.getX()*scaleX,guiTop+origin.getY()*scaleY);
-            }
-            textIndex++;
+        float scaleX = SCREEN_LENGTH/(mode.is2by2()?64.0F:96.0F);
+        float scaleY = SCREEN_LENGTH/64.0F;
+        for (int i=0;i<mode.getTotalText();i++){
+            Text t = getText(i);
+            Text rescaledText = t.rescale(scaleX,scaleY);
+            rescaledText.renderOnScreen(guiLeft,guiTop,scaleX/scaleY);
         }
     }
 
     private void renderScheme(int guiLeft, int guiTop){
         PSDisplayMode mode = getMode();
         GlStateManager.enableBlend();
-        float scaleX =137.0F/(mode.is2by2()?32.0F:48.0F);
-        float scaleY =137.0F/32.0F;
+        float scaleX =SCREEN_LENGTH/(mode.is2by2()?32.0F:48.0F);
+        float scaleY =SCREEN_LENGTH/32.0F;
 
         switch (mode){
             case EXIT:
@@ -196,6 +192,18 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         storage.ifPresent(psStorage -> {
             psStorage.setInternVariable(position,mode);
         });
+        List<QuadPSPosition> quadPositions = mode.getTextPosition();
+        int textIndex = 0;
+        for (QuadPSPosition quadPosition : quadPositions){
+            int xBase = quadPosition.getPosition().getX();
+            int yBase = quadPosition.getPosition().getY();
+            int maxNumber = quadPosition.getMaxText();
+            for (int i=0;i<maxNumber;i++){
+                Text t = new Text(xBase,yBase+9*i,"Test text "+textIndex,getForegroundColor(),1);
+                setText(t,textIndex);
+                textIndex++;
+            }
+        }
     }
 
     public PSPosition getPosition(){

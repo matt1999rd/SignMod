@@ -177,22 +177,16 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
         float pixelLength = 1.0F/32.0F;
         GlStateManager.enableTexture();
         GlStateManager.enableBlend();
-        Color color = psste.getForegroundColor();
         PSDisplayMode mode = psste.getMode();
-        List<QuadPSPosition> quadPositions = mode.getTextPosition();
-        for (QuadPSPosition quadPosition : quadPositions){
-            int xBase = quadPosition.getPosition().getX();
-            int yBase = quadPosition.getPosition().getY();
-            int maxNumber = quadPosition.getMaxText();
-            int xOrigin = (mode.is2by2())? 2 : 3;
-            for (int i=0;i<maxNumber;i++){
-                Text t = new Text(xBase,yBase+9*i,"This is a test text",color,1);
-                Tessellator tessellator = Tessellator.getInstance();
-                BufferBuilder builder = tessellator.getBuffer();
-                builder.begin(7,DefaultVertexFormats.POSITION_TEX_COLOR);
-                t.render(builder,xOrigin,2,z,pixelLength,pixelLength);
-                tessellator.draw();
-            }
+        int nbText = mode.getTotalText();
+        int xOrigin = (mode.is2by2())? 2 : 3;
+        for (int i=0;i<nbText;i++){
+            Text t=psste.getText(i);
+            Tessellator tessellator = Tessellator.getInstance();
+            BufferBuilder builder = tessellator.getBuffer();
+            builder.begin(7,DefaultVertexFormats.POSITION_TEX_COLOR);
+            t.render(builder,xOrigin,2,z,pixelLength,pixelLength);
+            tessellator.draw();
         }
         GlStateManager.popMatrix();
     }

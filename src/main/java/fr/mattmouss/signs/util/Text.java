@@ -88,6 +88,16 @@ public class Text {
         this.y = y;
     }
 
+    public Text rescale(float xScale,float yScale){
+        this.x *= xScale;
+        this.y *= yScale;
+        Text copy = new Text(this);
+        this.x /= xScale;
+        this.y /= yScale;
+        copy.changeScale(1); // a real scale is 1/2 of the pixels
+        return copy;
+    }
+
     public void render(BufferBuilder builder,float xOrigin, float yOrigin, float zOrigin, float pixelLength, float pixelHeight){
         Minecraft.getInstance().getTextureManager().bindTexture(TEXT);
         GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
@@ -112,27 +122,28 @@ public class Text {
 
     }
 
-    public void renderOnScreen(int guiLeft, int guiTop){
+    public void renderOnScreen(int guiLeft, int guiTop,float xyScale){
         Minecraft.getInstance().getTextureManager().bindTexture(TEXT);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder builder = tessellator.getBuffer();
         builder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
         GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
         int n=content.length();
+        float scaleX = scale*xyScale;
         int shift = 0;
         for (int i=0;i<n;i++){
             char c0 = content.charAt(i);
             if (c0 == ' '){
-                shift+=4* scale;
+                shift+=4* scaleX;
             }else {
                 Letter l = new Letter(c0, x + shift, y);
-                l.renderOnScreen(builder,color.getRed(),color.getGreen(),color.getBlue(),color.getAlpha(),guiLeft,guiTop, scale);
-                shift += l.length* scale;
+                l.renderOnScreen(builder,color.getRed(),color.getGreen(),color.getBlue(),color.getAlpha(),guiLeft,guiTop, scaleX,scale);
+                shift += l.length* scaleX;
                 char followingChar = (i!=n-1)?content.charAt(i+1):' ';
                 if (followingChar>97){
-                    shift+= scale;
+                    shift+= scaleX;
                 }else if (followingChar != ' '){
-                    shift+= scale *2;
+                    shift+= scaleX *2;
                 }
             }
         }

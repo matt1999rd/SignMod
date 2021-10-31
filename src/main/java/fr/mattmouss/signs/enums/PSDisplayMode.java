@@ -40,6 +40,19 @@ public enum PSDisplayMode implements IStringSerializable {
         return name;
     }
 
+    public int getTotalText(){
+        switch (this){
+            case EXIT:
+            case SCH_EXIT:
+                return 6;
+            case DIRECTION:
+                return 5;
+            case SCH_MUL_EXIT:
+                return 3;
+        }
+        return 0;
+    }
+
     public List<QuadPSPosition> getTextPosition() {
         List<QuadPSPosition> textPositions = new ArrayList<>();
         switch (this){
