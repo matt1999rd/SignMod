@@ -51,7 +51,7 @@ public abstract class EditingSignTileEntity extends PanelTileEntity {
 
     public void renderOnScreen(int guiLeft, int guiTop) {
         Text t = getText();
-        t.renderOnScreen(guiLeft,guiTop,1.0F);
+        t.renderOnScreen(guiLeft,guiTop,1.0F,true);
     }
 
     @Nonnull

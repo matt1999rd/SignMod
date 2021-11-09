@@ -43,7 +43,7 @@ public class PlainSquareScreen extends withColorSliderScreen {
     protected PlainSquareScreen(BlockPos panelPos) {
         super(new StringTextComponent("Plain Square screen"));
         this.panelPos = panelPos;
-        this.DIMENSION = new Vec2i(424,149);
+        this.DIMENSION = new Vec2i(424,150);
     }
 
     @Override

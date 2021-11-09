@@ -266,12 +266,12 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
             if (!isTextCentered()){
                 Text endText= getText(i,true);
                 if (!endText.isEmpty()){
-                    endText.renderOnScreen((int) (guiLeft-xOrigin),guiTop,1.0F);
+                    endText.renderOnScreen((int) (guiLeft-xOrigin),guiTop,1.0F,true);
                 }else if (flag)renderGrayRectangle(guiLeft, guiTop, i, true);
             }
             Text begText= getText(i,false);
             if (!begText.isEmpty()){
-                begText.renderOnScreen((int)(guiLeft-xOrigin),guiTop,1.0F);
+                begText.renderOnScreen((int)(guiLeft-xOrigin),guiTop,1.0F,true);
             }else if (flag)renderGrayRectangle(guiLeft, guiTop, i,false);
 
         }

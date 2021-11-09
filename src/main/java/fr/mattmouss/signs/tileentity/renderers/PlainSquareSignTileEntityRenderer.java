@@ -19,6 +19,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.Vec2f;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -75,7 +76,7 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
 
     private float getAngleFromBlockState(BlockState blockstate) {
         Direction facing = blockstate.get(BlockStateProperties.HORIZONTAL_FACING);
-        //to transform the horizontal index by a rotation angle that is proportionnal to 90°
+        //to transform the horizontal index by a rotation angle that is proportional to 90°
         //make 0->2 1->1 2->0 3->3 --> 0->2 1->1 2->0 3-> (-1%4) --> (2-x)%4
         float angle = 90.0F * ((2-facing.getHorizontalIndex())%4);
 
@@ -106,50 +107,33 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
         ResourceLocation location = new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/ps_arrow.png");
         float texLength = 84.0F;
         float texHeight = 61.0F;
-        switch (mode){
-            case EXIT:
-                float length = 12.0F;
-                float xBase = 1.0F;
-                float yBase = 25.0F;
-                //rendering of the arrow
-                renderQuadWithTexture(xBase,xBase+length/2,yBase,yBase+length/2,0.0F,length/texLength,14.0F/texHeight,(14.0F+length)/texHeight,color,2,location);
-                break;
-            case DIRECTION:
-                //arrowId = 0 -> left arrow / 1 -> center arrow / 2 -> right arrow
-                int arrowId = psste.getArrowId();
-                if (arrowId == -1)return;
-                float u1 = 20.0F*arrowId;
-                float v1 = 0.0F;
-                float u2 = 20.0F*(arrowId+1);
-                float v2 = 14.0F;
-                xBase = 2.0F;
-                yBase = 1.5F;
-                renderQuadWithTexture(xBase,xBase+10.0F,yBase,yBase+7.0F,u1/texLength,u2/texLength,v1/texHeight,v2/texHeight,color,2,location);
-                xBase += 16.0F;
-                renderQuadWithTexture(xBase,xBase+10.0F,yBase,yBase+7.0F,u1/texLength,u2/texLength,v1/texHeight,v2/texHeight,color,2,location);
-                xBase += 16.0F;
-                renderQuadWithTexture(xBase,xBase+10.0F,yBase,yBase+7.0F,u1/texLength,u2/texLength,v1/texHeight,v2/texHeight,color,2,location);
-                break;
-            case SCH_EXIT:
-                xBase = 26.0F;
-                yBase = 0.5F;
-                u1= 12.0F;
-                u2= 32.0F;
-                v1= 14.0F;
-                v2= 52.0F;
-                //render of scheme
-                renderQuadWithTexture(xBase,xBase+10.0F,yBase,yBase+19.0F,u1/texLength,u2/texLength,v1/texHeight,v2/texHeight,color,2,location);
-                break;
-            case SCH_MUL_EXIT:
-                xBase = 11.0F;
-                yBase = 0.5F;
-                u1= 32.0F;
-                u2= 84.0F;
-                v1= 14.0F;
-                v2= 61.0F;
-                //render of scheme
-                renderQuadWithTexture(xBase,xBase+26.0F,yBase,yBase+23.5F,u1/texLength,u2/texLength,v1/texHeight,v2/texHeight,color,2,location);
-                break;
+        float xBase = mode.getTextureXOrigin();
+        float yBase = mode.getTextureYOrigin();
+        float length = mode.getTexLength();
+        float height = mode.getTexHeight();
+        Vec2f uvOrigin = mode.getUVOrigin(psste.getArrowId());
+        Vec2f uvDimension = mode.getUVDimension();
+        float panelLength = ((mode.is2by2())?2:3)*16.0F;
+        float panelHeight = 2*16.0F;
+        float spaceBetweenArrow = 7.0F;
+        renderQuadWithTexture(
+                panelLength-xBase, panelLength-xBase-length, panelHeight-yBase,panelHeight-yBase-height,
+                uvOrigin.x/texLength,(uvOrigin.x+uvDimension.x)/texLength,
+                uvOrigin.y/texHeight,(uvOrigin.y+uvDimension.y)/texHeight,
+                color,2,location);
+        if (mode == PSDisplayMode.DIRECTION){
+            renderQuadWithTexture(
+                    panelLength-xBase-spaceBetweenArrow-length,panelLength-xBase-spaceBetweenArrow-2*length,
+                    panelHeight-yBase, panelHeight-yBase-height,
+                    uvOrigin.x/texLength,(uvOrigin.x+uvDimension.x)/texLength,
+                    uvOrigin.y/texHeight,(uvOrigin.y+uvDimension.y)/texHeight,
+                    color,2,location);
+            renderQuadWithTexture(
+                    panelLength-xBase-2*(spaceBetweenArrow+length), panelLength-xBase-2*(spaceBetweenArrow+length)-length,
+                    panelHeight-yBase,panelHeight-yBase-height,
+                    uvOrigin.x/texLength,(uvOrigin.x+uvDimension.x)/texLength,
+                    uvOrigin.y/texHeight,(uvOrigin.y+uvDimension.y)/texHeight,
+                    color,2,location);
         }
     }
 
@@ -202,10 +186,10 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder builder = tessellator.getBuffer();
         builder.begin(7, DefaultVertexFormats.POSITION_COLOR);
-        builder.pos(x2/16.0F, y2/16.0F, z).color(red, green, blue, alpha).endVertex();
-        builder.pos(x2/16.0F, y1/16.0F, z).color(red, green, blue, alpha).endVertex();
         builder.pos(x1/16.0F, y1/16.0F, z).color(red, green, blue, alpha).endVertex();
         builder.pos(x1/16.0F, y2/16.0F, z).color(red, green, blue, alpha).endVertex();
+        builder.pos(x2/16.0F, y2/16.0F, z).color(red, green, blue, alpha).endVertex();
+        builder.pos(x2/16.0F, y1/16.0F, z).color(red, green, blue, alpha).endVertex();
         tessellator.draw();
     }
 
@@ -216,20 +200,17 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
         GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
         float z = -0.06F-layer*0.001F;
         int red,green,blue,alpha;
-
         red = color.getRed();
         green = color.getGreen();
         blue = color.getBlue();
         alpha = color.getAlpha();
-
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder builder = tessellator.getBuffer();
         builder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-
-        builder.pos(x2/16.0F, y2/16.0F, z).tex(u1, v1).color(red, green, blue, alpha).endVertex();
-        builder.pos(x2/16.0F, y1/16.0F, z).tex(u1, v2).color(red, green, blue, alpha).endVertex();
-        builder.pos(x1/16.0F, y1/16.0F, z).tex(u2, v2).color(red, green, blue, alpha).endVertex();
-        builder.pos(x1/16.0F, y2/16.0F, z).tex(u2, v1).color(red, green, blue, alpha).endVertex();
+        builder.pos(x1/16.0F, y1/16.0F, z).tex(u1, v1).color(red, green, blue, alpha).endVertex();
+        builder.pos(x1/16.0F, y2/16.0F, z).tex(u1, v2).color(red, green, blue, alpha).endVertex();
+        builder.pos(x2/16.0F, y2/16.0F, z).tex(u2, v2).color(red, green, blue, alpha).endVertex();
+        builder.pos(x2/16.0F, y1/16.0F, z).tex(u2, v1).color(red, green, blue, alpha).endVertex();
 
         tessellator.draw();
     }

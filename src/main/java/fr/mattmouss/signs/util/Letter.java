@@ -66,11 +66,17 @@ public class Letter {
         builder.pos(x2,y1,zOrigin).tex(u+du,v).color(red, green, blue, alpha).endVertex();
     }
 
-    public void renderOnScreen(BufferBuilder builder,int red,int green,int blue,int alpha,int guiLeft,int guiTop,float scaleX,float scaleY){
+    public void renderOnScreen(BufferBuilder builder,int red,int green,int blue,int alpha,int guiLeft,int guiTop,float scaleX,float scaleY,boolean positionUnchangedByScale){
         float u = getUMapping()/256.0F;
         float v = getVMapping()/256.0F;
-        float x1 = beg.x+guiLeft;
-        float y1 = beg.y+guiTop;
+        float x1,y1;
+        if (positionUnchangedByScale){
+            x1 = guiLeft+ beg.x;
+            y1 = guiTop + beg.y;
+        } else {
+            x1 = beg.x * scaleX + guiLeft;
+            y1 = beg.y * scaleY + guiTop;
+        }
         float x2 = x1+length*scaleX;
         float y2 = y1+7*scaleY;
         builder.pos(x1,y1,0).tex(u,v).color(red,green,blue,alpha).endVertex();

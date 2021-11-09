@@ -49,6 +49,7 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
         this.form = form;
         this.panelPos = panelPos;
         this.DIMENSION = new Vec2i(325,203);
+        option = PencilOption.getDefaultOption();
     }
 
     /** initial function of opening **/
@@ -59,7 +60,6 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
 
     @Override
     protected void init() {
-        option = PencilOption.getDefaultOption();
         int BUTTON_LENGTH =25;
         int relX = getGuiStartXPosition();
         int relY = getGuiStartYPosition();
@@ -85,8 +85,10 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
                 PENCIL_BUTTONS,
                 button -> this.chBgButton(option.getColor()));
         this.addButton(chBgButton);
-        pencil_button[0].visible = false;
-        pencil_button[0].active = false;
+        //todo : init is redone when exiting the gui addtext -> correct bug due to this action
+        int modeIndice = option.getMode().getMeta();
+        pencil_button[modeIndice].visible = false;
+        pencil_button[modeIndice].active = false;
         plusButton = new Button(relX+290,relY+109,21,20,"+",button-> this.increaseLength());
         minusButton = new Button(relX+290,relY+129,21,20,"-", button-> this.decreaseLength());
         this.addButton(plusButton);
@@ -96,10 +98,15 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
         delTextButton = new Button(relX+132,relY+165,74,20,"Delete Text",b->deleteSelText());
         this.addButton(addTextButton);
         this.addButton(delTextButton);
-        addTextButton.active = false;
-        delTextButton.active = false;
-        minusButton.active = false;
+        addTextButton.active = option.getMode() == PencilMode.SELECT && option.isTextSelected();
+        delTextButton.active = option.getMode() == PencilMode.SELECT && option.isTextSelected();
+        minusButton.active = option.getLength() != 1;
+        plusButton.active = option.getLength() != 64;
+        if (option.isTextSelected()){
+            addTextButton.setMessage("Edit Text");
+        }
         super.init();
+        changeSliderDisplay(option.getMode().enableSlider());
     }
 
     /** display function **/
@@ -230,16 +237,19 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
         }
         //xor : mean that we change slider position
         if (oldMode.enableSlider() != newMode.enableSlider()){
-            boolean enableSlider = newMode.enableSlider();
-            this.RED_SLIDER.visible = enableSlider;
-            this.BLUE_SLIDER.visible = enableSlider;
-            this.GREEN_SLIDER.visible = enableSlider;
-            this.chBgButton.visible = enableSlider;
-            for (DyeColor dyeColor : DyeColor.values()){
-                this.dye_color_button[dyeColor.getId()].visible = enableSlider;
-            }
+            changeSliderDisplay(newMode.enableSlider());
         }
 
+    }
+
+    private void changeSliderDisplay(boolean enableSlider){
+        this.RED_SLIDER.visible = enableSlider;
+        this.BLUE_SLIDER.visible = enableSlider;
+        this.GREEN_SLIDER.visible = enableSlider;
+        this.chBgButton.visible = enableSlider;
+        for (DyeColor dyeColor : DyeColor.values()){
+            this.dye_color_button[dyeColor.getId()].visible = enableSlider;
+        }
     }
 
 

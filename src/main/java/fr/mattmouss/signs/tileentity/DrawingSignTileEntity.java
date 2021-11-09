@@ -97,7 +97,7 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
         Minecraft.getInstance().getTextureManager().bindTexture(TEXT);
         AtomicInteger ind = new AtomicInteger(0);
         texts.forEach(text -> {
-            text.renderOnScreen(guiLeft,guiTop,1.0F);
+            text.renderOnScreen(guiLeft,guiTop,1.0F,true);
             renderTextLimit(text,guiLeft,guiTop,ind.getAndIncrement() == selTextInd);
         });
     }

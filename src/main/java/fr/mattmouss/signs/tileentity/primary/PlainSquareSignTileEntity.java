@@ -86,67 +86,41 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         float scaleY = SCREEN_LENGTH/64.0F;
         for (int i=0;i<mode.getTotalText();i++){
             Text t = getText(i);
-            Text rescaledText = t.rescale(scaleX,scaleY);
-            rescaledText.renderOnScreen(guiLeft,guiTop,scaleX/scaleY);
+            Text rescaleText = new Text(t);
+            rescaleText.changeScale(1); // a text is rendered on screen with two pixels length
+            rescaleText.renderOnScreen(guiLeft,guiTop,scaleX/scaleY,false);
         }
     }
 
     private void renderScheme(int guiLeft, int guiTop){
         PSDisplayMode mode = getMode();
         GlStateManager.enableBlend();
-        float scaleX =SCREEN_LENGTH/(mode.is2by2()?32.0F:48.0F);
-        float scaleY =SCREEN_LENGTH/32.0F;
-
-        switch (mode){
-            case EXIT:
-                float length = 12.0F;
-                float xBase = guiLeft+25.0F*scaleX;
-                float yBase = guiTop+1.0F*scaleY;
-                float u1 = 0.0F;
-                float v1 = 14.0F;
-                float u2 = u1 + length;
-                float v2 = v1 + length;
-                //rendering of the arrow
-                renderTexture(xBase,yBase,xBase+length/2*scaleX,yBase+length/2*scaleY,u1,v1,u2,v2);
-                break;
-            case DIRECTION:
-                //arrowId = 0 -> left arrow / 1 -> center arrow / 2 -> right arrow
-                int arrowId = getArrowId();
-                if (arrowId == -1)return;
-                u1 = 20.0F*arrowId;
-                v1 = 0.0F;
-                u2 = 20.0F*(arrowId+1);
-                v2 = 14.0F;
-                xBase = guiLeft+34.0F*scaleX;
-                yBase = guiTop+23.5F*scaleY;
-                renderTexture(xBase,yBase,xBase+10.0F*scaleX,yBase+7.0F*scaleY,u1,v1,u2,v2);
-                xBase -= 16.0F*scaleX;
-                renderTexture(xBase,yBase,xBase+10.0F*scaleX,yBase+7.0F*scaleY,u1,v1,u2,v2);
-                xBase -= 16.0F*scaleX;
-                renderTexture(xBase,yBase,xBase+10.0F*scaleX,yBase+7.0F*scaleY,u1,v1,u2,v2);
-                break;
-            case SCH_EXIT:
-                xBase = guiLeft+12.0F*scaleX;
-                yBase = guiTop+12.5F*scaleY;
-                u1= 12.0F;
-                u2= 32.0F;
-                v1= 14.0F;
-                v2= 52.0F;
-                //render of scheme
-                renderTexture(xBase,yBase,xBase+10.0F*scaleX,yBase+19.0F*scaleY,u1,v1,u2,v2);
-                break;
-            case SCH_MUL_EXIT:
-                xBase = guiLeft+9.0F*scaleX;
-                yBase = guiTop+8.0F*scaleY;
-                u1= 32.0F;
-                u2= 84.0F;
-                v1= 14.0F;
-                v2= 61.0F;
-                //render of scheme
-                renderTexture(xBase,yBase,xBase+26.0F*scaleX,yBase+23.5F*scaleY,u1,v1,u2,v2);
-                break;
+        float scaleX =2*SCREEN_LENGTH/(mode.is2by2()?64.0F:96.0F);
+        float scaleY =2*SCREEN_LENGTH/64.0F;
+        float xBase = guiLeft+mode.getTextureXOrigin()*scaleX;
+        float yBase = guiTop+ mode.getTextureYOrigin()*scaleY;
+        float length = mode.getTexLength()*scaleX;
+        float height = mode.getTexHeight()*scaleY;
+        Vec2f uvOrigin = mode.getUVOrigin(getArrowId());
+        Vec2f uvDimension = mode.getUVDimension();
+        renderTexture(
+                xBase,yBase,xBase+length,yBase+height,
+                uvOrigin.x,uvOrigin.y,uvOrigin.x+uvDimension.x,uvOrigin.y+uvDimension.y);
+        if (mode == PSDisplayMode.DIRECTION){
+            float spaceBetweenArrow = 7.0F*scaleX;
+            renderTexture(
+                    xBase+spaceBetweenArrow+length,yBase,
+                    xBase+spaceBetweenArrow+2*length,yBase+height,
+                    uvOrigin.x, uvOrigin.y,
+                    uvOrigin.x+uvDimension.x,uvOrigin.y+uvDimension.y
+            );
+            renderTexture(
+                    xBase+2*(spaceBetweenArrow+length),yBase,
+                    xBase+2*(spaceBetweenArrow+length)+length,yBase+height,
+                    uvOrigin.x, uvOrigin.y,
+                    uvOrigin.x+uvDimension.x,uvOrigin.y+uvDimension.y
+            );
         }
-
     }
 
     private void renderTexture(float x1,float y1,float x2,float y2,float u1,float v1,float u2,float v2){

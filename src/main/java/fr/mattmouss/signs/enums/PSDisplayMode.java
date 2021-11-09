@@ -2,21 +2,39 @@ package fr.mattmouss.signs.enums;
 
 import fr.mattmouss.signs.util.QuadPSPosition;
 import net.minecraft.util.IStringSerializable;
+import net.minecraft.util.math.Vec2f;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public enum PSDisplayMode implements IStringSerializable {
-    EXIT(0,"exit"),
-    DIRECTION(1,"direction"),
-    SCH_MUL_EXIT(2,"scheme_round_about"),
-    SCH_EXIT(3,"scheme_exit");
+    EXIT(0,"exit",
+            new Vec2f(25.0F,1.0F), new Vec2f(6.0F,6.0F),
+            new Vec2f(0.0F,14.0F),new Vec2f(12.0F,12.0F)),
+    DIRECTION(1,"direction",
+            new Vec2f(2.0F,24.0F), new Vec2f(10.0F,7.0F),
+            new Vec2f(20.0F,0.0F), new Vec2f(20.0F,14.0F)),
+    SCH_MUL_EXIT(2,"scheme_round_about",
+            new Vec2f(11.0F,8.0F),  new Vec2f(26.0F,23.5F),
+            new Vec2f(32.0F,14.0F), new Vec2f(52.0F,47.0F)),
+    SCH_EXIT(3,"scheme_exit",
+            new Vec2f(12.0F,12.5F), new Vec2f(10.0F,19.0F),
+            new Vec2f(12.0F,14.0F), new Vec2f(20.0F,38.0F));
 
     private final int meta;
     private final String name;
-    PSDisplayMode(int mode,String name){
+    private final Vec2f texOrigin; //texture origin for the first texture to display (arrow in the left for direction)
+    private final Vec2f texDimension; //dimension of the texture displayed
+    private final Vec2f uvOrigin; //uv mapping value (u1,v1)
+    private final Vec2f uvDimension; // uv mapping value (u2,v2)
+    //texture origin is taken with an origin in up left and with x-axis horizontally and y-axis vertically
+    PSDisplayMode(int mode,String name,Vec2f texOrigin, Vec2f texDimension, Vec2f uvOrigin, Vec2f uvDimension){
         this.meta = mode;
         this.name = name;
+        this.texOrigin = texOrigin;
+        this.texDimension = texDimension;
+        this.uvOrigin = uvOrigin;
+        this.uvDimension = uvDimension;
     }
 
     public static PSDisplayMode byIndex(byte meta){
@@ -74,5 +92,33 @@ public enum PSDisplayMode implements IStringSerializable {
                 break;
         }
         return textPositions;
+    }
+
+    public float getTextureXOrigin(){
+        return this.texOrigin.x;
+    }
+
+    public float getTextureYOrigin(){
+        return this.texOrigin.y;
+    }
+
+    public float getTexLength(){
+        return this.texDimension.x;
+    }
+
+    public float getTexHeight(){
+        return this.texDimension.y;
+    }
+
+    public Vec2f getUVOrigin(int arrowId){
+        //arrowId = 0 -> left arrow / 1 -> center arrow / 2 -> right arrow (not used if it is not the direction mode)
+        if (this == DIRECTION){
+            return new Vec2f(uvOrigin.x*arrowId,uvOrigin.y);
+        }
+        return uvOrigin;
+    }
+
+    public Vec2f getUVDimension(){
+        return uvDimension;
     }
 }

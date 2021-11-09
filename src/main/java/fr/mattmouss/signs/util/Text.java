@@ -122,28 +122,29 @@ public class Text {
 
     }
 
-    public void renderOnScreen(int guiLeft, int guiTop,float xyScale){
+    public void renderOnScreen(int guiLeft, int guiTop,float xyScale,boolean positionUnchangedByScale){
         Minecraft.getInstance().getTextureManager().bindTexture(TEXT);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder builder = tessellator.getBuffer();
         builder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
         GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
         int n=content.length();
-        float scaleX = scale*xyScale;
-        int shift = 0;
+        float scaleX = scale*xyScale; //scale X is the length of a 1*1 unit pixel where scale is the heigth of this pixel
+        float scaleForUnchangedPosition = (positionUnchangedByScale)?scaleX:1.0F;
+        float shift = 0;
         for (int i=0;i<n;i++){
             char c0 = content.charAt(i);
             if (c0 == ' '){
-                shift+=4* scaleX;
+                shift+=4*scaleForUnchangedPosition;
             }else {
                 Letter l = new Letter(c0, x + shift, y);
-                l.renderOnScreen(builder,color.getRed(),color.getGreen(),color.getBlue(),color.getAlpha(),guiLeft,guiTop, scaleX,scale);
-                shift += l.length* scaleX;
+                l.renderOnScreen(builder,color.getRed(),color.getGreen(),color.getBlue(),color.getAlpha(),guiLeft,guiTop, scaleX,scale,positionUnchangedByScale);
+                shift += l.length*scaleForUnchangedPosition;
                 char followingChar = (i!=n-1)?content.charAt(i+1):' ';
                 if (followingChar>97){
-                    shift+= scaleX;
+                    shift+= 1*scaleForUnchangedPosition;
                 }else if (followingChar != ' '){
-                    shift+= scaleX *2;
+                    shift+= 2*scaleForUnchangedPosition;
                 }
             }
         }
