@@ -7,7 +7,6 @@ import fr.mattmouss.signs.gui.screenutils.ColorType;
 import fr.mattmouss.signs.gui.screenutils.Option;
 import fr.mattmouss.signs.gui.widget.ColorSlider;
 import fr.mattmouss.signs.gui.widget.LimitSizeTextField;
-import fr.mattmouss.signs.util.Functions;
 import fr.mattmouss.signs.util.Letter;
 import fr.mattmouss.signs.util.Text;
 import fr.mattmouss.signs.util.Vec2i;

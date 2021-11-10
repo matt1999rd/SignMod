@@ -2,15 +2,18 @@ package fr.mattmouss.signs.gui;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import fr.mattmouss.signs.SignMod;
-import fr.mattmouss.signs.enums.PSDisplayMode;
+import fr.mattmouss.signs.enums.Form;
 import fr.mattmouss.signs.gui.screenutils.ColorOption;
 import fr.mattmouss.signs.gui.screenutils.ColorType;
 import fr.mattmouss.signs.gui.screenutils.Option;
 import fr.mattmouss.signs.gui.widget.ColorSlider;
+import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
 import fr.mattmouss.signs.tileentity.primary.PlainSquareSignTileEntity;
+import fr.mattmouss.signs.util.Text;
 import fr.mattmouss.signs.util.Vec2i;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.ImageButton;
 import net.minecraft.tileentity.TileEntity;
@@ -22,13 +25,14 @@ import net.minecraft.world.World;
 
 import java.awt.Color;
 
-public class PlainSquareScreen extends withColorSliderScreen {
+public class PlainSquareScreen extends withColorSliderScreen implements IWithEditTextScreen {
     private static final Vec2i displayModeBtnStart = new Vec2i(241,113);
     private static final Vec2i displayModeBtnStop = new Vec2i(265,137);
 
     private boolean isBgColorDisplayed = true;
 
-    BlockPos panelPos;
+    private final BlockPos panelPos;
+    private int selTextIndex = -1;
     private static ColorOption backgroundColorOption;
     private static ColorOption edgingColorOption;
 
@@ -37,13 +41,13 @@ public class PlainSquareScreen extends withColorSliderScreen {
     ResourceLocation PS_SCHEME = new ResourceLocation(SignMod.MODID,"textures/gui/display_mode_scheme.png");
     ImageButton[] psDisplayModeButton = new ImageButton[4];
     ImageButton[] arrowDirectionButton = new ImageButton[3];
-    Button applyColorButton;
+    Button applyColorButton,setTextButton;
 
 
     protected PlainSquareScreen(BlockPos panelPos) {
         super(new StringTextComponent("Plain Square screen"));
         this.panelPos = panelPos;
-        this.DIMENSION = new Vec2i(424,150);
+        this.DIMENSION = new Vec2i(315,171);
     }
 
     @Override
@@ -113,7 +117,7 @@ public class PlainSquareScreen extends withColorSliderScreen {
             psDisplayModeButton[i] =  new ImageButton(
                     guiLeft+149, guiTop+6+BUTTON_LENGTH*i, //position on gui
                     BUTTON_LENGTH, BUTTON_LENGTH, //dimension of the button
-                    i*BUTTON_LENGTH,150,BUTTON_LENGTH,//mapping on button texture (uv and v for hovered mode)
+                    i*BUTTON_LENGTH,DIMENSION.getY(),BUTTON_LENGTH,//mapping on button texture (uv and v for hovered mode)
                     PLAIN_SQUARE, // texture resource
                     512,256, //texture total length
                     button -> changeDisplayMode(finalI) ) ; //the action to do when clicking on the button
@@ -125,7 +129,7 @@ public class PlainSquareScreen extends withColorSliderScreen {
             arrowDirectionButton[i] = new ImageButton(
                     guiLeft+211+i*(BUTTON_LENGTH+8),guiTop+6,
                     BUTTON_LENGTH, ARROW_BUTTON_LENGTH,
-                    100+i*BUTTON_LENGTH,150,ARROW_BUTTON_LENGTH,
+                    100+i*BUTTON_LENGTH,DIMENSION.getY(),ARROW_BUTTON_LENGTH,
                     PLAIN_SQUARE,
                     512,256,
                     button -> changeArrowDirection(finalI) );
@@ -134,6 +138,8 @@ public class PlainSquareScreen extends withColorSliderScreen {
 
         applyColorButton = new Button(guiLeft+148,guiTop+116,74,20,"Apply Color", button->applyColor());
         this.addButton(applyColorButton);
+        setTextButton = new Button(guiLeft+14,guiTop+143,120,20,"Set Text",button->openTextGui());
+        this.addButton(setTextButton);
     }
 
     private void changeDisplayMode(int i){
@@ -151,6 +157,16 @@ public class PlainSquareScreen extends withColorSliderScreen {
         System.out.println("Apply the color !");
     }
 
+    private void openTextGui() {
+        Minecraft.getInstance().displayGuiScreen(null);
+        PlainSquareSignTileEntity psste = getTileEntity();
+        if (selTextIndex == -1){
+            System.out.println("No text selected !");
+        }
+        Text t = psste.getText(selTextIndex);
+        AddTextScreen.open(this,t);
+    }
+
     @Override
     public void render(int mouseX, int mouseY, float partialTicks) {
         GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
@@ -164,7 +180,7 @@ public class PlainSquareScreen extends withColorSliderScreen {
         blit(relX+241,relY+113,this.blitOffset,DIMENSION.getX()+offset,0,25,25,256,512);
         super.render(mouseX, mouseY, partialTicks);
         PlainSquareSignTileEntity psste = getTileEntity();
-        psste.renderOnScreen(relX+10,relY+10);
+        psste.renderOnScreen(relX+10,relY+10,selTextIndex);
     }
 
     @Override
@@ -191,5 +207,21 @@ public class PlainSquareScreen extends withColorSliderScreen {
 
     public static void open(BlockPos panelPos){
         Minecraft.getInstance().displayGuiScreen(new PlainSquareScreen(panelPos));
+    }
+
+    @Override
+    public Form getForm() {
+        return Form.PLAIN_SQUARE;
+    }
+
+    @Override
+    public void addOrEditText(Text t) {
+        PlainSquareSignTileEntity psste = getTileEntity();
+        psste.setText(t,selTextIndex);
+    }
+
+    @Override
+    public Screen getScreen() {
+        return this;
     }
 }

@@ -39,6 +39,7 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
     private LazyOptional<PSStorage> storage = LazyOptional.of(this::getStorage).cast();
 
     private final int SCREEN_LENGTH = 128;
+    private final ResourceLocation TEXT = new ResourceLocation(SignMod.MODID,"textures/gui/letter.png");
 
     public PlainSquareSignTileEntity() {
         super(TEType.PLAIN_SQUARE_SIGN);
@@ -57,11 +58,11 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         return new PSStorage();
     }
 
-    public void renderOnScreen(int guiLeft, int guiTop) {
+    public void renderOnScreen(int guiLeft, int guiTop,int selTextIndex) {
         //display background
         AbstractGui.fill(guiLeft,guiTop,guiLeft+SCREEN_LENGTH,guiTop+SCREEN_LENGTH,getBackgroundColor().getRGB());
         renderLimit(guiLeft,guiTop);
-        renderText(guiLeft,guiTop);
+        renderText(guiLeft,guiTop,selTextIndex);
         renderScheme(guiLeft,guiTop);
     }
 
@@ -79,7 +80,7 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         AbstractGui.fill(guiLeft,guiTop+limitLength,guiLeft+limitLength,guiTop+SCREEN_LENGTH,fg_color);
     }
 
-    private void renderText(int guiLeft, int guiTop){
+    private void renderText(int guiLeft, int guiTop,int selTextIndex){
         PSDisplayMode mode = getMode();
         GlStateManager.enableBlend();
         float scaleX = SCREEN_LENGTH/(mode.is2by2()?64.0F:96.0F);
@@ -88,6 +89,7 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
             Text t = getText(i);
             Text rescaleText = new Text(t);
             rescaleText.changeScale(1); // a text is rendered on screen with two pixels length
+            renderTextLimit(rescaleText,guiLeft,guiTop,i==selTextIndex,scaleX,scaleY);
             rescaleText.renderOnScreen(guiLeft,guiTop,scaleX/scaleY,false);
         }
     }
@@ -146,6 +148,45 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         builder.pos(x2, y2, 0.0F).tex(u2/texLength, v2/texHeight).color(red, green, blue, alpha).endVertex();
         builder.pos(x2, y1, 0.0F).tex(u2/texLength, v1/texHeight).color(red, green, blue, alpha).endVertex();
 
+        tessellator.draw();
+    }
+
+    private void renderTextLimit(Text t,int guiLeft,int guiTop,boolean isSelected,float scaleX,float scaleY){
+        Minecraft.getInstance().getTextureManager().bindTexture(TEXT);
+        float L = t.getLength()*scaleX/scaleY;
+        float h = t.getHeight();
+        float u = (isSelected) ? 0 :1/256.0F;
+        float v = 35/256.0F+u;
+        float horDu = (L+2)/256.0F;
+        float verDu = 1/256.0F;
+        float horDv = verDu;
+        float verDv = (h+2)/256.0F;
+        guiLeft+=t.getX()*scaleX;
+        guiTop+=t.getY()*scaleY;
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder builder = tessellator.getBuffer();
+        builder.begin(7, DefaultVertexFormats.POSITION_TEX);
+        //up bar
+        builder.pos(guiLeft-1,  guiTop-1,0).tex(   u,          v)      .endVertex();
+        builder.pos(guiLeft-1,     guiTop,  0).tex(   u,       v+horDv).endVertex();
+        builder.pos(guiLeft+L+1,   guiTop,  0).tex(u+horDu, v+horDv).endVertex();
+        builder.pos(guiLeft+L+1,guiTop-1,0).tex(u+horDu,    v)      .endVertex();
+        //down bar
+        builder.pos(guiLeft-1,  guiTop+h,  0).tex(   u    ,     v)      .endVertex();
+        builder.pos(guiLeft-1,  guiTop+h+1,0).tex(   u    ,  v+horDv).endVertex();
+        builder.pos(guiLeft+L+1,guiTop+h+1,0).tex(u+horDu,v+horDv).endVertex();
+        builder.pos(guiLeft+L+1,guiTop+h,  0).tex(u+horDu,   v)      .endVertex();
+        //left bar
+        builder.pos(guiLeft-1,guiTop-1,  0).tex(   u,         v)      .endVertex();
+        builder.pos(guiLeft-1,guiTop+h+1,0).tex(   u,      v+verDv).endVertex();
+        builder.pos(   guiLeft,  guiTop+h+1,0).tex(u+verDu,v+verDv).endVertex();
+        builder.pos(   guiLeft,  guiTop-1,  0).tex(u+verDu,   v)      .endVertex();
+        //right bar
+        builder.pos(   guiLeft+L,    guiTop-1,  0).tex(   u,         v)      .endVertex();
+        builder.pos(   guiLeft+L,    guiTop+h+1,0).tex(   u,      v+verDv).endVertex();
+        builder.pos(   guiLeft+L+1,  guiTop+h+1,0).tex(u+verDu,v+verDv).endVertex();
+        builder.pos(   guiLeft+L+1,  guiTop-1,  0).tex(u+verDu,   v)      .endVertex();
+        //finish drawing
         tessellator.draw();
     }
 

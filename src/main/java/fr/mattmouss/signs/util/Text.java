@@ -88,16 +88,6 @@ public class Text {
         this.y = y;
     }
 
-    public Text rescale(float xScale,float yScale){
-        this.x *= xScale;
-        this.y *= yScale;
-        Text copy = new Text(this);
-        this.x /= xScale;
-        this.y /= yScale;
-        copy.changeScale(1); // a real scale is 1/2 of the pixels
-        return copy;
-    }
-
     public void render(BufferBuilder builder,float xOrigin, float yOrigin, float zOrigin, float pixelLength, float pixelHeight){
         Minecraft.getInstance().getTextureManager().bindTexture(TEXT);
         GlStateManager.color4f(1.0F,1.0F,1.0F,1.0F);
