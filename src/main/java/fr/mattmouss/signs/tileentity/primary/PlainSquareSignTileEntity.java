@@ -38,7 +38,7 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
 
     private LazyOptional<PSStorage> storage = LazyOptional.of(this::getStorage).cast();
 
-    private final int SCREEN_LENGTH = 128;
+    public static final int SCREEN_LENGTH = 128;
     private final ResourceLocation TEXT = new ResourceLocation(SignMod.MODID,"textures/gui/letter.png");
 
     public PlainSquareSignTileEntity() {
@@ -82,15 +82,14 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
 
     private void renderText(int guiLeft, int guiTop,int selTextIndex){
         PSDisplayMode mode = getMode();
-        GlStateManager.enableBlend();
         float scaleX = SCREEN_LENGTH/(mode.is2by2()?64.0F:96.0F);
         float scaleY = SCREEN_LENGTH/64.0F;
         for (int i=0;i<mode.getTotalText();i++){
             Text t = getText(i);
             Text rescaleText = new Text(t);
             rescaleText.changeScale(1); // a text is rendered on screen with two pixels length
-            renderTextLimit(rescaleText,guiLeft,guiTop,i==selTextIndex,scaleX,scaleY);
             rescaleText.renderOnScreen(guiLeft,guiTop,scaleX/scaleY,false);
+            renderTextLimit(rescaleText,guiLeft,guiTop,i==selTextIndex,scaleX,scaleY);
         }
     }
 
@@ -152,7 +151,6 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
     }
 
     private void renderTextLimit(Text t,int guiLeft,int guiTop,boolean isSelected,float scaleX,float scaleY){
-        Minecraft.getInstance().getTextureManager().bindTexture(TEXT);
         float L = t.getLength()*scaleX/scaleY;
         float h = t.getHeight();
         float u = (isSelected) ? 0 :1/256.0F;

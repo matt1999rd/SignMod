@@ -76,7 +76,7 @@ public class EditingSignTileEntityRenderer<T extends EditingSignTileEntity> exte
         GlStateManager.pushMatrix();
         Functions.setWorldGLState(true);
         Text t = tileEntity.getText();
-        //GlStateManager.enableTexture();
+        GlStateManager.enableTexture();
         GlStateManager.enableBlend();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder builder = tessellator.getBuffer();

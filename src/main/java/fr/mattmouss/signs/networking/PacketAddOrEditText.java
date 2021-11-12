@@ -4,6 +4,7 @@ import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.tileentity.DirectionSignTileEntity;
 import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
 import fr.mattmouss.signs.tileentity.EditingSignTileEntity;
+import fr.mattmouss.signs.tileentity.primary.PlainSquareSignTileEntity;
 import fr.mattmouss.signs.util.Text;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
@@ -44,8 +45,11 @@ public class PacketAddOrEditText {
                 EditingSignTileEntity este = (EditingSignTileEntity)te;
                 este.setText(t);
             }else if (te instanceof DirectionSignTileEntity) {
-                DirectionSignTileEntity dste = (DirectionSignTileEntity)te;
-                dste.setText(ind/2,ind%2 == 1,t);
+                DirectionSignTileEntity dste = (DirectionSignTileEntity) te;
+                dste.setText(ind / 2, ind % 2 == 1, t);
+            }else if (te instanceof PlainSquareSignTileEntity){
+                PlainSquareSignTileEntity psste = (PlainSquareSignTileEntity) te;
+                psste.setText(t,ind);
             }else {
                 SignMod.LOGGER.warn("unable to send packet to server : invalid position send");
             }

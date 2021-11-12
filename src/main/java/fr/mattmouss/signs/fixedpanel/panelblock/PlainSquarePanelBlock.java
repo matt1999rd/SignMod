@@ -23,6 +23,7 @@ public class PlainSquarePanelBlock extends AbstractPanelBlock {
     public PlainSquarePanelBlock() {
         super("huge_direction");
     }
+    public static final PSPosition DEFAULT_POSITION = PSPosition.DOWN_RIGHT;
 
     @Override
     public ScreenType getScreenType() {

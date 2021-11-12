@@ -141,10 +141,10 @@ public class Text {
         tessellator.draw();
     }
 
-    public boolean isIn(double mouseX,double mouseY,int guiLeft,int guiTop){
-        int L = getLength();
-        int h = getHeight();
-        return (mouseX>guiLeft-1+x && mouseX<guiLeft+x+L+1) && (mouseY>guiTop-1+y && mouseY<guiTop+y+h+1);
+    public boolean isIn(double mouseX,double mouseY,int guiLeft,int guiTop,float scaleX,float scaleY){
+        float L = getLength()*scaleX/scaleY;
+        float h = getHeight();
+        return (mouseX>guiLeft-1+x*scaleX && mouseX<guiLeft+x*scaleX+L+1) && (mouseY>guiTop-1+y*scaleY && mouseY<guiTop+y*scaleY+h+1);
     }
 
     public CompoundNBT serializeNBT() {

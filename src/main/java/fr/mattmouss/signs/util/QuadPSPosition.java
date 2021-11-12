@@ -22,4 +22,5 @@ public class QuadPSPosition {
     public int getMaxText(){
         return maxText;
     }
+
 }

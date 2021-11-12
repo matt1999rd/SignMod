@@ -145,6 +145,10 @@ public enum PSPosition implements IStringSerializable {
         return positions;
     }
 
+    //BlockPos pos is the block position associated with the PSPosition this
+    //the output of the function is the block position associated with the PSPosition position
+    //facing and isFor2by2 are argument for calculation
+
     public BlockPos offsetPos(PSPosition position,BlockPos pos,Direction facing,boolean isFor2by2){
         BlockPos offset = new BlockPos(pos);
         Direction leftDirection = facing.rotateY();
@@ -153,13 +157,13 @@ public enum PSPosition implements IStringSerializable {
         }else if (!position.isUp() && this.isUp()){
             offset = offset.down();
         }
-        if (this.isRight()){
+        if (this.isRight()){ //the position is in the right
             int n = (position.isRight())? 0 : (position.isMiddle() || isFor2by2) ? 1 : 2;
             offset = offset.offset(leftDirection,n);
-        } else if (this.isLeft()){
+        } else if (this.isLeft()){ //the position is in the left
             int n = (position.isLeft())? 0 : (position.isMiddle() || isFor2by2) ? 1 : 2;
             offset = offset.offset(leftDirection.getOpposite(),n);
-        } else {
+        } else { //the position is in the middle
             Direction offsetDir = (position.isLeft())? leftDirection : leftDirection.getOpposite();
             int n = (position.isMiddle())? 0 : 1;
             offset = offset.offset(offsetDir,n);

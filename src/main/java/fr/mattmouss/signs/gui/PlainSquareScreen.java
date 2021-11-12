@@ -3,25 +3,33 @@ package fr.mattmouss.signs.gui;
 import com.mojang.blaze3d.platform.GlStateManager;
 import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.enums.Form;
+import fr.mattmouss.signs.enums.PSDisplayMode;
+import fr.mattmouss.signs.enums.PSPosition;
+import fr.mattmouss.signs.fixedpanel.panelblock.PlainSquarePanelBlock;
 import fr.mattmouss.signs.gui.screenutils.ColorOption;
 import fr.mattmouss.signs.gui.screenutils.ColorType;
 import fr.mattmouss.signs.gui.screenutils.Option;
 import fr.mattmouss.signs.gui.widget.ColorSlider;
-import fr.mattmouss.signs.tileentity.DrawingSignTileEntity;
+import fr.mattmouss.signs.networking.Networking;
+import fr.mattmouss.signs.networking.PacketAddOrEditText;
 import fr.mattmouss.signs.tileentity.primary.PlainSquareSignTileEntity;
 import fr.mattmouss.signs.util.Text;
 import fr.mattmouss.signs.util.Vec2i;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.ImageButton;
+import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
+import static fr.mattmouss.signs.tileentity.primary.PlainSquareSignTileEntity.SCREEN_LENGTH;
 
 import java.awt.Color;
 
@@ -38,7 +46,6 @@ public class PlainSquareScreen extends withColorSliderScreen implements IWithEdi
 
     ColorSlider[] sliders = new ColorSlider[6];
     ResourceLocation PLAIN_SQUARE = new ResourceLocation(SignMod.MODID,"textures/gui/ps_gui.png");
-    ResourceLocation PS_SCHEME = new ResourceLocation(SignMod.MODID,"textures/gui/display_mode_scheme.png");
     ImageButton[] psDisplayModeButton = new ImageButton[4];
     ImageButton[] arrowDirectionButton = new ImageButton[3];
     Button applyColorButton,setTextButton;
@@ -64,8 +71,18 @@ public class PlainSquareScreen extends withColorSliderScreen implements IWithEdi
         assert this.minecraft != null;
         World world = this.minecraft.world;
         TileEntity te = world.getTileEntity(panelPos);
+        BlockState state = world.getBlockState(panelPos);
+        Direction facing = state.get(BlockStateProperties.HORIZONTAL_FACING);
         if (te instanceof PlainSquareSignTileEntity){
-            return (PlainSquareSignTileEntity) te;
+            PlainSquareSignTileEntity clickedPsste = (PlainSquareSignTileEntity) te;
+            PSPosition clickedPsstePosition = clickedPsste.getPosition();
+            BlockPos realPanelPos = clickedPsstePosition.offsetPos(PlainSquarePanelBlock.DEFAULT_POSITION,panelPos,facing,clickedPsste.getMode().is2by2());
+            te = world.getTileEntity(realPanelPos);
+            if (te instanceof PlainSquareSignTileEntity){
+                return (PlainSquareSignTileEntity) te;
+            }else {
+                throw new IllegalStateException("The panel created has not the same number of tile entity as the number of block : the world may be corrupted !");
+            }
         }
         if (te == null)throw new NullPointerException("Tile entity at panelPos is not in desired place !");
         throw new IllegalStateException("Plain Square Screen need plain square sign tile entity in place !");
@@ -139,6 +156,7 @@ public class PlainSquareScreen extends withColorSliderScreen implements IWithEdi
         applyColorButton = new Button(guiLeft+148,guiTop+116,74,20,"Apply Color", button->applyColor());
         this.addButton(applyColorButton);
         setTextButton = new Button(guiLeft+14,guiTop+143,120,20,"Set Text",button->openTextGui());
+        this.setTextButton.active = (selTextIndex != -1);
         this.addButton(setTextButton);
     }
 
@@ -158,13 +176,14 @@ public class PlainSquareScreen extends withColorSliderScreen implements IWithEdi
     }
 
     private void openTextGui() {
-        Minecraft.getInstance().displayGuiScreen(null);
-        PlainSquareSignTileEntity psste = getTileEntity();
         if (selTextIndex == -1){
             System.out.println("No text selected !");
+        }else{
+            Minecraft.getInstance().displayGuiScreen(null);
+            PlainSquareSignTileEntity psste = getTileEntity();
+            Text t = psste.getText(selTextIndex);
+            AddTextScreen.open(this,t);
         }
-        Text t = psste.getText(selTextIndex);
-        AddTextScreen.open(this,t);
     }
 
     @Override
@@ -195,7 +214,33 @@ public class PlainSquareScreen extends withColorSliderScreen implements IWithEdi
             Minecraft.getInstance().getSoundHandler().play(SimpleSound.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             updateSliderDisplay();
         }
+        int newSelTextIndex = getTextSelected(mouseX,mouseY);
+        if (newSelTextIndex != -1){
+            this.selTextIndex = newSelTextIndex;
+            this.setTextButton.active = true;
+        }else if (button == 1){
+            this.selTextIndex = -1;
+            this.setTextButton.active = false;
+        }
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    private int getTextSelected(double mouseX, double mouseY){
+        int guiLeft = getGuiStartXPosition();
+        int guiTop = getGuiStartYPosition();
+        PlainSquareSignTileEntity psste = getTileEntity();
+        PSDisplayMode mode = psste.getMode();
+        int nbText = mode.getTotalText();
+        float scaleX = SCREEN_LENGTH/(mode.is2by2()?64.0F:96.0F);
+        float scaleY = SCREEN_LENGTH/64.0F;
+        for (int j=0;j<nbText;j++){
+            Text t=new Text(psste.getText(j));
+            t.changeScale(1);
+            if (t.isIn(mouseX,mouseY,guiLeft+10,guiTop+10,scaleX,scaleY)){
+                return j;
+            }
+        }
+        return -1;
     }
     private void updateSliderDisplay() {
         for (int k=0;k<6;k++){
@@ -218,6 +263,7 @@ public class PlainSquareScreen extends withColorSliderScreen implements IWithEdi
     public void addOrEditText(Text t) {
         PlainSquareSignTileEntity psste = getTileEntity();
         psste.setText(t,selTextIndex);
+        Networking.INSTANCE.sendToServer(new PacketAddOrEditText(panelPos,t,selTextIndex));
     }
 
     @Override

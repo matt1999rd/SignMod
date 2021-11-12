@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import fr.mattmouss.signs.SignMod;
 import fr.mattmouss.signs.enums.PSDisplayMode;
 import fr.mattmouss.signs.enums.PSPosition;
+import fr.mattmouss.signs.fixedpanel.panelblock.PlainSquarePanelBlock;
 import fr.mattmouss.signs.fixedpanel.support.GridSupport;
 import fr.mattmouss.signs.tileentity.model.PSSignModel;
 import fr.mattmouss.signs.tileentity.primary.PlainSquareSignTileEntity;
@@ -93,7 +94,7 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
         Color color = psste.getBackgroundColor();
         renderQuad(0,16,0,16,color,0); //background rendering
         renderLimit(psste);
-        if (psste.getPosition() == PSPosition.DOWN_RIGHT){
+        if (psste.getPosition() == PlainSquarePanelBlock.DEFAULT_POSITION){
             GlStateManager.enableTexture();
             renderText(psste);
             renderScheme(psste);

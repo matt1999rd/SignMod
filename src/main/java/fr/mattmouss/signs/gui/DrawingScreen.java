@@ -98,7 +98,7 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
         delTextButton = new Button(relX+132,relY+165,74,20,"Delete Text",b->deleteSelText());
         this.addButton(addTextButton);
         this.addButton(delTextButton);
-        addTextButton.active = option.getMode() == PencilMode.SELECT && option.isTextSelected();
+        addTextButton.active = option.getMode() == PencilMode.SELECT;
         delTextButton.active = option.getMode() == PencilMode.SELECT && option.isTextSelected();
         minusButton.active = option.getLength() != 1;
         plusButton.active = option.getLength() != 64;
@@ -314,7 +314,7 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
         int n= dste.getNumberOfText();
         for (int i=0;i<n;i++){
             Text t = dste.getText(i);
-            if (t.isIn(mouseX,mouseY,relX+30,relY+4)){
+            if (t.isIn(mouseX,mouseY,relX+30,relY+4,1.0F,1.0F)){
                 return i;
             }
         }
