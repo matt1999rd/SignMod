@@ -1,0 +1,86 @@
+package fr.matt1999rd.signs.tileentity;
+
+
+import com.mojang.blaze3d.matrix.MatrixStack;
+import fr.matt1999rd.signs.enums.Form;
+import fr.matt1999rd.signs.fixedpanel.panelblock.AbstractPanelBlock;
+import fr.matt1999rd.signs.util.Text;
+import fr.matt1999rd.signs.capabilities.TextCapability;
+import fr.matt1999rd.signs.capabilities.TextStorage;
+import net.minecraft.block.BlockState;
+
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.Direction;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.common.util.LazyOptional;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+
+public abstract class EditingSignTileEntity extends PanelTileEntity {
+
+    private LazyOptional<TextStorage> storage = LazyOptional.of(this::getStorage).cast();
+    public EditingSignTileEntity(TileEntityType<?> tileEntityTypeIn) {
+        super(tileEntityTypeIn);
+    }
+
+    @Override
+    public void tick() {
+        BlockState state = getBlockState();
+        if (!state.getValue(AbstractPanelBlock.GRID)){
+            //if it is a support with grid
+            super.tick();
+        }
+    }
+
+    protected abstract Form getForm();
+
+    private TextStorage getStorage() {
+        return new TextStorage(1, Text.getDefaultText());
+    }
+
+    public Text getText(){
+        return storage.map(textStorage -> textStorage.getText(0)).orElse(Text.getDefaultText());
+    }
+
+    public void setText(Text newText){
+        storage.ifPresent(textStorage -> textStorage.setText(newText,0));
+    }
+
+    public void renderOnScreen(MatrixStack stack,int guiLeft, int guiTop) {
+        Text t = getText();
+        t.renderOnScreen(stack,guiLeft,guiTop,1.0F,true);
+    }
+
+    @Nonnull
+    @Override
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+        if (cap == TextCapability.TEXT_STORAGE){
+            return storage.cast();
+        }
+        return super.getCapability(cap, side);
+    }
+
+    @Override
+    public void load(BlockState state,CompoundNBT compound) {
+        CompoundNBT storage_tag = compound.getCompound("text");
+        getCapability(TextCapability.TEXT_STORAGE).ifPresent(s -> ((INBTSerializable<CompoundNBT>) s).deserializeNBT(storage_tag));
+        super.load(state,compound);
+    }
+
+    @Override
+    public CompoundNBT save(CompoundNBT tag) {
+        getCapability(TextCapability.TEXT_STORAGE).ifPresent(storage -> {
+            CompoundNBT compoundNBT = ((INBTSerializable<CompoundNBT>) storage).serializeNBT();
+            tag.put("text", compoundNBT);
+        });
+        return super.save(tag);
+    }
+
+    public CompoundNBT getUpdateTag() {
+        return this.save(new CompoundNBT());
+    }
+}
