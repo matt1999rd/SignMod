@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
+import static fr.matt1999rd.signs.util.Functions.*;
 import static net.minecraft.util.text.ITextComponent.nullToEmpty;
 
 import java.awt.*;
@@ -29,6 +30,7 @@ public class AddTextScreen extends withColorSliderScreen {
     ColorSlider RED_SLIDER, GREEN_SLIDER, BLUE_SLIDER;
 
     protected AddTextScreen(IWithEditTextScreen parentScreen,Text textToEdit) {
+
         super(new StringTextComponent("Add Text Screen"));
         this.parentScreen = parentScreen;
         oldText = textToEdit;
@@ -41,20 +43,26 @@ public class AddTextScreen extends withColorSliderScreen {
         int relY = (this.height - DIMENSION.getY()) / 2;
         Form f = parentScreen.getForm();
         assert this.minecraft != null;
-        field = new LimitSizeTextField(this.minecraft,relX,relY,f,oldText);
-        if (f.isForDirection()){
-            boolean isEnd = ((DirectionScreen)parentScreen).isEndSelected();
-            boolean isTextCentered = ((DirectionScreen)parentScreen).isTextCentered();
-            field.defineVariableForDirection(isEnd,isTextCentered);
+        field = new LimitSizeTextField(this.minecraft,relX+30,relY+118,f,oldText);
+        if (f.hasLengthPredefinedLimit()){
+            int maxLength ;
+            if (f.isForDirection()){
+                boolean isTextCentered = ((DirectionScreen)parentScreen).isTextCentered();
+                boolean isEnd = ((DirectionScreen)parentScreen).isEndSelected();
+                maxLength = (isTextCentered) ? panelLength-2*st_gap : (isEnd) ? endTextLength : begTextLength;
+            } else {
+                maxLength = ((PlainSquareScreen) parentScreen).getMaxLength();
+            }
+            field.setLengthLimit(maxLength);
         }
         field.setFilter(s -> {
-            int n= s.length();
-            for (int i=0;i<n;i++){
-                char c0 = s.charAt(i);
-                if (!Letter.isIn(c0) && c0 != ' '){
-                    return false;
-                }
-                if (f.isForDirection()){
+            if (!Letter.VALIDATOR_FOR_TEXT_DISPLAY.test(s)){
+                return false;
+            }
+            if (f.isForDirection()){
+                int n= s.length();
+                for (int i=0;i<n;i++){
+                    char c0 = s.charAt(i);
                     DirectionScreen screen = (DirectionScreen)parentScreen;
                     if (screen.isEndSelected() && !Letter.isNumber(c0)){
                         return false;

@@ -166,8 +166,14 @@ public enum Form {
 
     public boolean isNotForEditing() {return (this.tileEntityClass != EditingSignTileEntity.class);}
 
+    public boolean needNotUpdateTextPosition() { return isNotForEditing() || this != PLAIN_SQUARE; }
+
     public boolean isForDirection() {
         return (this.tileEntityClass == DirectionSignTileEntity.class);
+    }
+
+    public boolean hasLengthPredefinedLimit(){
+        return isForDirection() || this == PLAIN_SQUARE;
     }
 
     public ResourceLocation getTexture(){

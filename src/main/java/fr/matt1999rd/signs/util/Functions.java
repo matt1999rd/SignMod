@@ -1,7 +1,6 @@
 package fr.matt1999rd.signs.util;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
 import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -9,14 +8,12 @@ import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.ExtendDirection;
 import fr.matt1999rd.signs.enums.PSPosition;
 import fr.matt1999rd.signs.fixedpanel.panelblock.AbstractPanelBlock;
+import fr.matt1999rd.signs.fixedpanel.panelblock.PlainSquarePanelBlock;
 import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
 import fr.matt1999rd.signs.fixedpanel.support.SignSupport;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.renderer.RenderState;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -35,7 +32,6 @@ import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.lwjgl.opengl.GL11;
 
 import java.util.List;
 
@@ -50,6 +46,17 @@ public class Functions {
     public static final int center_gap = 4; //larger gap
     public static final int begTextLength = panelLength-endTextLength-2*st_gap-center_gap;
     public static final ResourceLocation SIGN_BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/block/sign.png");
+
+    //function for authorisation of placing the four plain square panel : three of them are the 3 by 2 and one is 2 by 2.
+    // 0 -> nothing, 1-> only 2 by 2, 2-> all >> for the placement (allowPanel = false)
+
+    // 0 -> nothing, 1-> only 2 by 2, 2-> 3 by 2 in left, 3 -> 3 by 2 in right,
+    // 4 -> all side >> for the enable/disable of reduce/expand side button in gui (allowPanel = true)
+    public static final int NO_PANEL = 0;
+    public static final int ONLY_2BY2_PANEL = 1;
+    public static final int ONLY_3BY2_PANEL_IN_LEFT = 2;
+    public static final int ONLY_3BY2_PANEL_IN_RIGHT = 3;
+    public static final int ALL_PANEL = 4;
 
 
     static {
@@ -212,7 +219,7 @@ public class Functions {
         world.setBlock(pos, Blocks.AIR.defaultBlockState(),35);
     }
 
-    //useful to delete the other grid of a grid or a
+    //useful to delete the other grid of a grid or a support
 
     public static void deleteOtherGrid(BlockPos pos, World worldIn, PlayerEntity player,BlockState state) {
         boolean isRotated = state.getValue(GridSupport.ROTATED);
@@ -374,18 +381,31 @@ public class Functions {
     }
 
     //function for authorisation of placing the four plain square panel : three of them are the 3 by 2 and one is 2 by 2.
-    //0 -> nothing, 1-> only 2 by 2, 2-> all
+    // 0 -> nothing, 1-> only 2 by 2, 2-> all >> for the placement (allowPanel = false)
 
-    public static byte getAuthoring(World world, BlockPos futurePos, Direction futureFacing) {
-        List<PSPosition> placementDir = PSPosition.listPlaceable(world,futurePos,futureFacing,true);
+    // 0 -> nothing, 1-> only 2 by 2, 2-> 3 by 2 in left, 3 -> 3 by 2 in right,
+    // 4 -> all side >> for the enable/disable of reduce/expand side button in gui (allowPanel = true)
+
+    public static byte getAuthoring(World world, BlockPos futurePos, Direction futureFacing,boolean allowPanel) {
+        List<PSPosition> placementDir = PSPosition.listPlaceable(world,futurePos,futureFacing,true,allowPanel);
         if (placementDir.isEmpty()){
-            return 0;
+            return NO_PANEL;
         }
-        List<PSPosition> placementDir2 = PSPosition.listPlaceable(world,futurePos,futureFacing,false);
+        List<PSPosition> placementDir2 = PSPosition.listPlaceable(world,futurePos,futureFacing,false,allowPanel);
         if (placementDir2.isEmpty()){
-            return 1;
+            return ONLY_2BY2_PANEL;
         }
-        return 2;
+        if (placementDir2.size() == 1){
+            if (!allowPanel)return ALL_PANEL;
+            PSPosition position = placementDir2.get(0);
+            PSPosition defaultPosition = PlainSquarePanelBlock.DEFAULT_RIGHT_POSITION;
+            if ((position == defaultPosition) == (defaultPosition.isRight())){
+                return ONLY_3BY2_PANEL_IN_LEFT;
+            }else {
+                return ONLY_3BY2_PANEL_IN_RIGHT;
+            }
+        }
+        return (byte) ((allowPanel)? ALL_PANEL : ONLY_3BY2_PANEL_IN_LEFT);
     }
 
     // function that indicates if vector2f "point" is in the rhombus of center vec2f "center" = (xC,yC) and diagonal length (xD,yD) with diagonal over X and Y axis

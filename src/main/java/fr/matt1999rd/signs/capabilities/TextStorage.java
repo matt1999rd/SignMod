@@ -84,6 +84,7 @@ public class TextStorage implements ITextStorage, INBTSerializable<CompoundNBT> 
     public void deserializeNBT(CompoundNBT nbt) {
         ListNBT nbt1 = (ListNBT) nbt.get("txts");
         maxLength = nbt.getInt("maxLength");
+        assert nbt1 != null;
         if (nbt1.size()>maxLength){
             return;
         }

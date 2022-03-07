@@ -22,18 +22,10 @@ import java.awt.*;
 public class Text {
     private float x,y;
     private int scale;
-    private final String content;
-    private final Color color;
+    private String content;
+    private Color color;
     public static final ResourceLocation TEXT = new ResourceLocation(SignMod.MODID,"textures/gui/letter.png");
     private static final RenderType textRenderType = RenderType.text(TEXT);
-
-    public Text(int x,int y,String txt,Color color,int scale){
-        this.x = x;
-        this.y = y;
-        this.content = txt;
-        this.color = color;
-        this.scale = scale;
-    }
 
     public Text(float x,float y,String txt,Color color,int scale){
         this.x = x;
@@ -43,12 +35,20 @@ public class Text {
         this.scale = scale;
     }
 
+    public Text(int x,int y,String txt,Color color,int scale){
+        this((float) x,(float) y,txt,color,scale);
+    }
+
+    public Text(Vector2i position,String txt,Color color,int scale){
+        this(position.getX(),position.getY(),txt,color,scale);
+    }
+
     public Text(Text t){
-        this.x = t.getX();
-        this.y = t.getY();
-        this.content = t.getText();
-        this.color = new Color(t.getColor(),true);
-        this.scale = t.getScale();
+        this(t.getX(), t.getY(), t.getText(), new Color(t.getColor(),true), t.getScale());
+    }
+
+    public static Text getDefaultText(Vector2i position,Color color){
+        return new Text(position,"",color,1);
     }
 
     public static Text getDefaultText(){
@@ -94,6 +94,10 @@ public class Text {
     public void setPosition(float x,float y){
         this.x = x;
         this.y = y;
+    }
+
+    public void setText(String content){
+        this.content = content;
     }
 
     public void render(MatrixStack stack, IRenderTypeBuffer buffer, float xOrigin, float yOrigin, float zOrigin, float pixelLength, float pixelHeight,int combinedLight){
@@ -194,5 +198,9 @@ public class Text {
 
     public boolean isEmpty() {
         return this.content.isEmpty();
+    }
+
+    public void setColor(int color) {
+        this.color = new Color(color);
     }
 }

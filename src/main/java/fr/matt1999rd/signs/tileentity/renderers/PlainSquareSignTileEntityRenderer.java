@@ -5,7 +5,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.PSDisplayMode;
-import fr.matt1999rd.signs.enums.PSPosition;
 import fr.matt1999rd.signs.fixedpanel.panelblock.PlainSquarePanelBlock;
 import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
 import fr.matt1999rd.signs.tileentity.model.PSSignModel;
@@ -14,15 +13,9 @@ import fr.matt1999rd.signs.util.Functions;
 import fr.matt1999rd.signs.util.PictureRenderState;
 import fr.matt1999rd.signs.util.Text;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.Atlases;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
@@ -84,9 +77,12 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
         Color color = psste.getBackgroundColor();
         Matrix4f matrix4f = stack.last().pose();
         stack.translate(-5.0F/16F,5.0F/16F,-0.1F/16F);
-        renderQuad(pictureBuffer,matrix4f,0,16,0,16,color,0,combinedLight); //background rendering
-        renderLimit(pictureBuffer,matrix4f,psste,combinedLight);
-        if (psste.getPosition() == PlainSquarePanelBlock.DEFAULT_POSITION){
+        // renderQuad(pictureBuffer,matrix4f,0,16,0,16,color,0,combinedLight); //background rendering
+        // renderLimit(pictureBuffer,matrix4f,psste,combinedLight);
+        if (psste.getPosition() == PlainSquarePanelBlock.DEFAULT_RIGHT_POSITION){
+            PSDisplayMode mode = psste.getMode();
+            renderQuad(pictureBuffer,matrix4f,0,16*(mode.is2by2()?2:3),0,32,color,0,combinedLight); //background rendering
+            renderLimit(pictureBuffer,matrix4f,mode.is2by2(),psste.getForegroundColor(),combinedLight);
             RenderSystem.enableTexture();
             Functions.setWorldGLState();
             renderText(stack,buffer,psste,combinedLight);
@@ -133,22 +129,15 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
         }
     }
 
-    private void renderLimit(IVertexBuilder builder,Matrix4f matrix4f,PlainSquareSignTileEntity psste,int combinedLight){
-        Color color = psste.getForegroundColor();
-        PSPosition position = psste.getPosition();
+    private void renderLimit(IVertexBuilder builder,Matrix4f matrix4f,boolean is2by2,Color foregroundColor,int combinedLight){
         float limitLength = 0.5F;
-        float panelLength = 16.0F;
-        if (position.isRight()){
-            renderQuad(builder,matrix4f,0,limitLength,0,panelLength,color,1,combinedLight); //left limit
-        }
-        if (position.isLeft()){
-            renderQuad(builder,matrix4f,panelLength-limitLength,panelLength,0,panelLength,color,1,combinedLight); //right limit
-        }
-        if (position.isUp()){
-            renderQuad(builder,matrix4f,0, panelLength, panelLength - limitLength, panelLength, color,1,combinedLight); //down limit
-        }else {
-            renderQuad(builder,matrix4f,0,panelLength,0,limitLength,color,1,combinedLight); //up limit
-        }
+        float panelLength = (is2by2?2:3)*16.0F;
+        float panelHeight = 2*16.0F;
+
+        renderQuad(builder,matrix4f,0, limitLength,0,panelHeight,foregroundColor,1,combinedLight); //right limit
+        renderQuad(builder,matrix4f,panelLength-limitLength,panelLength,0,panelHeight,foregroundColor,1,combinedLight); //left limit
+        renderQuad(builder,matrix4f,0, panelLength,panelHeight - limitLength, panelHeight, foregroundColor,1,combinedLight); //up limit
+        renderQuad(builder,matrix4f,0, panelLength,0,limitLength,foregroundColor,1,combinedLight); //down limit
     }
 
     private void renderText(MatrixStack stack, IRenderTypeBuffer buffer, PlainSquareSignTileEntity psste, int combinedLight){

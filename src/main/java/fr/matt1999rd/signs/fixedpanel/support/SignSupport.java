@@ -12,7 +12,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
-import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.ISelectionContext;
@@ -24,7 +23,6 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 
 public class SignSupport extends Block {
@@ -69,7 +67,7 @@ public class SignSupport extends Block {
     public void playerWillDestroy(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         Functions.deleteConnectingGrid(pos,world,player,state);
         BlockPos offset_pos = pos.above();
-        //we delete all block that this support block was handling
+        //we delete all sign support block that this support block was handling
         while (Functions.isSignSupport(world.getBlockState(offset_pos))){
             BlockState state1 = world.getBlockState(offset_pos);
             Functions.deleteBlock(offset_pos,world,player);

@@ -14,7 +14,6 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
-import org.lwjgl.system.CallbackI;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -59,7 +58,6 @@ public class ChoiceScreen extends Screen {
         for (int i=0;i<3;i++){
             for (int j=0;j<3;j++){
                 int k = 3*i+j;
-                Form f = Form.byIndex(k);
                 this.mainMenuButtons[k] = new ImageButton(relX + 4 + MAIN_MENU_BUTTON_LENGTH * i, //PosX on gui
                             relY + 4 + MAIN_MENU_BUTTON_LENGTH * j, //PosY on gui
                             MAIN_MENU_BUTTON_LENGTH, //width
@@ -104,13 +102,13 @@ public class ChoiceScreen extends Screen {
             minecraft.setScreen(null);
         }else {
             assert minecraft != null;
-            byte authoring = Functions.getAuthoring(minecraft.level,futurePanelPos,futureFacing);
+            byte authoring = Functions.getAuthoring(minecraft.level,futurePanelPos,futureFacing,false);
             int k = 0;
             for (ImageButton button : subMenuButtons){
-                button.active = (k == 0 || authoring == 2);
+                button.active = (k == 0 || authoring == Functions.ALL_PANEL);
                 k++;
             }
-            if (authoring != 0)this.openSubMenu();
+            if (authoring != Functions.NO_PANEL)this.openSubMenu();
             else this.onClose();
         }
     }

@@ -3,11 +3,7 @@ package fr.matt1999rd.signs.fixedpanel;
 import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import net.minecraft.block.Block;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.RenderTypeLookup;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import java.util.ArrayList;
 import java.util.List;

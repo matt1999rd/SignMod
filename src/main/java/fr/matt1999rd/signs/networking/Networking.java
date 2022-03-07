@@ -83,6 +83,11 @@ public class Networking {
                 PacketPlacePSPanel::new,
                 PacketPlacePSPanel::handle);
 
+        INSTANCE.registerMessage(nextID(),
+                PacketPSScreenOperation.class,
+                PacketPSScreenOperation::toBytes,
+                PacketPSScreenOperation::new,
+                PacketPSScreenOperation::handle);
 
 
         /*

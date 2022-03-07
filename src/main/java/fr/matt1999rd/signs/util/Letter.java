@@ -13,6 +13,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 
 
 public class Letter {
@@ -26,6 +27,17 @@ public class Letter {
             new char[]{'-','1','I','f','t'},
             buildFourLengthTab(),
             buildFiveLengthTab()
+    };
+
+    public static final Predicate<String> VALIDATOR_FOR_TEXT_DISPLAY = s -> {
+        int n=s.length();
+        for (int i=0;i<n;i++){
+            char c0 = s.charAt(i);
+            if (!Letter.isIn(c0) && c0 != ' '){
+                return false;
+            }
+        }
+        return true;
     };
 
     private static char[] buildFourLengthTab() {

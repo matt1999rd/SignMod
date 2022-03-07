@@ -1,12 +1,8 @@
 package fr.matt1999rd.signs.fixedpanel.panelblock;
 
 import fr.matt1999rd.signs.enums.*;
-import fr.matt1999rd.signs.fixedpanel.ModBlock;
-import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
 import fr.matt1999rd.signs.tileentity.primary.PlainSquareSignTileEntity;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
@@ -23,7 +19,9 @@ public class PlainSquarePanelBlock extends AbstractPanelBlock {
     public PlainSquarePanelBlock() {
         super("huge_direction");
     }
-    public static final PSPosition DEFAULT_POSITION = PSPosition.DOWN_RIGHT;
+    public static final PSPosition DEFAULT_RIGHT_POSITION = PSPosition.DOWN_RIGHT;
+    public static final PSPosition DEFAULT_LEFT_POSITION = PSPosition.UP_LEFT;
+
 
     @Override
     public ScreenType getScreenType() {

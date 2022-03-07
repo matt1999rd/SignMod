@@ -1,7 +1,9 @@
 package fr.matt1999rd.signs.enums;
 
 import com.google.common.collect.Lists;
+import fr.matt1999rd.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
+import net.minecraft.block.Block;
 import net.minecraft.util.Direction;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.math.BlockPos;
@@ -69,7 +71,7 @@ public enum PSPosition implements IStringSerializable {
         return meta/3 == 0;
     }
 
-    public boolean isPlaceable(World world, BlockPos pos, Direction facing,boolean isFor2by2){
+    public boolean isPlaceable(World world, BlockPos pos, Direction facing,boolean isFor2by2,boolean allowPanel){
         List<BlockPos> posToCheck = Lists.newArrayList();
         Direction leftDirection = facing.getClockWise();
         if (isFor2by2 && isMiddle()){
@@ -121,17 +123,18 @@ public enum PSPosition implements IStringSerializable {
                 break;
         }
         for (BlockPos pos2 : posToCheck){
-            if (!(world.getBlockState(pos2).getBlock() instanceof GridSupport)){
+            Block block = world.getBlockState(pos2).getBlock();
+            if (!(block instanceof GridSupport) && !(block instanceof AbstractPanelBlock && allowPanel)){
                 return false;
             }
         }
         return true;
     }
 
-    public static List<PSPosition> listPlaceable(World world, BlockPos pos, Direction facing,boolean isFor2by2){
+    public static List<PSPosition> listPlaceable(World world, BlockPos pos, Direction facing,boolean isFor2by2,boolean allowPanel){
         List<PSPosition> positions = Lists.newArrayList();
         for (PSPosition position : PSPosition.values()){
-            if (position.isPlaceable(world,pos,facing,isFor2by2)){
+            if (position.isPlaceable(world,pos,facing,isFor2by2,allowPanel)){
                 positions.add(position);
             }
         }
@@ -175,5 +178,11 @@ public enum PSPosition implements IStringSerializable {
         }
 
         return neighbor;
+    }
+
+    public PSPosition centerPosition() {
+        if (this.isMiddle())return this;
+        if (this.isUp()) return PSPosition.UP_MIDDLE;
+        else return PSPosition.DOWN_MIDDLE;
     }
 }

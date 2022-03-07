@@ -58,7 +58,7 @@ public class PacketPlacePSPanel {
             if (m == null) {
                 return;
             }
-            List<PSPosition> directionOfPlacement = PSPosition.listPlaceable(world,panelFuturePos,Direction.from2DDataValue(facing),m.is2by2());
+            List<PSPosition> directionOfPlacement = PSPosition.listPlaceable(world,panelFuturePos,Direction.from2DDataValue(facing),m.is2by2(),false);
             if (directionOfPlacement.isEmpty()) {
                 return;
             }

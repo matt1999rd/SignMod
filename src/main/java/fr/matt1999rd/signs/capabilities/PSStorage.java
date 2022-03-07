@@ -4,12 +4,14 @@ package fr.matt1999rd.signs.capabilities;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.PSDisplayMode;
 import fr.matt1999rd.signs.enums.PSPosition;
+import fr.matt1999rd.signs.util.QuadPSPositions;
 import fr.matt1999rd.signs.util.Text;
 import net.minecraft.nbt.*;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
+import java.util.List;
 
 
 public class PSStorage implements IPSStorage, INBTSerializable<CompoundNBT> {
@@ -105,10 +107,24 @@ public class PSStorage implements IPSStorage, INBTSerializable<CompoundNBT> {
         return position;
     }
 
+    @Override
+    public void setPosition(PSPosition position) {
+        this.position = position;
+    }
+
     @Nonnull
     @Override
     public PSDisplayMode getDisplayMode() {
         return mode;
+    }
+
+    @Override
+    public void setDisplayMode(PSDisplayMode mode) {
+        this.mode = mode;
+        for (int i=0;i<mode.getTotalText();i++){
+            Text t = new Text(mode.getTextBegPosition(i),"",getForegroundColor(),1);
+            setText(t,i);
+        }
     }
 
     @Override
@@ -124,6 +140,9 @@ public class PSStorage implements IPSStorage, INBTSerializable<CompoundNBT> {
     @Override
     public void setForegroundColor(int color) {
         this.foregroundColor = new Color(color);
+        for (int i=0;i<6;i++){
+            this.texts[i].setColor(color);
+        }
     }
 
     @Override
