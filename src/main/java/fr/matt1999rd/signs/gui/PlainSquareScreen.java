@@ -5,7 +5,7 @@ import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.enums.PSDisplayMode;
 import fr.matt1999rd.signs.enums.PSPosition;
-import fr.matt1999rd.signs.fixedpanel.panelblock.PlainSquarePanelBlock;
+import fr.matt1999rd.signs.fixedpanel.panelblock.PanelBlock;
 import fr.matt1999rd.signs.gui.screenutils.ColorOption;
 import fr.matt1999rd.signs.gui.screenutils.ColorType;
 import fr.matt1999rd.signs.gui.screenutils.Option;
@@ -87,7 +87,7 @@ public class PlainSquareScreen extends withColorSliderScreen {
         if (te instanceof PlainSquareSignTileEntity){
             PlainSquareSignTileEntity clickedPsste = (PlainSquareSignTileEntity) te;
             PSPosition clickedPsstePosition = clickedPsste.getPosition();
-            BlockPos realPanelPos = clickedPsstePosition.offsetPos(PlainSquarePanelBlock.DEFAULT_RIGHT_POSITION,panelPos,facing,clickedPsste.getMode().is2by2());
+            BlockPos realPanelPos = clickedPsstePosition.offsetPos(PanelBlock.DEFAULT_RIGHT_POSITION,panelPos,facing,clickedPsste.getMode().is2by2());
             te = world.getBlockEntity(realPanelPos);
             if (te instanceof PlainSquareSignTileEntity){
                 return (PlainSquareSignTileEntity) te;
@@ -211,11 +211,8 @@ public class PlainSquareScreen extends withColorSliderScreen {
             Text t = psste.getText(selTextIndex);
             t.setText(text);
             PSDisplayMode mode = psste.getMode();
-            if (mode != PSDisplayMode.EXIT) {
-                int length = t.getLength();
-                int maxLength = getMaxLength();
-                Vector2i vector2i = psste.getMode().getTextBegPosition(selTextIndex);
-                t.setPosition(vector2i.getX() + (maxLength - length) / 2.0F, t.getY());
+            if (!mode.is2by2()) {
+                t.centerText(mode,selTextIndex);
             }
             psste.setText(t,selTextIndex);
             Networking.INSTANCE.sendToServer(new PacketAddOrEditText(panelPos,t,selTextIndex));
@@ -321,9 +318,9 @@ public class PlainSquareScreen extends withColorSliderScreen {
         int offset = (isBgColorDisplayed)? 25:0;
         //display of button for the color to define (using color slider) choice between background and foreground color
         blit(stack,relX+241,relY+113,this.getBlitOffset(),DIMENSION.getX()+offset,0,25,25,256,512);
-        super.render(stack,mouseX, mouseY, partialTicks);
         PlainSquareSignTileEntity psste = getTileEntity();
         psste.renderOnScreen(stack,relX+10,relY+10,selTextIndex);
+        super.render(stack,mouseX, mouseY, partialTicks);
     }
 
     @Override
@@ -387,7 +384,7 @@ public class PlainSquareScreen extends withColorSliderScreen {
         if (tile instanceof PlainSquareSignTileEntity){
             PlainSquareSignTileEntity psste = (PlainSquareSignTileEntity) tile;
             Direction facing = psste.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
-            BlockPos defaultPSPosBlockPos = psste.getPosition().offsetPos(PlainSquarePanelBlock.DEFAULT_RIGHT_POSITION,panelPos,facing,psste.getMode().is2by2());
+            BlockPos defaultPSPosBlockPos = psste.getPosition().offsetPos(PanelBlock.DEFAULT_RIGHT_POSITION,panelPos,facing,psste.getMode().is2by2());
             minecraft.setScreen(new PlainSquareScreen(defaultPSPosBlockPos));
         }else {
             throw new IllegalStateException("The panel created has not the same number of tile entity as the number of block : the world may be corrupted !");

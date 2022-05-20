@@ -2,6 +2,7 @@ package fr.matt1999rd.signs.gui.screenutils;
 
 
 import fr.matt1999rd.signs.util.Functions;
+import fr.matt1999rd.signs.util.Text;
 
 import java.awt.*;
 
@@ -15,7 +16,7 @@ public class PencilOption implements Option{
         this.color = color;
         this.length = length;
         this.mode = mode;
-        this.selectedTextIndices = -1;
+        this.selectedTextIndices = Text.UNSELECTED_TEXT_ID;
     }
 
     public static PencilOption getDefaultOption(){
@@ -100,10 +101,10 @@ public class PencilOption implements Option{
     }
 
     public boolean isTextSelected(){
-        return (selectedTextIndices != -1);
+        return (selectedTextIndices != Text.UNSELECTED_TEXT_ID);
     }
 
     public void unselectText() {
-        this.selectedTextIndices = -1;
+        this.selectedTextIndices = Text.UNSELECTED_TEXT_ID;
     }
 }

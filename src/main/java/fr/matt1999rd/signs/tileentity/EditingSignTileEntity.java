@@ -7,11 +7,13 @@ import fr.matt1999rd.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.matt1999rd.signs.util.Text;
 import fr.matt1999rd.signs.capabilities.TextCapability;
 import fr.matt1999rd.signs.capabilities.TextStorage;
+import fr.matt1999rd.signs.util.Vector2i;
 import net.minecraft.block.BlockState;
 
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
+import net.minecraft.util.math.vector.Vector2f;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
@@ -52,7 +54,9 @@ public abstract class EditingSignTileEntity extends PanelTileEntity {
 
     public void renderOnScreen(MatrixStack stack,int guiLeft, int guiTop) {
         Text t = getText();
-        t.renderOnScreen(stack,guiLeft,guiTop,1.0F,true);
+        Vector2i origin = new Vector2i(guiLeft,guiTop);
+        Vector2f scale = new Vector2f(1.0F,1.0F);
+        t.renderOnScreen(stack,origin,scale,true,false);
     }
 
     @Nonnull

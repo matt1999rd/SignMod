@@ -10,11 +10,8 @@ import fr.matt1999rd.signs.setup.IProxy;
 import fr.matt1999rd.signs.setup.ModSetup;
 import fr.matt1999rd.signs.setup.ServerProxy;
 import net.minecraft.block.Block;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntityType;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -22,7 +19,6 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -93,7 +89,7 @@ public class SignMod
                     .of(UpsideTriangleSignTileEntity::new,ModBlock.LET_WAY_PANEL)
                     .build(null).setRegistryName("let_way_panel"));
             register.getRegistry().register(TileEntityType.Builder
-                    .of(OctogoneSignTileEntity::new,ModBlock.STOP_PANEL)
+                    .of(OctagonSignTileEntity::new,ModBlock.STOP_PANEL)
                     .build(null).setRegistryName("stop_panel"));
             register.getRegistry().register(TileEntityType.Builder
                     .of(ArrowSignTileEntity::new,ModBlock.DIRECTION_PANEL)

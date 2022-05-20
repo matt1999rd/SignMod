@@ -2,6 +2,7 @@ package fr.matt1999rd.signs.gui;
 
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.datafixers.util.Pair;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.ClientAction;
 import fr.matt1999rd.signs.enums.Form;
@@ -29,6 +30,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
+import org.lwjgl.glfw.GLFW;
+
 import static net.minecraft.util.text.ITextComponent.nullToEmpty;
 
 public class DrawingScreen extends withColorSliderScreen implements IWithEditTextScreen {
@@ -119,6 +122,8 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
         assert this.minecraft != null;
         this.minecraft.getTextureManager().bind(BACKGROUND);
         blit(stack,relX, relY,this.getBlitOffset() , 0.0F, 0.0F, DIMENSION.getX(), DIMENSION.getY(), 256, 512);
+        DrawingSignTileEntity dste = getTileEntity();
+        dste.renderOnScreen(stack,relX+30,relY+4,option.getTextIndices());
         super.render(stack,mouseX, mouseY, partialTicks);
         // rendering of color is done before following action -> not the case before
         FontRenderer renderer = this.minecraft.font;
@@ -127,8 +132,7 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
         drawString(stack,renderer,"Color of pencil :" ,relX+180,relY+93,white);
         drawString(stack,renderer,"Length of pencil :",relX+160,relY+124,white);
         drawString(stack,renderer,""+length,relX+272-gap,relY+126,white);
-        DrawingSignTileEntity dste = getTileEntity();
-        dste.renderOnScreen(stack,relX+30,relY+4,option.getTextIndices());
+
     }
 
     /** IPressable Consumer object for button in drawing screen **/
@@ -288,15 +292,19 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
             color = option.getColor();
             length = option.getLength();
         }else {
-            int newInd = getTextClicked(mouseX,mouseY);
-            if (!option.isTextSelected() && newInd != -1 && button == 0){
-                option.selectText(newInd);
-                addTextButton.setMessage(nullToEmpty("Edit Text"));
-                delTextButton.active = true;
-            }else if (option.isTextSelected() && newInd == -1 && button == 1){
-                option.unselectText();
-                addTextButton.setMessage(nullToEmpty("Add Text"));
-                delTextButton.active = false;
+            Pair<Integer,Text> indexAndText = getTextClicked(mouseX,mouseY);
+            int newInd = indexAndText.getFirst();
+            // if we have no text selected, and we click on left mouse button to select a text with success
+            if ((!option.isTextSelected() && newInd != Text.UNSELECTED_TEXT_ID && button == GLFW.GLFW_MOUSE_BUTTON_LEFT) ||
+                    // if we have a text selected and we click on right button to unselect the text with success
+                    (option.isTextSelected() && newInd == Text.UNSELECTED_TEXT_ID && button == GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
+                onTextSelected(newInd);
+            }
+            Text t = indexAndText.getSecond();
+            if (t != null){
+                //the text is moved so that the position where the mouse was clicked is the center of the rectangle formed by text limit
+                x = getXOnScreen(mouseX - t.getLength(true)/2F);
+                y = getYOnScreen(mouseY - t.getHeight()/2F);
             }
             makeAction = option.isTextSelected();
             color = option.getTextIndices();
@@ -305,9 +313,21 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
         if (makeAction)transferActionToTE(ClientAction.getActionFromMode(option.getMode()),x,y,color,length);
     }
 
+    private void onTextSelected(int newIndex){
+        if (newIndex == Text.UNSELECTED_TEXT_ID){ //unselect a text
+            option.unselectText();
+            addTextButton.setMessage(nullToEmpty("Add Text"));
+            delTextButton.active = false;
+        }else { //select text
+            option.selectText(newIndex);
+            addTextButton.setMessage(nullToEmpty("Edit Text"));
+            delTextButton.active = true;
+        }
+    }
+
     /**  screen test for mouse **/
 
-    private int getTextClicked(double mouseX, double mouseY) {
+    private Pair<Integer,Text> getTextClicked(double mouseX, double mouseY) {
         DrawingSignTileEntity dste = getTileEntity();
         int relX = getGuiStartXPosition();
         int relY = getGuiStartYPosition();
@@ -315,10 +335,10 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
         for (int i=0;i<n;i++){
             Text t = dste.getText(i);
             if (t.isIn(mouseX,mouseY,relX+30,relY+4,1.0F,1.0F)){
-                return i;
+                return new Pair<>(i,t);
             }
         }
-        return -1;
+        return new Pair<>(Text.UNSELECTED_TEXT_ID,null);
     }
 
     private int getYOnScreen(double mouseY) {
@@ -345,29 +365,26 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
 
     @Override
     public boolean keyPressed(int button, int p_keyPressed_2_, int p_keyPressed_3_) {
-        if (option.getMode() == PencilMode.SELECT && button>259 && button<266) {
-            if (button == 260) { // button insert
+        if (option.getMode() == PencilMode.SELECT && button>GLFW.GLFW_KEY_INSERT - 1 && button<GLFW.GLFW_KEY_UP + 1) {
+            if (button == GLFW.GLFW_KEY_INSERT) { // button insert
                 openTextGui();
             }else if (option.isTextSelected()) {
-                if (button == 261) { // button "suppr"
+                if (button == GLFW.GLFW_KEY_DELETE) { // button del
                     deleteSelText();
-                } else { //pad button /|\ : 265  \|/ : 264  <- : 263 -> : 262
-                    button-=262;
+                } else { //pad button ↑ : 265  ↓ : 264  ← : 263 → : 262
+                    button-=GLFW.GLFW_KEY_RIGHT;
                     DrawingSignTileEntity dste = getTileEntity();
                     Text t = dste.getText(option.getTextIndices());
                     int x_offset = (button == 0)? 1 : (button == 1) ? -1 : 0;
                     int y_offset = (button == 2)? 1 : (button == 3) ? -1 : 0;
-                    int x = (int)t.getX() + x_offset;
-                    int y = (int)t.getY() + y_offset;
+                    int x = (int)t.getX(true) + x_offset; //todo : solve the problem : "handle the offset position will lead to define a false position"
+                    int y = (int)t.getY(true) + y_offset;
                     transferActionToTE(ClientAction.MOVE_TEXT,x,y,option.getTextIndices(),1);
                 }
             }
         }
         return super.keyPressed(button,p_keyPressed_2_,p_keyPressed_3_);
     }
-
-
-
 
 
     private DrawingSignTileEntity getTileEntity(){
@@ -401,9 +418,9 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
         DrawingSignTileEntity dste = getTileEntity();
         Networking.INSTANCE.sendToServer(new PacketAddOrEditText(panelPos,t,ind));
         dste.addOrEditText(t,ind);
-        if (ind ==-1){
+        if (ind ==Text.UNSELECTED_TEXT_ID){ //before this text was added, there was no text selected
             int k=dste.getNumberOfText();
-            option.selectText(k-1);
+            onTextSelected(k-1);
         }
     }
 

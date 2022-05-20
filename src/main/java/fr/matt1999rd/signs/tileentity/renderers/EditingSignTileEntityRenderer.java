@@ -20,6 +20,8 @@ import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Vector2f;
+import net.minecraft.util.math.vector.Vector3f;
 
 import java.awt.*;
 
@@ -96,7 +98,9 @@ public class EditingSignTileEntityRenderer<T extends EditingSignTileEntity> exte
         Text t = tileEntity.getText();
         float completeLength = 10.0F/16;
         float pixelLength = completeLength / 128.0F;
-        t.render(stack,buffer,completeLength,completeLength,0.005F,pixelLength,pixelLength,combinedLight);
+        Vector3f origin = new Vector3f(completeLength,completeLength,0.005F);
+        Vector2f scale = new Vector2f(pixelLength,pixelLength);
+        t.render(stack,buffer,origin,scale,combinedLight);
         Functions.resetWorldGLState();
     }
 

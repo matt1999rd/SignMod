@@ -8,10 +8,11 @@ import fr.matt1999rd.signs.enums.PSDisplayMode;
 import fr.matt1999rd.signs.enums.PSPosition;
 import fr.matt1999rd.signs.fixedpanel.ModBlock;
 import fr.matt1999rd.signs.fixedpanel.panelblock.AbstractPanelBlock;
-import fr.matt1999rd.signs.fixedpanel.panelblock.PlainSquarePanelBlock;
+import fr.matt1999rd.signs.fixedpanel.panelblock.PanelBlock;
 import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
 import fr.matt1999rd.signs.tileentity.PanelTileEntity;
 import fr.matt1999rd.signs.tileentity.TEType;
+import fr.matt1999rd.signs.util.Functions;
 import fr.matt1999rd.signs.util.Text;
 import fr.matt1999rd.signs.capabilities.PSCapability;
 import fr.matt1999rd.signs.capabilities.PSStorage;
@@ -47,10 +48,9 @@ import java.util.List;
 
 public class PlainSquareSignTileEntity extends PanelTileEntity {
 
-    private LazyOptional<PSStorage> storage = LazyOptional.of(this::getStorage).cast();
+    private final LazyOptional<PSStorage> storage = LazyOptional.of(this::getStorage).cast();
 
     public static final int SCREEN_LENGTH = 128;
-    private final ResourceLocation TEXT = new ResourceLocation(SignMod.MODID,"textures/gui/letter.png");
 
     //operation id is a code to indicate what action is done
     // 0 -> change display mode with left reduce button
@@ -112,22 +112,22 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         PSDisplayMode mode = getMode();
         float scaleX = SCREEN_LENGTH/(mode.is2by2()?64.0F:96.0F);
         float scaleY = SCREEN_LENGTH/64.0F;
+        Vector2i origin = new Vector2i(guiLeft,guiTop);
+        Vector2f scale = new Vector2f(scaleX,scaleY);
         for (int i=0;i<mode.getTotalText();i++){
             Text t = getText(i);
             if (t.isEmpty()){
-                renderGrayRectangle(stack,guiLeft,guiTop,i,scaleX,scaleY);
+                renderEmptyTextRectangle(stack,guiLeft,guiTop,i,scaleX,scaleY,i == selTextIndex);
             }else {
                 Text rescaleText = new Text(t);
-                rescaleText.changeScale(1); // a text is rendered on screen with two pixels length
-                rescaleText.renderOnScreen(stack, guiLeft, guiTop, scaleX / scaleY, false);
-                renderTextLimit(rescaleText, guiLeft, guiTop, i == selTextIndex, scaleX, scaleY);
+                rescaleText.renderOnScreen(stack, origin, scale,i == selTextIndex,true);
             }
         }
     }
 
     private void renderScheme(int guiLeft, int guiTop){
         PSDisplayMode mode = getMode();
-        GlStateManager._enableBlend();
+        RenderSystem.enableBlend();
         float scaleX =2*SCREEN_LENGTH/(mode.is2by2()?64.0F:96.0F);
         float scaleY =2*SCREEN_LENGTH/64.0F;
         float xBase = guiLeft+mode.getTextureXOrigin()*scaleX;
@@ -182,44 +182,6 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         tessellator.end();
     }
 
-    private void renderTextLimit(Text t,int guiLeft,int guiTop,boolean isSelected,float scaleX,float scaleY){
-        float L = t.getLength()*scaleX/scaleY;
-        float h = t.getHeight();
-        float u = (isSelected) ? 0 :1/256.0F;
-        float v = 35/256.0F+u;
-        float horDu = (L+2)/256.0F;
-        float verDu = 1/256.0F;
-        float horDv = verDu;
-        float verDv = (h+2)/256.0F;
-        guiLeft+=t.getX()*scaleX;
-        guiTop+=t.getY()*scaleY;
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder builder = tessellator.getBuilder();
-        builder.begin(7, DefaultVertexFormats.POSITION_TEX);
-        //up bar
-        builder.vertex(guiLeft-1,guiTop-1,0).uv(u,v).endVertex();
-        builder.vertex(guiLeft-1,guiTop,0).uv(u,v+horDv).endVertex();
-        builder.vertex(guiLeft+L+1,guiTop,0).uv(u+horDu,v+horDv).endVertex();
-        builder.vertex(guiLeft+L+1,guiTop-1,0).uv(u+horDu,v).endVertex();
-        //down bar
-        builder.vertex(guiLeft-1,guiTop+h,0).uv(u,v).endVertex();
-        builder.vertex(guiLeft-1,guiTop+h+1,0).uv(u,v+horDv).endVertex();
-        builder.vertex(guiLeft+L+1,guiTop+h+1,0).uv(u+horDu,v+horDv).endVertex();
-        builder.vertex(guiLeft+L+1,guiTop+h,0).uv(u+horDu,v).endVertex();
-        //left bar
-        builder.vertex(guiLeft-1,guiTop-1,0).uv(u,v).endVertex();
-        builder.vertex(guiLeft-1,guiTop+h+1,0).uv(u,v+verDv).endVertex();
-        builder.vertex(guiLeft,guiTop+h+1,0).uv(u+verDu,v+verDv).endVertex();
-        builder.vertex(guiLeft,guiTop-1,0).uv(u+verDu,v).endVertex();
-        //right bar
-        builder.vertex(guiLeft+L,guiTop-1,0).uv(u,v).endVertex();
-        builder.vertex(guiLeft+L,guiTop+h+1,0).uv(u,v+verDv).endVertex();
-        builder.vertex(guiLeft+L+1,guiTop+h+1,0).uv(u+verDu,v+verDv).endVertex();
-        builder.vertex(guiLeft+L+1,guiTop-1,0).uv(u+verDu,v).endVertex();
-        //finish drawing
-        tessellator.end();
-    }
-
     private void renderRectangle(MatrixStack stack,Rectangle2D rectangle2D,Color color){
         Tessellator tessellator = Tessellator.getInstance();
         RenderSystem.enableBlend();
@@ -241,9 +203,16 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         RenderSystem.disableBlend();
     }
 
-    private void renderGrayRectangle(MatrixStack stack,int guiLeft,int guiTop,int ind,float scaleX,float scaleY) {
+    private void renderEmptyTextRectangle(MatrixStack stack, int guiLeft, int guiTop, int ind, float scaleX, float scaleY, boolean isSelected) {
         Rectangle2D.Float rectangle = getTextArea(guiLeft, guiTop, ind,scaleX,scaleY);
-        this.renderRectangle(stack,rectangle,Color.GRAY);
+        Color bgColor = getBackgroundColor();
+        Color emptyRectangleColor;
+        if (Functions.colorDistance(bgColor,Color.DARK_GRAY) < 10F || Functions.colorDistance(bgColor,Color.GRAY) < 10F){
+            emptyRectangleColor = (isSelected) ? Color.BLACK : Color.WHITE;
+        }else {
+            emptyRectangleColor = (isSelected) ? Color.DARK_GRAY : Color.GRAY;
+        }
+        this.renderRectangle(stack,rectangle,emptyRectangleColor);
     }
 
     public Rectangle2D.Float getTextArea(int guiLeft, int guiTop, int ind, float scaleX, float scaleY){
@@ -253,13 +222,6 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         float length = this.getMode().getMaxLength(ind) * scaleX + 1;
         float height = 7*scaleY +1;
         return new Rectangle2D.Float(x1,y1,length,height);
-    }
-
-    public Rectangle2D.Float getTextArea(int guiLeft, int guiTop, int ind){
-        PSDisplayMode mode = getMode();
-        float scaleX = SCREEN_LENGTH/(mode.is2by2()?64.0F:96.0F);
-        float scaleY = SCREEN_LENGTH/64.0F;
-        return getTextArea(guiLeft, guiTop, ind,scaleX,scaleY);
     }
 
 
@@ -276,9 +238,7 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
     }
 
     public void registerData(PSPosition position, PSDisplayMode mode){
-        storage.ifPresent(psStorage -> {
-            psStorage.setInternVariable(position,mode);
-        });
+        storage.ifPresent(psStorage -> psStorage.setInternVariable(position,mode));
         for (int i=0;i<mode.getTotalText();i++){
             Text t = Text.getDefaultText(mode.getTextBegPosition(i),getForegroundColor());
             setText(t,i);
@@ -312,7 +272,7 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
 
     public void setMode(PSDisplayMode newMode,boolean rightSelected){
         PSDisplayMode oldMode = getMode();
-        if (this.getPosition() == PlainSquarePanelBlock.DEFAULT_RIGHT_POSITION){
+        if (this.getPosition() == PanelBlock.DEFAULT_RIGHT_POSITION){
             //update of neighbor block
             List<PlainSquareSignTileEntity> tiles = getTileEntitiesToUpdate();
             for (PlainSquareSignTileEntity psste : tiles){
@@ -320,7 +280,7 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
             }
         }
         storage.ifPresent(psStorage -> psStorage.setDisplayMode(newMode));
-        if (this.getPosition() == PlainSquarePanelBlock.DEFAULT_RIGHT_POSITION) {
+        if (this.getPosition() == PanelBlock.DEFAULT_RIGHT_POSITION) {
             PSPosition upPsPosition = (rightSelected) ? PSPosition.UP_RIGHT : PSPosition.UP_LEFT;
             PSPosition downPsPosition = (rightSelected) ? PSPosition.DOWN_RIGHT : PSPosition.DOWN_LEFT;
             if (oldMode.is2by2()) {
@@ -329,8 +289,8 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
                 addPanelInWorld(downPsPosition,rightSelected);
             }else if (newMode.is2by2()){
                 //remove the panel used for 3 by 2 panel
-                removePanelInWorld(upPsPosition,rightSelected);
-                removePanelInWorld(downPsPosition,rightSelected);
+                removePanelInWorld(upPsPosition);
+                removePanelInWorld(downPsPosition);
             }
         }
     }
@@ -349,6 +309,7 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         //tile entity definition
         BlockState newState = level.getBlockState(newPos);
         TileEntity newTile = newState.getBlock().createTileEntity(newState,level);
+        assert newTile != null;
         ((PlainSquareSignTileEntity) newTile).copyData(this,positionToMove);
         level.setBlockEntity(newPos,newTile);
         //redefine position of the middle tile
@@ -363,12 +324,13 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
 
 
 
-    private void removePanelInWorld(PSPosition positionToMove, boolean rightSelected) {
+    private void removePanelInWorld(PSPosition positionToMove) {
         Direction facing = getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
         boolean rotated = getBlockState().getValue(GridSupport.ROTATED);
         BlockPos oldPos = PSPosition.DOWN_RIGHT.offsetPos(positionToMove,this.getBlockPos(),facing,false);
         BlockPos newPos = PSPosition.DOWN_RIGHT.offsetPos(positionToMove.centerPosition(),this.getBlockPos(),facing,false);
         //block state deletion
+        assert level != null;
         level.setBlock(oldPos, ModBlock.GRID_SUPPORT.defaultBlockState()
                 .setValue(BlockStateProperties.HORIZONTAL_AXIS,facing.getClockWise().getAxis())
                 .setValue(GridSupport.ROTATED,rotated)
@@ -379,7 +341,8 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         TileEntity newTile = level.getBlockEntity(newPos);
         if (newTile instanceof PlainSquareSignTileEntity){
             PlainSquareSignTileEntity newPsste = (PlainSquareSignTileEntity) newTile;
-            newPsste.setPosition(positionToMove);
+            if (positionToMove == PanelBlock.DEFAULT_RIGHT_POSITION)newPsste.copyData(this,positionToMove);
+            else newPsste.setPosition(positionToMove);
         }else {
             throw new IllegalStateException("Impossible state : the tile entity is not of the correct type !");
         }
@@ -422,6 +385,7 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         EnumMap<PSPosition, BlockPos> positions = this.getPosition().getNeighborPosition(this.getBlockPos(), facing,this.getMode().is2by2());
         positions.remove(this.getPosition());
         for (PSPosition position : positions.keySet()){
+            assert this.level != null;
             TileEntity tileEntity = this.level.getBlockEntity(positions.get(position));
             if (tileEntity instanceof PlainSquareSignTileEntity) {
                 PlainSquareSignTileEntity psste = (PlainSquareSignTileEntity) tileEntity ;
@@ -444,26 +408,22 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
 
     @Override
     public void load(BlockState state,CompoundNBT compound) {
-        if (compound.contains("plain_square")) { // only down right position is registered
-            CompoundNBT storage_tag = compound.getCompound("plain_square");
-            getCapability(PSCapability.PS_STORAGE).ifPresent(s -> ((INBTSerializable<CompoundNBT>) s).deserializeNBT(storage_tag));
-        }
+        CompoundNBT storage_tag = compound.getCompound("plain_square");
+        getCapability(PSCapability.PS_STORAGE).ifPresent(s -> ((INBTSerializable<CompoundNBT>) s).deserializeNBT(storage_tag));
         super.load(state,compound);
     }
 
     @Override
     public CompoundNBT save(CompoundNBT tag) {
-        if (this.getPosition() == PSPosition.DOWN_RIGHT) {
-            getCapability(PSCapability.PS_STORAGE).ifPresent(storage -> {
+        getCapability(PSCapability.PS_STORAGE).ifPresent(storage -> {
                 CompoundNBT compoundNBT = ((INBTSerializable<CompoundNBT>) storage).serializeNBT();
                 tag.put("plain_square", compoundNBT);
-            });
-        }
+        });
         return super.save(tag);
     }
 
     public CompoundNBT getUpdateTag() {
-        return this.save(new CompoundNBT());
+        return save(new CompoundNBT());
     }
 
 }

@@ -5,9 +5,9 @@ import fr.matt1999rd.signs.tileentity.EditingSignTileEntity;
 import fr.matt1999rd.signs.tileentity.TEType;
 
 
-public class OctogoneSignTileEntity extends EditingSignTileEntity {
+public class OctagonSignTileEntity extends EditingSignTileEntity {
 
-    public OctogoneSignTileEntity() {
+    public OctagonSignTileEntity() {
         super(TEType.OCTOGONE_SIGN);
     }
 

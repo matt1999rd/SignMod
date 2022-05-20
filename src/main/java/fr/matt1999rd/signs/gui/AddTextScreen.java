@@ -14,7 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
-import static fr.matt1999rd.signs.util.Functions.*;
+import static fr.matt1999rd.signs.util.DirectionSignConstants.*;
 import static net.minecraft.util.text.ITextComponent.nullToEmpty;
 
 import java.awt.*;
@@ -30,7 +30,6 @@ public class AddTextScreen extends withColorSliderScreen {
     ColorSlider RED_SLIDER, GREEN_SLIDER, BLUE_SLIDER;
 
     protected AddTextScreen(IWithEditTextScreen parentScreen,Text textToEdit) {
-
         super(new StringTextComponent("Add Text Screen"));
         this.parentScreen = parentScreen;
         oldText = textToEdit;
@@ -49,7 +48,7 @@ public class AddTextScreen extends withColorSliderScreen {
             if (f.isForDirection()){
                 boolean isTextCentered = ((DirectionScreen)parentScreen).isTextCentered();
                 boolean isEnd = ((DirectionScreen)parentScreen).isEndSelected();
-                maxLength = (isTextCentered) ? panelLength-2*st_gap : (isEnd) ? endTextLength : begTextLength;
+                maxLength = (isTextCentered) ? horPixelNumber-2*sideGapPixelNumber : (isEnd) ? endTextPixelNumber : begTextPixelNumber;
             } else {
                 maxLength = ((PlainSquareScreen) parentScreen).getMaxLength();
             }

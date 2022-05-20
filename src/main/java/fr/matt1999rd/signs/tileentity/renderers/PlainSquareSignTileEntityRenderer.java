@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.PSDisplayMode;
-import fr.matt1999rd.signs.fixedpanel.panelblock.PlainSquarePanelBlock;
+import fr.matt1999rd.signs.fixedpanel.panelblock.PanelBlock;
 import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
 import fr.matt1999rd.signs.tileentity.model.PSSignModel;
 import fr.matt1999rd.signs.tileentity.primary.PlainSquareSignTileEntity;
@@ -21,6 +21,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector2f;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -77,9 +78,7 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
         Color color = psste.getBackgroundColor();
         Matrix4f matrix4f = stack.last().pose();
         stack.translate(-5.0F/16F,5.0F/16F,-0.1F/16F);
-        // renderQuad(pictureBuffer,matrix4f,0,16,0,16,color,0,combinedLight); //background rendering
-        // renderLimit(pictureBuffer,matrix4f,psste,combinedLight);
-        if (psste.getPosition() == PlainSquarePanelBlock.DEFAULT_RIGHT_POSITION){
+        if (psste.getPosition() == PanelBlock.DEFAULT_RIGHT_POSITION){
             PSDisplayMode mode = psste.getMode();
             renderQuad(pictureBuffer,matrix4f,0,16*(mode.is2by2()?2:3),0,32,color,0,combinedLight); //background rendering
             renderLimit(pictureBuffer,matrix4f,mode.is2by2(),psste.getForegroundColor(),combinedLight);
@@ -147,9 +146,11 @@ public class PlainSquareSignTileEntityRenderer extends TileEntityRenderer<PlainS
         PSDisplayMode mode = psste.getMode();
         int nbText = mode.getTotalText();
         int xOrigin = (mode.is2by2())? 2 : 3;
+        Vector3f origin = new Vector3f(xOrigin,2,z);
+        Vector2f scale = new Vector2f(pixelLength,pixelLength);
         for (int i=0;i<nbText;i++){
             Text t=psste.getText(i);
-            t.render(stack,buffer,xOrigin,2,z,pixelLength,pixelLength,combinedLight);
+            t.render(stack,buffer,origin,scale,combinedLight);
         }
         stack.popPose();
     }

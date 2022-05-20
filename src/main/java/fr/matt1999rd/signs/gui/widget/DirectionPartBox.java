@@ -18,6 +18,6 @@ public class DirectionPartBox extends CheckboxButton {
     public void onPress() {
         super.onPress();
         this.screen.updateBoolean(ind);
-        if (screen.getForm() == Form.ARROW)this.screen.updateCursorAuthorisation(ind);
+        if (screen.getForm() == Form.ARROW)this.screen.updateCursorAuthorisation(ind,selected());
     }
 }

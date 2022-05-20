@@ -5,9 +5,11 @@ import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.ClientAction;
 import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.fixedpanel.panelblock.AbstractPanelBlock;
+import fr.matt1999rd.signs.util.Functions;
 import fr.matt1999rd.signs.util.Text;
 import fr.matt1999rd.signs.capabilities.SignCapability;
 import fr.matt1999rd.signs.capabilities.SignStorage;
+import fr.matt1999rd.signs.util.Vector2i;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
@@ -18,6 +20,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.vector.Vector2f;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.Capability;
@@ -26,6 +29,7 @@ import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -94,54 +98,15 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
                 }
             }
         }
-        List<Text> texts = storage.map(signStorage -> signStorage.getTexts()).orElse(new ArrayList<Text>());
+        List<Text> texts = storage.map(SignStorage::getTexts).orElse(new ArrayList<>());
         Minecraft.getInstance().getTextureManager().bind(TEXT);
         AtomicInteger ind = new AtomicInteger(0);
+        Vector2i origin = new Vector2i(guiLeft,guiTop);
+        Vector2f pixelDimension = new Vector2f(1.0F,1.0F);
         texts.forEach(text -> {
-            text.renderOnScreen(stack,guiLeft,guiTop,1.0F,true);
-            renderTextLimit(text,guiLeft,guiTop,ind.getAndIncrement() == selTextInd);
+            text.renderOnScreen(stack,origin,pixelDimension,ind.getAndIncrement() == selTextInd,false);
         });
     }
-
-    private void renderTextLimit(Text t,int guiLeft,int guiTop,boolean isSelected){
-        int L = t.getLength();
-        int h = t.getHeight();
-        float u = (isSelected) ? 0 :1/256.0F;
-        float v = 35/256.0F+u;
-        float horDu = (L+2)/256.0F;
-        float verDu = 1/256.0F;
-        float horDv = verDu;
-        float verDv = (h+2)/256.0F;
-        guiLeft+=t.getX();
-        guiTop+=t.getY();
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder builder = tessellator.getBuilder();
-        builder.begin(7, DefaultVertexFormats.POSITION_TEX);
-        //up bar
-        builder.vertex(guiLeft-1,  guiTop-1,0).uv(   u,          v)      .endVertex();
-        builder.vertex(guiLeft-1,     guiTop,  0).uv(   u,       v+horDv).endVertex();
-        builder.vertex(guiLeft+L+1,   guiTop,  0).uv(u+horDu, v+horDv).endVertex();
-        builder.vertex(guiLeft+L+1,guiTop-1,0).uv(u+horDu,    v)      .endVertex();
-        //down bar
-        builder.vertex(guiLeft-1,  guiTop+h,  0).uv(   u    ,     v)      .endVertex();
-        builder.vertex(guiLeft-1,  guiTop+h+1,0).uv(   u    ,  v+horDv).endVertex();
-        builder.vertex(guiLeft+L+1,guiTop+h+1,0).uv(u+horDu,v+horDv).endVertex();
-        builder.vertex(guiLeft+L+1,guiTop+h,  0).uv(u+horDu,   v)      .endVertex();
-        //left bar
-        builder.vertex(guiLeft-1,guiTop-1,  0).uv(   u,         v)      .endVertex();
-        builder.vertex(guiLeft-1,guiTop+h+1,0).uv(   u,      v+verDv).endVertex();
-        builder.vertex(   guiLeft,  guiTop+h+1,0).uv(u+verDu,v+verDv).endVertex();
-        builder.vertex(   guiLeft,  guiTop-1,  0).uv(u+verDu,   v)      .endVertex();
-        //right bar
-        builder.vertex(   guiLeft+L,    guiTop-1,  0).uv(   u,         v)      .endVertex();
-        builder.vertex(   guiLeft+L,    guiTop+h+1,0).uv(   u,      v+verDv).endVertex();
-        builder.vertex(   guiLeft+L+1,  guiTop+h+1,0).uv(u+verDu,v+verDv).endVertex();
-        builder.vertex(   guiLeft+L+1,  guiTop-1,  0).uv(u+verDu,   v)      .endVertex();
-        //finish drawing
-        tessellator.end();
-    }
-
-
 
     public void makeOperationFromScreen(ClientAction action, int x, int y, int color, int length){
         SignMod.LOGGER.info("doing operation in te with parameter : action : "+action+" x : "+x+" y : "+y+" color : "+color+" length : "+length);

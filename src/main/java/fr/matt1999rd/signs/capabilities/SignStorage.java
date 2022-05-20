@@ -108,7 +108,7 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
             return;
         }
         Text t = texts.get(ind);
-        if (form.rectangleIsIn(newX,newX+t.getLength()-1,newY,newY+t.getHeight()-1))t.setPosition(newX,newY);
+        if (form.rectangleIsIn(newX,newX+t.getLength(true)-1,newY,newY+t.getHeight()-1))t.setPosition(newX,newY);
         else SignMod.LOGGER.info("coordinate leads to out pass the limit of the text : no position set !");
     }
 

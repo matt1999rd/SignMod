@@ -5,6 +5,8 @@ import fr.matt1999rd.signs.fixedpanel.ModBlock;
 import fr.matt1999rd.signs.fixedpanel.PanelItem;
 import fr.matt1999rd.signs.fixedpanel.PanelRegister;
 import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
+import fr.matt1999rd.signs.fixedpanel.support.GridSupportItem;
+import fr.matt1999rd.signs.fixedpanel.support.SignSupportItem;
 import fr.matt1999rd.signs.util.Functions;
 import fr.matt1999rd.signs.networking.Networking;
 import fr.matt1999rd.signs.networking.PacketOpenScreen;
@@ -15,6 +17,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.EnumProperty;
@@ -40,6 +43,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 public abstract class AbstractPanelBlock extends Block {
+
     public AbstractPanelBlock(String name) {
         //why I cannot delete "no occlusion" ? if I do this +6min in loading of main screen why ?
         super(Properties.of(Material.STONE).noCollission().strength(2.0F).noOcclusion());
@@ -86,28 +90,7 @@ public abstract class AbstractPanelBlock extends Block {
 
 
     public static AbstractPanelBlock createPanelInstance(Form form){
-        switch (form){
-            case UPSIDE_TRIANGLE:
-                return new LetWayPanelBlock();
-            case TRIANGLE:
-                return new TrianglePanelBlock();
-            case OCTAGON:
-                return new OctagonPanelBlock();
-            case CIRCLE:
-                return new CirclePanelBlock();
-            case SQUARE:
-                return new SquarePanelBlock();
-            case RECTANGLE:
-                return new RectanglePanelBlock();
-            case ARROW:
-                return new ArrowPanelBlock();
-            case PLAIN_SQUARE:
-                return new PlainSquarePanelBlock();
-            case DIAMOND:
-                return new DiamondPanelBlock();
-            default:
-                return null;
-        }
+        return new PanelBlock(form);
     }
 
     public abstract ScreenType getScreenType();
@@ -117,10 +100,13 @@ public abstract class AbstractPanelBlock extends Block {
     public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
         ScreenType type = this.getScreenType();
         Form form = this.getForm();
-        if (!worldIn.isClientSide()) {
+        Direction facing = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+        if (!worldIn.isClientSide() &&
+                (player.getDirection() == facing.getOpposite())) {
             Networking.INSTANCE.sendTo(new PacketOpenScreen(pos,form,type),((ServerPlayerEntity) player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+            return ActionResultType.SUCCESS;
         }
-        return ActionResultType.SUCCESS;
+        return ActionResultType.PASS;
     }
 
     @Override
@@ -154,16 +140,9 @@ public abstract class AbstractPanelBlock extends Block {
         builder.add(
                 BlockStateProperties.HORIZONTAL_FACING,
                 GridSupport.ROTATED,
-                GRID,
-                Functions.NORTH_EAST,
-                Functions.NORTH_WEST,
-                Functions.SOUTH_EAST,
-                Functions.SOUTH_WEST,
-                BlockStateProperties.NORTH,
-                BlockStateProperties.SOUTH,
-                BlockStateProperties.WEST,
-                BlockStateProperties.EAST
+                GRID
         );
+        ExtendDirection.addAllBooleanProperty(builder);
     }
 
     @Override

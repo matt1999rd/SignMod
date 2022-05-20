@@ -10,7 +10,7 @@ public class TEType {
     @ObjectHolder("sign:direction_panel")
     public static TileEntityType<ArrowSignTileEntity> ARROW_SIGN;
     @ObjectHolder("sign:stop_panel")
-    public static TileEntityType<OctogoneSignTileEntity> OCTOGONE_SIGN;
+    public static TileEntityType<OctagonSignTileEntity> OCTOGONE_SIGN;
     @ObjectHolder("sign:let_way_panel")
     public static TileEntityType<UpsideTriangleSignTileEntity> UPSIDE_TRIANGLE_SIGN;
     @ObjectHolder("sign:rectangle_panel")

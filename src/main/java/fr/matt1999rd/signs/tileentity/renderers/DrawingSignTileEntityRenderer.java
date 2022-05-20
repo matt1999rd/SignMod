@@ -23,6 +23,8 @@ import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Vector2f;
+import net.minecraft.util.math.vector.Vector3f;
 import org.lwjgl.system.CallbackI;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -79,9 +81,11 @@ public class DrawingSignTileEntityRenderer<T extends DrawingSignTileEntity> exte
         int n= tileEntity.getNumberOfText();
         float completeLength = 10.0F/16;
         float pixelLength = completeLength / 128.0F;
+        Vector3f origin = new Vector3f(completeLength,completeLength,0.005F);
+        Vector2f scale = new Vector2f(pixelLength,pixelLength);
         for (int i=0;i<n;i++){
             Text t = tileEntity.getText(i);
-            t.render(stack,buffer,completeLength,completeLength,0.005F,pixelLength,pixelLength,combinedLight);
+            t.render(stack,buffer,origin,scale,combinedLight);
         }
         Functions.resetWorldGLState();
         stack.popPose();

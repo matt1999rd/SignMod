@@ -6,6 +6,7 @@ import fr.matt1999rd.signs.gui.screenutils.ColorType;
 import fr.matt1999rd.signs.gui.screenutils.Option;
 import fr.matt1999rd.signs.util.Letter;
 import fr.matt1999rd.signs.util.Text;
+import fr.matt1999rd.signs.util.TextStyles;
 import net.minecraft.client.Minecraft;
 import static fr.matt1999rd.signs.util.Functions.*;
 import net.minecraft.client.gui.screen.Screen;
@@ -17,25 +18,28 @@ import javax.annotation.Nullable;
 import java.awt.*;
 
 public class LimitSizeTextField extends TextFieldWidget implements Option {
-    int xText,yText;
+    float xText,yText;
     Form form;
     int scale;
     Color color;
+    TextStyles styles ;
     //boolean isEnd,isTextCentered;
     int limitLength;
 
     public LimitSizeTextField(Minecraft mc, int relX, int relY, Form form,@Nullable Text oldText) {
         super(mc.font, relX, relY, 90, 12, ITextComponent.nullToEmpty(" "));
-        int xText= (oldText != null) ? (int)oldText.getX() : form.getXBeginning(7);
-        int yText= (oldText != null) ? (int)oldText.getY() : form.getYBeginning(7);
+        float xText= (oldText != null) ? oldText.getX(false) : form.getXBeginning(7); //todo : same problem as found in keyPressed function in DrawingScreen
+        float yText= (oldText != null) ? oldText.getY(false) : form.getYBeginning(7);
         int scale = (oldText != null) ? oldText.getScale() : 1;
         String text = (oldText != null) ? oldText.getText() : "";
         color = (oldText != null) ? new Color(oldText.getColor(),true) : Color.WHITE;
+        styles = (oldText != null) ? oldText.getStyles() : TextStyles.defaultStyle();
         this.setValue(text);
         this.xText = xText;
-        this.yText = yText ;
+        this.yText = yText;
         this.form = form ;
         this.scale = scale;
+
         this.setCanLoseFocus(false);
         this.setFocus(true);
         onUpdate(true);
@@ -46,11 +50,11 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
         this.limitLength = maxLength;
     }
 
-    public int getX() {
+    public float getX() {
         return xText;
     }
 
-    public int getY() {
+    public float getY() {
         return yText;
     }
 
@@ -75,13 +79,13 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
         String text = this.getValue();
         if (Letter.isIn(c) || c == ' '){
             String newText = text+c;
-            int length = getLength(newText)*scale;
+            float length = Text.getLength(newText,styles,scale,true);
             int height = 7*scale;
             if (form.hasLengthPredefinedLimit()) {
                 if (length <= limitLength) {
                     return super.charTyped(c, p_charTyped_2_);
                 }
-            } else if (form.rectangleIsIn(x,x+length-1,y,y+height-1)){
+            } else if (form.rectangleIsIn(xText,xText+length-1,yText,yText+height-1)){
                 return super.charTyped(c,p_charTyped_2_);
             }
         }
@@ -164,11 +168,11 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
     }
 
     public void updatePlusButton() {
-        int length = getLength(this.getValue());
+        float length = Text.getLength(this.getValue(),styles,scale,true);
         Screen screen = Minecraft.getInstance().screen;
         if (screen instanceof AddTextScreen){
-            int upperLength = (scale+1)*length;
-            int upperHeight = (scale+1)*7;
+            float upperLength = (scale+1)*length/scale;
+            int upperHeight = (scale+1)*7/scale;
             AddTextScreen addTextScreen = (AddTextScreen)screen;
             if (form.hasLengthPredefinedLimit()){
                 if (scale == 3 || upperLength> limitLength){
@@ -176,7 +180,7 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
                 } else {
                     addTextScreen.enablePlusButton();
                 }
-            } else if (!form.rectangleIsIn(xText,xText+length*scale-1,yText,yText+7*scale-1) && form != Form.PLAIN_SQUARE){
+            } else if (!form.rectangleIsIn(xText,xText+length-1,yText,yText+7*scale-1) && form != Form.PLAIN_SQUARE){
                 this.setValue("");
             }else if (!form.rectangleIsIn(xText,xText+upperLength-1,yText,yText+upperHeight-1)){
                 addTextScreen.disablePlusButton();
@@ -188,13 +192,13 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
 
     public void updateTextPosition(boolean init){
         if (form.isNotForEditing())return;
-        int L = getLength(this.getValue()) * scale;
+        float L = Text.getLength(this.getValue(),styles,scale,true);
         if (form == Form.OCTAGON) {
             int H = 7*scale;
-            xText = 64 - L / 2;
-            yText = 64 - H / 2;
+            xText = 64 - L / 2F;
+            yText = 64 - H / 2F;
         }else {
-            xText = 64 - L / 2;
+            xText = 64 - L / 2F;
             if (init) yText = Form.offsetLetWay;
         }
     }

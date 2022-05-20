@@ -8,6 +8,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.network.NetworkEvent;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public class PacketDrawingAction {
@@ -49,7 +50,7 @@ public class PacketDrawingAction {
 
     public void handle(Supplier<NetworkEvent.Context> ctx){
         ctx.get().enqueueWork(()-> {
-            TileEntity te = ctx.get().getSender().getLevel().getBlockEntity(panelPos);
+            TileEntity te = Objects.requireNonNull(ctx.get().getSender()).getLevel().getBlockEntity(panelPos);
             if (te instanceof DrawingSignTileEntity){
                 DrawingSignTileEntity dste = (DrawingSignTileEntity)te;
                 dste.makeOperationFromScreen(ClientAction.getAction(action),x,y,color,length);

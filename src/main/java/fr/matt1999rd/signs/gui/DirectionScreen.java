@@ -24,11 +24,13 @@ import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
+
+import java.awt.Color;
+import java.util.List;
+
 import static net.minecraft.util.text.ITextComponent.nullToEmpty;
 
-import java.awt.*;
-
-import static fr.matt1999rd.signs.util.Functions.*;
+import static fr.matt1999rd.signs.util.DirectionSignConstants.*;
 
 public class DirectionScreen extends withColorSliderScreen implements IWithEditTextScreen {
     private int selTextInd = 4;
@@ -118,6 +120,7 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
                 boolean bool = dste.isRightArrow(i*2);
                 arrowDirection[i] = new DirectionCursorButton(relX, relY, b -> {
                 }, this, i, bool);
+                arrowDirection[i].active = dste.isCellPresent(2*i);
                 addButton(arrowDirection[i]);
             }
         }
@@ -173,14 +176,16 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
         int offset = (isBgColorDisplayed)? 25:0;
         //display of button for the color to define (using color slider) choice between background and foreground color
         blit(stack,relX+338,relY+85,this.getBlitOffset(),DIMENSION.getX()+offset,0,25,25,256,512);
-        super.render(stack,mouseX, mouseY, partialTicks);
         DirectionSignTileEntity dste = getTileEntity();
         if (form == Form.RECTANGLE){
             if (isTextCenter != centerText.selected()){
                 onTextCenterChange();
             }
         }
+        // 4 and 14 are offset to the place of rendering
         dste.renderOnScreen(stack,relX+4,relY+14);
+        super.render(stack,mouseX, mouseY, partialTicks);
+
     }
 
     private void onTextCenterChange() {
@@ -210,30 +215,30 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
 
     @Override
     public void addOrEditText(Text t) {
-        int text_length = t.getLength();
+        float text_length = t.getLength(true);
         DirectionSignTileEntity dste = getTileEntity();
         int ind= (selTextInd/2);
+        boolean isEndSelected = selTextInd%2 == 1;
         float x;
         if (isTextCenter){
-            centerText.active = (text_length<begTextLength);
-
-            if (isEndSelected()){
+            centerText.active = (text_length<begTextPixelNumber);
+            if (isEndSelected){
                 return;
             }
-            x = (panelLength - text_length) / 2.0F;
-        } else if (form == Form.RECTANGLE || dste.isRightArrow(ind)) {
+            x = (horPixelNumber - text_length) / 2.0F;
+        } else if ((form == Form.ARROW && !dste.isRightArrow(ind)) != isEndSelected) {
             centerText.active = true;
-            x = (selTextInd % 2) * (panelLength - text_length - 2*st_gap) ;
+            x = horPixelNumber - (text_length + sideGapPixelNumber) ; //writing on the right
         }else {
-            x = ((selTextInd+1)%2)* (panelLength - text_length - 2*st_gap) ;
+            centerText.active = true;
+            x = sideGapPixelNumber; //writing on the left
         }
-        x+=xOrigin+st_gap;
         int text_height = t.getHeight();
         int y_offset = 25 * ind + ind / 2;
         int height = (ind % 2 == 0) ? 25 : (ind == 1) ? 26 : 27;
         float y = (height - text_height) / 2.0F + y_offset;
-        t.setPosition(x,y);
-        dste.setText(selTextInd/2,isEndSelected(),t);
+        t.setPosition(x,y,false,false);
+        dste.setText(ind,isEndSelected,t);
         Networking.INSTANCE.sendToServer(new PacketAddOrEditText(panelPos,t,selTextInd));
     }
 
@@ -255,6 +260,7 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
     }
 
     public void changeArrowSide(int ind,boolean b){
+        //this function is processing data in tile entity following click on right left button
         DirectionSignTileEntity dste = getTileEntity();
         dste.flipText(ind);
         Networking.INSTANCE.sendToServer(new PacketFlipText(panelPos,ind));
@@ -325,15 +331,15 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
             if (isEnd){
                 return false;
             }
-            x1 = guiLeft+st_gap;
-            length = panelLength-2*st_gap;
+            x1 = guiLeft+sideGapPixelNumber;
+            length = horPixelNumber-2*sideGapPixelNumber;
         } else {
             if (form == Form.RECTANGLE || dste.isRightArrow(ind)) {
-                x1 = guiLeft + ((isEnd) ? panelLength-st_gap-endTextLength : st_gap);
+                x1 = guiLeft + ((isEnd) ? horPixelNumber-sideGapPixelNumber-endTextPixelNumber : sideGapPixelNumber);
             } else {
-                x1 = guiLeft + ((isEnd) ? st_gap : endTextLength+st_gap+center_gap);
+                x1 = guiLeft + ((isEnd) ? sideGapPixelNumber : endTextPixelNumber+sideGapPixelNumber+centerGapPixelNumber);
             }
-            length = (isEnd) ? endTextLength : panelLength-endTextLength-8;
+            length = (isEnd) ? endTextPixelNumber : horPixelNumber-endTextPixelNumber-8; //todo : add more constant in this function
         }
         //a gap of 25 and then 26
         int y1 = guiTop+16+(25*ind)+ind-(ind==0?0:1);
@@ -354,49 +360,52 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
     }
 
     //when ticking one of the 5 part direction we need to update cursor possibility
-    public void updateCursorAuthorisation(int ind) {
+    public void updateCursorAuthorisation(int ind,boolean selected) {
+        if (ind == 0){
+            arrowDirection[0].active = selected;
+        }else if (ind == 2){
+            arrowDirection[1].active = selected;
+        }else if (ind == 4){
+            arrowDirection[2].active = selected;
+        }
         DirectionSignTileEntity dste = getTileEntity();
-        boolean isPartPresent = getPlacement(ind);
-        switch (ind){
-            //in all case if we connect two plain part we disable the last one
-            case 0:
-                //had panel 1 directly connected to panel 2
-                if (dste.is12connected()){
-                    arrowDirection[1].active = !isPartPresent;
-                }
-                break;
-            case 1:
-                if (dste.hasPanel(1)){
-                    //if we join the two panel and there are not on the same arrow direction
-                    if (isPartPresent && (getPlacement(5) != getPlacement(6))){
-                        arrowDirection[1].onPress();
-                    }
-                    arrowDirection[1].active = !isPartPresent;
-                }
-                break;
-            case 2:
+        boolean tryUpdateThirdButton = (ind == 3);
+        if (selected){
+            if (ind == 1 && dste.isRightArrow(0) != dste.isRightArrow(2)){
+                arrowDirection[1].rawOnPress();
                 if (dste.is23connected()){
-                    arrowDirection[2].active = !isPartPresent;
+                    tryUpdateThirdButton = true;
                 }
-                break;
-            case 3:
-                if (dste.hasPanel(2)){
-                    //same as case 1
-                    if (isPartPresent && (getPlacement(6) != getPlacement(7))) {
-                        arrowDirection[2].onPress();
-                    }
-                    arrowDirection[2].active = !isPartPresent;
-                }
-                break;
+            }
+            if (dste.isRightArrow(2) != dste.isRightArrow(4) && tryUpdateThirdButton){
+                arrowDirection[2].rawOnPress();
+            }
         }
     }
 
-    public void updateOtherArrowSide(int ind) {
+    public void updateOtherArrowSide(int ind){
         DirectionSignTileEntity dste = getTileEntity();
-        if (ind == 0 && dste.is12connected()){
-            arrowDirection[1].onPress();
-        }else if (ind == 1 && dste.is23connected()){
-            arrowDirection[2].onPress();
+        if (ind == 0){
+            if (dste.is12connected() && dste.isCellPresent(2)){
+                arrowDirection[1].rawOnPress();
+                if (dste.is23connected() && dste.isCellPresent(4)){
+                    arrowDirection[2].rawOnPress();
+                }
+            }
+        }else if (ind == 1){
+            if (dste.is12connected() && dste.isCellPresent(0)){
+                arrowDirection[0].rawOnPress();
+            }
+            if (dste.is23connected() && dste.isCellPresent(4)){
+                arrowDirection[2].rawOnPress();
+            }
+        }else if (ind == 2) {
+            if (dste.is23connected() && dste.isCellPresent(2)) {
+                arrowDirection[1].rawOnPress();
+                if (dste.is12connected() && dste.isCellPresent(0)) {
+                    arrowDirection[0].rawOnPress();
+                }
+            }
         }
     }
 }

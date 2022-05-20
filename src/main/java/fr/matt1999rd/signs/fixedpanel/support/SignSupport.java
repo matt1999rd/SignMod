@@ -13,11 +13,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -65,16 +67,7 @@ public class SignSupport extends Block {
 
     @Override
     public void playerWillDestroy(World world, BlockPos pos, BlockState state, PlayerEntity player) {
-        Functions.deleteConnectingGrid(pos,world,player,state);
-        BlockPos offset_pos = pos.above();
-        //we delete all sign support block that this support block was handling
-        while (Functions.isSignSupport(world.getBlockState(offset_pos))){
-            BlockState state1 = world.getBlockState(offset_pos);
-            Functions.deleteBlock(offset_pos,world,player);
-            Functions.deleteConnectingGrid(offset_pos,world,player,state1);
-            offset_pos = offset_pos.above();
-        }
-        Functions.deleteBlock(pos,world,player);
+        Functions.manageDeletionOfSupportedBlock(world, pos, state, player);
         super.playerWillDestroy(world, pos, state, player);
     }
 
@@ -82,6 +75,16 @@ public class SignSupport extends Block {
     public void setPlacedBy(World worldIn, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         if (placer != null){
             Functions.setBlockState(worldIn,pos,state,0);
+        }
+    }
+
+    @Override
+    public boolean canSurvive(BlockState state, IWorldReader worldIn, BlockPos pos) {
+        BlockState downBlockState = worldIn.getBlockState(pos.below());
+        if (Functions.isSignSupport(downBlockState)){
+            return true;
+        }else {
+            return downBlockState.isFaceSturdy(worldIn,pos.below(), Direction.UP);
         }
     }
 

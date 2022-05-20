@@ -1,7 +1,6 @@
 package fr.matt1999rd.signs.tileentity.renderers;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import fr.matt1999rd.signs.SignMod;
@@ -13,23 +12,22 @@ import fr.matt1999rd.signs.util.Functions;
 import fr.matt1999rd.signs.util.PictureRenderState;
 import fr.matt1999rd.signs.util.Text;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 
-import net.minecraft.client.renderer.Atlases;
 import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Vector2f;
+import net.minecraft.util.math.vector.Vector3f;
+import static fr.matt1999rd.signs.util.DirectionSignConstants.*;
 
 public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> extends TileEntityRenderer<T> {
 
     private final DirectionSignModel model ;
     private final Form form;
+    private static final float blockLength = 16F;
 
     public DirectionSignTileEntityRenderer(TileEntityRendererDispatcher dispatcher, Form form) {
         super(dispatcher);
@@ -52,10 +50,10 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
 
         IVertexBuilder vertexBuilder = buffer.getBuffer(model.renderType(Functions.SIGN_BACKGROUND));
         this.model.renderSign(stack,tileEntityIn,vertexBuilder,combinedLight,combinedOverlay);
-        stack.translate(0,0,-2.001F/16F);
+        stack.translate(-totalLength /(2*blockLength),totalHeight/(2*blockLength),-2.001F/blockLength);
 
         renderBackground(stack,tileEntityIn,buffer,combinedLight);
-        stack.translate(-5.0F/16F,5.0F/16F,-0.1F/16F);
+        stack.translate(0,0,-0.1F/blockLength);
         renderText(stack,buffer,tileEntityIn,combinedLight);
 
         stack.popPose();
@@ -80,73 +78,33 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
     }
 
     private void renderPanel(Matrix4f matrix4f,IVertexBuilder builder,int ind,DirectionSignTileEntity tileEntity,int combinedLight){
-        float limLength = 0.1F/16F;
-        float x1 = -7F/16F;
-        float x2 = 7F/16F;
-        int limColor;
-        int bgColor;
+        float limLength = 0.1F/blockLength;
+        float x1 = 0;
+        float x2 = totalLength/blockLength;
         int panelInd;
         int panelLength;
+        int colorInd;
         float y1,y2;
-        switch (ind){
-            case 0:
-                //L1P1
-                limColor = tileEntity.getColor(1,false);
-                bgColor = tileEntity.getColor(1,true);
-                y1 = 13F/16F;
-                y2 = 15F/16F;
-                panelInd = 0;
-                panelLength = 1;
-                break;
-            case 1:
-                //L1P2
-                limColor = tileEntity.getColor(2,false);
-                bgColor = tileEntity.getColor(2,true);
-                y1 = 9F/16F;
-                y2 = 11F/16F;
-                panelInd = 2;
-                panelLength = 1;
-                break;
-            case 2:
-                //L1P3
-                limColor = tileEntity.getColor(3,false);
-                bgColor = tileEntity.getColor(3,true);
-                y1 = 5F/16F;
-                y2 = 7F/16F;
-                panelInd = 4;
-                panelLength = 1;
-                break;
-            case 3:
-                //L3P12
-                limColor = tileEntity.getColor(1,false);
-                bgColor = tileEntity.getColor(1,true);
-                y1 = 9F/16F;
-                y2 = 15F/16F;
-                panelInd = 0;
-                panelLength = 3;
-                break;
-            case 4:
-                //L3P23
-                limColor = tileEntity.getColor(2,false);
-                bgColor = tileEntity.getColor(2,true);
-                y1 = 5F/16F;
-                y2 = 11F/16F;
-                panelInd = 2;
-                panelLength = 3;
-                break;
-            case 5:
-                //L5
-                limColor = tileEntity.getColor(1,false);
-                bgColor = tileEntity.getColor(1,true);
-                y1 = 5F/16F;
-                y2 = 15F/16F;
-                panelInd = 0;
-                panelLength = 5;
-                break;
-            default:
-                SignMod.LOGGER.warn("Rendering not done : skip bad value of case !");
-                return;
+        if (ind <0 || ind > 5){
+            SignMod.LOGGER.warn("Rendering not done : skip bad value of case !");
+            return;
+        }else if (ind < 3){
+            panelLength = 1;
+        }else if (ind < 5){
+            ind -= 3;
+            panelLength = 3;
+        }else {
+            ind -= 5;
+            panelLength = 5;
         }
+
+        y2 = (totalHeight - ind * (singlePanelHeight + gapBtwPanelHeight)) / blockLength;
+        y1 = y2 - panelLength*singlePanelHeight/blockLength;
+        colorInd = ind +1;
+        panelInd = 2*ind;
+
+        int limColor = tileEntity.getColor(colorInd,false);
+        int bgColor = tileEntity.getColor(colorInd,true);
         //center rectangle
         renderRectangle(matrix4f,builder,x1+limLength,y1+limLength,x2-limLength,y2-limLength,bgColor,combinedLight);
         //down limit
@@ -162,12 +120,12 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
             renderRectangle(matrix4f,builder, x1, y1+limLength, x1 + limLength, y2-limLength, rightColor,combinedLight);
             //left limit
             renderRectangle(matrix4f,builder, x2 - limLength, y1+limLength, x2, y2-limLength, leftColor, combinedLight);
-            float xCommon = 7F/16F;
-            float xSolo = xCommon+panelLength*1F/16F;
+            float xCommon = totalLength/blockLength;
+            float xSolo = xCommon+panelLength*1F/blockLength;
             float ySolo = (y1+y2)/2;
             if (isRightArrow){
-                xCommon *= -1;
-                xSolo *= -1;
+                xCommon = totalLength/blockLength-xCommon;
+                xSolo = totalLength/blockLength - xSolo;
                 xDiff *= -1;
             }
             //arrow of limit
@@ -197,6 +155,8 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
     }
 
     //function to render triangle with a y axes direction as one of its three sides
+    // the three point are A(xCommon,yDown) , B(xSolo,ySolo) and C(xCommon,yUp)
+    // the point H(xCommon,ySolo) is the intersection of the altitude from B and the opposite side of the triangle
     private void renderTriangle(Matrix4f matrix4f,IVertexBuilder builder,float xCommon,float xSolo,float yDown,float ySolo,float yUp,int color,int combinedLight,boolean isBgColor){
         float z = (isBgColor)? -0.002F/16F :-0.001F/16F;
         RenderSystem.color4f(1.0F,1.0F,1.0F,1.0F);
@@ -205,16 +165,38 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
         int bColor = Functions.getBlueValue(color);
         int aColor = Functions.getAlphaValue(color);
 
+        //startYUp boolean indicates the first vertex to draw in order to see the triangle (always render clockwise)
+        // we always draw A first
+        // startYUp = false
+        /*
+              C
+           🡽 🡻
+         🡽   🡻
+        B     H
+         🡼   🡻
+           🡼 🡻
+              A
+         */
+        // startYUp = true
+        /*
+         C
+         🡹 🡾
+         🡹   🡾
+         H     B
+         🡹   🡿
+         🡹 🡿
+         A
+         */
         boolean startYUp = (xCommon<xSolo);
-        builder.vertex(matrix4f,xCommon,yDown,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex();
+        builder.vertex(matrix4f,xCommon,yDown,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw A
         if (startYUp){
-            builder.vertex(matrix4f,xCommon,ySolo,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex();
-            builder.vertex(matrix4f,xCommon,yUp,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex();
-            builder.vertex(matrix4f,xSolo,ySolo,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex();
+            builder.vertex(matrix4f,xCommon,ySolo,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw H
+            builder.vertex(matrix4f,xCommon,yUp,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw C
+            builder.vertex(matrix4f,xSolo,ySolo,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw B
         }else {
-            builder.vertex(matrix4f,xSolo,ySolo,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex();
-            builder.vertex(matrix4f,xCommon,yUp,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex();
-            builder.vertex(matrix4f,xCommon,ySolo,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex();
+            builder.vertex(matrix4f,xSolo,ySolo,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw B
+            builder.vertex(matrix4f,xCommon,yUp,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw C
+            builder.vertex(matrix4f,xCommon,ySolo,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw H
         }
 
     }
@@ -233,9 +215,10 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
         stack.pushPose();
         Functions.setWorldGLState();
         Text t = tileEntity.getText(ind,isEnd);
-        float completeLength = 10.0F/16;
-        float pixelLength = completeLength / 128.0F;
-        t.render(stack,buffer,completeLength,completeLength,0.005F,pixelLength,pixelLength,combinedLight);
+        Vector3f origin = new Vector3f(totalLength/blockLength,totalHeight/blockLength,0.005F);
+        float pixelLength = totalHeight/blockLength / verPixelNumber;
+        Vector2f scale = new Vector2f(pixelLength,pixelLength);
+        t.render(stack,buffer,origin,scale,combinedLight);
         Functions.resetWorldGLState();
         stack.popPose();
     }

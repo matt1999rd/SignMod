@@ -1,14 +1,10 @@
 package fr.matt1999rd.signs.enums;
 
-import com.google.common.collect.Lists;
 import fr.matt1999rd.signs.util.QuadPSPositions;
 import fr.matt1999rd.signs.util.Vector2i;
 import net.minecraft.util.IStringSerializable;
-import net.minecraft.util.Tuple;
 import net.minecraft.util.math.vector.Vector2f;
 
-import java.util.HashMap;
-import java.util.List;
 
 public enum PSDisplayMode implements IStringSerializable {
     EXIT(0,"exit",
@@ -131,11 +127,6 @@ public enum PSDisplayMode implements IStringSerializable {
             return new Vector2f(uvOrigin.x*arrowId,uvOrigin.y);
         }
         return uvOrigin;
-    }
-
-    //the text written in here must be centered
-    public boolean hasCenteredText(){
-        return meta<2;
     }
 
     public Vector2f getUVDimension(){

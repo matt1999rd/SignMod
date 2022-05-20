@@ -8,14 +8,17 @@ import fr.matt1999rd.signs.capabilities.DirectionCapability;
 import fr.matt1999rd.signs.capabilities.DirectionStorage;
 import fr.matt1999rd.signs.tileentity.primary.ArrowSignTileEntity;
 import fr.matt1999rd.signs.tileentity.primary.RectangleSignTileEntity;
+import fr.matt1999rd.signs.util.Vector2i;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
+import net.minecraft.util.math.vector.Vector2f;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
+import static fr.matt1999rd.signs.util.DirectionSignConstants.*;
 
 
 import javax.annotation.Nonnull;
@@ -24,7 +27,7 @@ import java.awt.*;
 
 public abstract class DirectionSignTileEntity extends PanelTileEntity{
 
-    private LazyOptional<DirectionStorage> storage = LazyOptional.of(this::getStorage).cast();
+    private final LazyOptional<DirectionStorage> storage = LazyOptional.of(this::getStorage).cast();
     public DirectionSignTileEntity(TileEntityType<?> tileEntityTypeIn) {
         super(tileEntityTypeIn);
     }
@@ -121,16 +124,11 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
     }
 
     public Text getText(int ind, boolean isEnd){
-        Text t = storage.map(directionStorage -> {
-            return directionStorage.getText(ind,isEnd);
-        }).orElse(Text.getDefaultText());
-        return t;
+        return storage.map(directionStorage -> directionStorage.getText(ind,isEnd)).orElse(Text.getDefaultText());
     }
 
     public void setText(int ind, boolean isEnd, Text newText){
-        storage.ifPresent(d->{
-            d.setText(ind,newText,isEnd);
-        });
+        storage.ifPresent(d-> d.setText(ind,newText,isEnd));
     }
 
     //text center boolean
@@ -146,10 +144,10 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
     public void centerText(boolean center){
         for (int i=0;i<5;i++){
             Text beg = getText(i,false);
-            int text_length = beg.getLength();
-            float x = Functions.xOrigin+((center) ? (Functions.panelLength-text_length)/2.0F: Functions.st_gap);
-            float y = beg.getY();
-            beg.setPosition(x,y);
+            float text_length = beg.getLength(true);
+            float x = ((center) ? (horPixelNumber-text_length)/2.0F: sideGapPixelNumber);
+            float y = beg.getY(false);
+            beg.setPosition(x,y,false,false);
         }
     }
 
@@ -235,15 +233,15 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         }else {
             H = 126;
         }
-        AbstractGui.fill(stack,x1+1,y1+1,x1+ Functions.panelLength-1,y1+1+H,bgColor);
+        AbstractGui.fill(stack,x1+1,y1+1,x1+ horPixelNumber-1,y1+1+H,bgColor);
         //up limit
-        AbstractGui.fill(stack,x1,y1,x1+ Functions.panelLength,y1+1,limColor);
+        AbstractGui.fill(stack,x1,y1,x1+ horPixelNumber,y1+1,limColor);
         //down limit
-        AbstractGui.fill(stack,x1,y1+H+1,x1+ Functions.panelLength,y1+H+2,limColor);
+        AbstractGui.fill(stack,x1,y1+H+1,x1+ horPixelNumber,y1+H+2,limColor);
         //left limit
         AbstractGui.fill(stack,x1,y1+1,x1+1,y1+H+1,limColor);
         //right limit
-        AbstractGui.fill(stack,x1+ Functions.panelLength-1,y1+1,x1+ Functions.panelLength,y1+H+1,limColor);
+        AbstractGui.fill(stack,x1+ horPixelNumber-1,y1+1,x1+ horPixelNumber,y1+H+1,limColor);
     }
 
     public boolean isCellPresent(int i){
@@ -258,18 +256,20 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
 
 
     private void renderText(MatrixStack stack,int guiLeft,int guiTop){
+        Vector2i origin = new Vector2i(guiLeft,guiTop);
+        Vector2f pixelDimension = new Vector2f(1.0F,1.0F);
         for (int i=0;i<5;i++){
             // flag indicates if we have to display the gray empty text rectangle
             boolean flag = isCellPresent(i);
             if (!isTextCentered()){
                 Text endText= getText(i,true);
                 if (!endText.isEmpty()){
-                    endText.renderOnScreen(stack,(int) (guiLeft- Functions.xOrigin),guiTop,1.0F,true);
+                    endText.renderOnScreen(stack,origin,pixelDimension,false,false); //todo : add possibility to display the text selected with a specific rendering
                 }else if (flag)renderGrayRectangle(stack,guiLeft, guiTop, i, true);
             }
             Text begText= getText(i,false);
             if (!begText.isEmpty()){
-                begText.renderOnScreen(stack,(int)(guiLeft- Functions.xOrigin),guiTop,1.0F,true);
+                begText.renderOnScreen(stack,origin,pixelDimension,false,false);
             }else if (flag)renderGrayRectangle(stack,guiLeft, guiTop, i,false);
 
         }
@@ -278,19 +278,19 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
     private void flipSpecifiedText(int ind){
         Text beg = getText(ind,false);
         if (!beg.isEmpty()) {
-            int length = beg.getLength();
-            float x = Functions.xOrigin+ ((beg.getX() == Functions.st_gap+ Functions.xOrigin) ? Functions.panelLength - length - Functions.st_gap: Functions.st_gap);
-            float y = beg.getY();
-            beg.setPosition(x, y);
+            float length = beg.getLength(true);
+            float x = ((beg.getX(false) == sideGapPixelNumber) ? horPixelNumber - length - sideGapPixelNumber: sideGapPixelNumber);
+            float y = beg.getY(false);
+            beg.setPosition(x, y,false,false); //todo : same problem as found in keyPressed function in DrawingScreen
         }
         setText(ind,false,new Text(beg));
 
         Text end = getText(ind,true);
         if (!end.isEmpty()) {
-            int length = end.getLength();
-            float x = Functions.xOrigin+((end.getX() == Functions.st_gap+ Functions.xOrigin) ? Functions.panelLength - length - Functions.st_gap: Functions.st_gap);
-            float y = end.getY();
-            end.setPosition(x, y);
+            float length = end.getLength(true);
+            float x = ((end.getX(false) == sideGapPixelNumber) ? horPixelNumber - length - sideGapPixelNumber: sideGapPixelNumber);
+            float y = end.getY(false);
+            end.setPosition(x, y,false,false);
         }
         setText(ind,true,new Text(end));
     }
@@ -323,15 +323,15 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
     private void renderGrayRectangle(MatrixStack stack,int guiLeft,int guiTop,int ind,boolean isEnd) {
         int x1,length;
         if (isTextCentered()) {
-            x1 = guiLeft + Functions.st_gap;
-            length = Functions.panelLength-2* Functions.st_gap;
+            x1 = guiLeft + sideGapPixelNumber;
+            length = horPixelNumber-2* sideGapPixelNumber;
         }else {
             if (this instanceof RectangleSignTileEntity || this.isRightArrow(ind)) {
-                x1 = guiLeft + Functions.st_gap + ((isEnd) ? Functions.begTextLength+ Functions.center_gap : 0);
+                x1 = guiLeft + sideGapPixelNumber + ((isEnd) ? begTextPixelNumber+ centerGapPixelNumber : 0);
             } else {
-                x1 = guiLeft + Functions.st_gap + ((isEnd) ? 0 : Functions.endTextLength+ Functions.center_gap);
+                x1 = guiLeft + sideGapPixelNumber + ((isEnd) ? 0 : endTextPixelNumber+ centerGapPixelNumber);
             }
-            length = (isEnd) ? Functions.endTextLength : Functions.begTextLength;
+            length = (isEnd) ? endTextPixelNumber : begTextPixelNumber;
         }
         //a gap of 25 and then 26
         int y1 = guiTop+2+(25*ind)+ind-(ind==0?0:1);

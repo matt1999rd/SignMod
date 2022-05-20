@@ -11,8 +11,18 @@ import java.awt.*;
 
 public class DirectionStorage implements IDirectionStorage, INBTSerializable<CompoundNBT> {
 
+    // panelPlacement boolean table includes five value for the existence of panel
+    // 0 -> first panel exists
+    // 1 -> link between first and second exists
+    // 2 -> second panel exists
+    // 3 -> link between second and third exists
+    // 4 -> third panel exists
+    // 5 -> arrow is right for first panel
+    // 6 -> arrow is right for second panel
+    // 7 -> arrow is right for third panel
 
     boolean[] panelPlacement = new boolean[8];
+
     Text[] texts = new Text[5];
     Text[] endTexts = new Text[5];
     Color[] bg_color,limit_color;
@@ -23,6 +33,9 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
             panelPlacement[i] = (i==2);
             texts[i] = Text.getDefaultText();
             endTexts[i] = Text.getDefaultText();
+        }
+        for (int i=0;i<3;i++){
+            panelPlacement[5+i] = false;
         }
         bg_color = new Color[]{Color.WHITE,Color.WHITE,Color.WHITE};
         limit_color = new Color[]{Color.BLACK,Color.BLACK,Color.BLACK};

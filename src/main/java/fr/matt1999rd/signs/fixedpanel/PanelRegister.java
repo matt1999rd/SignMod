@@ -27,7 +27,6 @@ public class PanelRegister {
     private static AbstractPanelBlock register(Form form){
         AbstractPanelBlock panelBlock = AbstractPanelBlock.createPanelInstance(form);
         System.out.println("-----------------Block "+ form +" registered !------------------");
-        assert panelBlock != null;
         System.out.println("------------------ Registry Name : "+panelBlock.getRegistryName()+"-------------");
         PANELS.add(panelBlock);
         return panelBlock;

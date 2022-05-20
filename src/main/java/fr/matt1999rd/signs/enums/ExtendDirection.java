@@ -2,8 +2,11 @@ package fr.matt1999rd.signs.enums;
 
 
 import fr.matt1999rd.signs.util.Functions;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.state.BooleanProperty;
+import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -62,6 +65,12 @@ public enum ExtendDirection {
             return (z == -1)? NORTH : SOUTH;
         }else {
             return (z == -1)? NORTH_EAST : (z == 0) ? EAST : SOUTH_EAST;
+        }
+    }
+
+    public static void addAllBooleanProperty(StateContainer.Builder<Block, BlockState> builder) {
+        for (ExtendDirection direction : ExtendDirection.values()){
+            builder.add(direction.property);
         }
     }
 

@@ -5,11 +5,14 @@ import fr.matt1999rd.signs.tileentity.DirectionSignTileEntity;
 import fr.matt1999rd.signs.tileentity.DrawingSignTileEntity;
 import fr.matt1999rd.signs.tileentity.EditingSignTileEntity;
 import fr.matt1999rd.signs.tileentity.PanelTileEntity;
-import fr.matt1999rd.signs.tileentity.primary.PlainSquareSignTileEntity;
+import fr.matt1999rd.signs.tileentity.primary.*;
 import fr.matt1999rd.signs.util.Functions;
+import net.minecraft.block.BlockState;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector2f;
+import net.minecraft.world.IBlockReader;
 
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
@@ -22,7 +25,7 @@ public enum Form {
 
 
 
-    UPSIDE_TRIANGLE(0, EditingSignTileEntity.class,
+    UPSIDE_TRIANGLE(0,"let_way", EditingSignTileEntity.class,
             vec2f -> Functions.isInRhombus(vec2f,new Vector2f(0.5F,0),0.5F,1),
             h->h/2+2,
             h-> 10
@@ -31,7 +34,7 @@ public enum Form {
     // TRIANGLE :
     // it must be in the upper part of the rhombus centered on the point (1/2,1) and of x diagonal length 1 and y diagonal length 2
 
-    TRIANGLE(1, DrawingSignTileEntity.class,
+    TRIANGLE(1,"triangle", DrawingSignTileEntity.class,
             vec2f -> Functions.isInRhombus(vec2f,new Vector2f(0.5F,1),0.5F,1),
             h-> h/2+2,
             h-> 127-h
@@ -44,7 +47,7 @@ public enum Form {
     // horizontal/vertical line : y=0 and y=1 and x=0 and x=1
     // it must be in the rhombus centered on (1/2,1/2) but with a 1/3 more distance (in total) from the origin and with equal diagonal
 
-    OCTAGON(2, EditingSignTileEntity.class,
+    OCTAGON(2,"stop", EditingSignTileEntity.class,
             vec2f -> Functions.isInRhombus(vec2f,new Vector2f(0.5F,0.5F),2/3F,2/3F),
             h-> 0,
             h-> 50
@@ -53,7 +56,7 @@ public enum Form {
     // CIRCLE : ●
     // it must be within 0.5 (radius) distance from the point C=(x0,y0)=(0.5,0.5) (center)
 
-    CIRCLE(3, DrawingSignTileEntity.class,
+    CIRCLE(3,"circle", DrawingSignTileEntity.class,
             (vec2f -> Functions.distance(vec2f.x-0.5F,vec2f.y-0.5F) <= 0.5F),
             h-> MathHelper.ceil(64+MathHelper.sqrt(64.0F-h*h/2.0F)),
             h-> 64-h/2
@@ -62,22 +65,22 @@ public enum Form {
     // SQUARE and OTHER FOUR FORMS (RECTANGLE,ARROW,PLAIN_SQUARE) : same limit
     // horizontal/vertical line : y=0 and y=1 and x=0 and x=1
 
-    SQUARE(4, DrawingSignTileEntity.class,
+    SQUARE(4,"square",DrawingSignTileEntity.class,
             vec2f -> true,
             h-> 0,
             h-> 0
     ),
 
-    RECTANGLE(5, DirectionSignTileEntity.class,
+    RECTANGLE(5,"rectangle", DirectionSignTileEntity.class,
             vec2f -> true,
             h-> 0,
             h-> 0
     ),
-    ARROW(6, DirectionSignTileEntity.class,
+    ARROW(6,"direction", DirectionSignTileEntity.class,
             vec2f -> true,
             h-> 0,
             h-> 0),
-    PLAIN_SQUARE(7, PlainSquareSignTileEntity.class,
+    PLAIN_SQUARE(7,"huge_direction", PlainSquareSignTileEntity.class,
             vec2f -> true,
             h-> 0,
             h-> 0
@@ -86,7 +89,7 @@ public enum Form {
     // DIAMOND   ◢◣
     //           ◥◤
     // it must be in the rhombus centered on (1/2,1/2) but with a distance (in total) of 1/2 from the origin and with equal diagonal
-    DIAMOND(8, DrawingSignTileEntity.class,
+    DIAMOND(8,"diamond", DrawingSignTileEntity.class,
             vec2f -> Functions.isInRhombus(vec2f,new Vector2f(0.5F,0.5F),0.5F,0.5F),
             h-> h/2+2,
             h-> 64-h/2-2
@@ -99,6 +102,7 @@ public enum Form {
     public static final int offsetLetWay = 10;
 
     private final int meta;
+    private final String objName;
     private final Predicate<Vector2f> isIn;
     private final IntFunction<Integer> xBegText;  //start text when you can fit a rectangle of height h,
     private final IntFunction<Integer> yBegText;  // the y needed to get max length
@@ -106,8 +110,9 @@ public enum Form {
     private static final ResourceLocation STOP_BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/stop.png");
     private static final ResourceLocation LW_BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/tileentityrenderer/let_way.png");
 
-    Form(int meta, Class<? extends PanelTileEntity> teClass, Predicate<Vector2f> isIn, IntFunction<Integer> xBeg, IntFunction<Integer> yBegText){
+    Form(int meta,String objectName, Class<? extends PanelTileEntity> teClass, Predicate<Vector2f> isIn, IntFunction<Integer> xBeg, IntFunction<Integer> yBegText){
         this.meta = meta;
+        objName = objectName;
         this.isIn = isIn;
         this.xBegText = xBeg;
         this.yBegText = yBegText;
@@ -120,6 +125,22 @@ public enum Form {
             return null;
         }
         return forms[meta];
+    }
+
+    public String getObjName() {
+        return objName;
+    }
+
+    public ScreenType getScreenType(){
+        if (isForDrawing()){
+            return ScreenType.DRAWING_SCREEN;
+        }else if (isForDirection()){
+            return ScreenType.DIRECTION_SCREEN;
+        }else if (isNotForEditing()){
+            return ScreenType.PLAIN_SQUARE_SCREEN;
+        }else {
+            return ScreenType.EDITING_SCREEN;
+        }
     }
 
     public int getMeta(){
@@ -146,6 +167,13 @@ public enum Form {
         return true;
     }
 
+    public boolean rectangleIsIn(float iMin,float iMax,float jMin,float jMax){
+        return rectangleIsIn(
+                MathHelper.ceil(iMin),MathHelper.floor(iMax),
+                MathHelper.ceil(jMin),MathHelper.floor(jMax)
+                );
+    }
+
     private boolean isOnWholeCube(){
         return (this == PLAIN_SQUARE || this == ARROW || this == RECTANGLE);
     }
@@ -166,8 +194,6 @@ public enum Form {
 
     public boolean isNotForEditing() {return (this.tileEntityClass != EditingSignTileEntity.class);}
 
-    public boolean needNotUpdateTextPosition() { return isNotForEditing() || this != PLAIN_SQUARE; }
-
     public boolean isForDirection() {
         return (this.tileEntityClass == DirectionSignTileEntity.class);
     }
@@ -180,5 +206,30 @@ public enum Form {
         if (this == UPSIDE_TRIANGLE)return LW_BACKGROUND;
         if (this == OCTAGON)return STOP_BACKGROUND;
         return Functions.SIGN_BACKGROUND;
+    }
+
+    public TileEntity createTileEntity(){
+        switch (this){
+            case ARROW:
+                return new ArrowSignTileEntity();
+            case CIRCLE:
+                return new CircleSignTileEntity();
+            case SQUARE:
+                return new SquareSignTileEntity();
+            case DIAMOND:
+                return new DiamondSignTileEntity();
+            case OCTAGON:
+                return new OctagonSignTileEntity();
+            case TRIANGLE:
+                return new TriangleSignTileEntity();
+            case RECTANGLE:
+                return new RectangleSignTileEntity();
+            case PLAIN_SQUARE:
+                return new PlainSquareSignTileEntity();
+            case UPSIDE_TRIANGLE:
+                return new UpsideTriangleSignTileEntity();
+            default:
+                return null;
+        }
     }
 }

@@ -2,6 +2,7 @@ package fr.matt1999rd.signs.gui.widget;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.gui.DirectionScreen;
 import net.minecraft.client.Minecraft;
@@ -49,9 +50,9 @@ public class DirectionCursorButton extends Button {
                 }
             }
         }
-        GlStateManager._enableBlend();
-        GlStateManager._blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA.value, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA.value, GlStateManager.SourceFactor.ONE.value, GlStateManager.DestFactor.ZERO.value);
-        GlStateManager._blendFunc(GlStateManager.SourceFactor.SRC_ALPHA.value, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA.value);
+        RenderSystem.enableBlend();
+        RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA.value, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA.value, GlStateManager.SourceFactor.ONE.value, GlStateManager.DestFactor.ZERO.value);
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA.value, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA.value);
         //rendering of background
         this.blit(stack,this.x,this.y,0,50,this.width,this.height);
         //rendering of the moving cursor
@@ -60,9 +61,13 @@ public class DirectionCursorButton extends Button {
 
     @Override
     public void onPress() {
+        rawOnPress();
+        screen.updateOtherArrowSide(ind);
+    }
+
+    public void rawOnPress(){
         isMoving = true;
         isRightPosition = !isRightPosition;
-        screen.updateOtherArrowSide(ind);
         screen.changeArrowSide(ind,isRightPosition);
     }
 }

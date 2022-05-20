@@ -8,12 +8,15 @@ import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.ExtendDirection;
 import fr.matt1999rd.signs.enums.PSPosition;
 import fr.matt1999rd.signs.fixedpanel.panelblock.AbstractPanelBlock;
-import fr.matt1999rd.signs.fixedpanel.panelblock.PlainSquarePanelBlock;
+import fr.matt1999rd.signs.fixedpanel.panelblock.PanelBlock;
 import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
 import fr.matt1999rd.signs.fixedpanel.support.SignSupport;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -33,18 +36,13 @@ import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.util.List;
 
 public class Functions {
 
     public static BooleanProperty NORTH_WEST,NORTH_EAST,SOUTH_WEST,SOUTH_EAST;
-    //for disposition of text in direction panel : 1(limit) 2(st gap) 144(beg text) 4(larger gap) 25(end text) 2(st gap) 1(limit)
-    public static final int panelLength = 179;
-    public static final int endTextLength = 25;
-    public static final float xOrigin = -25.6F;
-    public static final int st_gap = 3; //st gap+limit
-    public static final int center_gap = 4; //larger gap
-    public static final int begTextLength = panelLength-endTextLength-2*st_gap-center_gap;
     public static final ResourceLocation SIGN_BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/block/sign.png");
 
     //function for authorisation of placing the four plain square panel : three of them are the 3 by 2 and one is 2 by 2.
@@ -140,7 +138,7 @@ public class Functions {
 
     //useful for text coordinate will be changed in the future
 
-    public static boolean isValidCoordinate(int x, int y) {
+    public static boolean isValidCoordinate(float x, float y) {
         return (x>-1 && y>-1 && x<128 && y<128);
     }
 
@@ -192,16 +190,25 @@ public class Functions {
         }
     }
 
+    //manage the deletion of supported block : generic function for sign support and abstract panel block
+    public static void manageDeletionOfSupportedBlock(World world, BlockPos pos, BlockState state, PlayerEntity player){
+        Functions.deleteConnectingGrid(pos,world,player,state);
+        BlockPos offset_pos = pos.above();
+        BlockState upSupportState = world.getBlockState(offset_pos);
+        //we delete all sign support block that this support block was handling
+        if (Functions.isSignSupport(upSupportState)){
+            Functions.manageDeletionOfSupportedBlock(world,offset_pos,upSupportState,player);
+        }
+        Functions.deleteBlock(pos,world,player);
+    }
+
     //delete connecting grid of a sign support (with or without panel) at position pos in worldIn by player
 
     public static void deleteConnectingGrid(BlockPos pos, World worldIn, PlayerEntity player,BlockState state) {
         int flags = getFlagsFromState(state);
         for (ExtendDirection direction : ExtendDirection.values()){
             if ((flags&1)==1){
-                BlockPos gridPos = direction.relative(pos);
-                BlockState gridState = worldIn.getBlockState(gridPos);
-                Functions.deleteOtherGrid(gridPos,worldIn,player,gridState);
-                Functions.deleteBlock(gridPos,worldIn,player);
+                Functions.deleteGridRow(direction,pos,worldIn,player);
             }
             flags = flags >> 1;
         }
@@ -275,6 +282,18 @@ public class Functions {
         return (color & 255);
     }
 
+    public static float colorDistance(Color firstColor, Color secondColor){
+        int d = 0;
+        int firstColorValue = firstColor.getRGB();
+        int secondColorValue = secondColor.getRGB();
+        int v;
+        for (int i=0;i<4;i++){
+            v = ((firstColorValue >> (8 * i) & 255) - (secondColorValue >> (8 * i) & 255));
+            d += v*v;
+        }
+        return MathHelper.sqrt(d);
+    }
+
     public static VoxelShape getSupportShape(){
         return Block.box(7,0,7,9,16,9);
     }
@@ -315,8 +334,8 @@ public class Functions {
         RenderSystem.enableTexture();
     }
 
-    public static char[] toCharArray(List<Character> list){
-        int n= list.size();
+    public static char[] toCharArray(List<Character> list) {
+        int n = list.size();
         char[] chars = new char[n];
         int i = 0;
         for (Character character : list) {
@@ -324,27 +343,6 @@ public class Functions {
             i++;
         }
         return chars;
-    }
-
-    public static int getLength(String content){
-        int n=content.length();
-        int length = 0;
-        for (int i=0;i<n;i++){
-            char c0 = content.charAt(i);
-            if (c0 == ' '){
-                length+=4;
-            }else {
-                Letter l = new Letter(c0, 0, 0);
-                length += l.length;
-                char followingChar = (i != n - 1) ? content.charAt(i + 1) : ' ';
-                if (followingChar > 97) {
-                    length += 1;
-                } else if (followingChar != ' ') {
-                    length += 2;
-                }
-            }
-        }
-        return length;
     }
 
     public static float distance(float x, float y) {
@@ -398,7 +396,7 @@ public class Functions {
         if (placementDir2.size() == 1){
             if (!allowPanel)return ALL_PANEL;
             PSPosition position = placementDir2.get(0);
-            PSPosition defaultPosition = PlainSquarePanelBlock.DEFAULT_RIGHT_POSITION;
+            PSPosition defaultPosition = PanelBlock.DEFAULT_RIGHT_POSITION;
             if ((position == defaultPosition) == (defaultPosition.isRight())){
                 return ONLY_3BY2_PANEL_IN_LEFT;
             }else {
@@ -414,6 +412,35 @@ public class Functions {
     // the length of the x diagonal is xD and the length of the y diagonal is yD
     public static boolean isInRhombus(Vector2f point,Vector2f center,float xD,float yD){
         return MathHelper.abs(point.y-center.y) <= yD * (1 - MathHelper.abs(point.x-center.x)/xD);
+    }
+
+    public static void renderTextLimit(float guiLeft,float guiTop,float L,float h,boolean isSelected){
+        float u = (isSelected) ? 0 :1/256.0F;
+        float v = 35/256.0F+u;
+        float horDu = (L+2)/256.0F;
+        float verDu = 1/256.0F;
+        float horDv = verDu;
+        float verDv = (h+2)/256.0F;
+        //up bar
+        renderTexture(new Rectangle2D.Float(guiLeft-1,guiTop-1,L+2,1),new Rectangle2D.Float(u,v,horDu,horDv));
+        //down bar
+        renderTexture(new Rectangle2D.Float(guiLeft-1,guiTop+h,L+2,1),new Rectangle2D.Float(u,v,horDu,horDv));
+        //left bar
+        renderTexture(new Rectangle2D.Float(guiLeft-1,guiTop-1,1,h+2),new Rectangle2D.Float(u,v,verDu,verDv));
+        //right bar
+        renderTexture(new Rectangle2D.Float(guiLeft+L,guiTop-1,1,h+2),new Rectangle2D.Float(u,v,verDu,verDv));
+    }
+
+    private static void renderTexture(Rectangle2D vertex,Rectangle2D uvMapping){
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder builder = tessellator.getBuilder();
+        builder.begin(7, DefaultVertexFormats.POSITION_TEX);
+        builder.vertex(vertex.getMinX(),vertex.getMinY(),0).uv((float) uvMapping.getMinX(), (float) uvMapping.getMinY()).endVertex();
+        builder.vertex(vertex.getMinX(),vertex.getMaxY(),0).uv((float) uvMapping.getMinX(), (float) uvMapping.getMaxY()).endVertex();
+        builder.vertex(vertex.getMaxX(),vertex.getMaxY(),0).uv((float) uvMapping.getMaxX(), (float) uvMapping.getMaxY()).endVertex();
+        builder.vertex(vertex.getMaxX(),vertex.getMinY(),0).uv((float) uvMapping.getMaxX(), (float) uvMapping.getMinY()).endVertex();
+        RenderSystem.enableAlphaTest();
+        tessellator.end();
     }
 
 

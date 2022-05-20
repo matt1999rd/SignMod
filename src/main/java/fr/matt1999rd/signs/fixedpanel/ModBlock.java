@@ -1,5 +1,6 @@
 package fr.matt1999rd.signs.fixedpanel;
 
+import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.fixedpanel.panelblock.*;
 import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
 import fr.matt1999rd.signs.fixedpanel.support.SignSupport;
@@ -15,23 +16,23 @@ public class ModBlock {
     @ObjectHolder("sign:grid_support")
     public static GridSupport GRID_SUPPORT = new GridSupport();
     @ObjectHolder("sign:square_panel")
-    public static SquarePanelBlock SQUARE_PANEL = new SquarePanelBlock();
+    public static PanelBlock SQUARE_PANEL = new PanelBlock(Form.SQUARE);
     @ObjectHolder("sign:circle_panel")
-    public static CirclePanelBlock CIRCLE_PANEL = new CirclePanelBlock();
+    public static PanelBlock CIRCLE_PANEL = new PanelBlock(Form.CIRCLE);
     @ObjectHolder("sign:triangle_panel")
-    public static TrianglePanelBlock TRIANGLE_PANEL = new TrianglePanelBlock();
+    public static PanelBlock TRIANGLE_PANEL = new PanelBlock(Form.TRIANGLE);
     @ObjectHolder("sign:let_way_panel")
-    public static LetWayPanelBlock LET_WAY_PANEL = new LetWayPanelBlock();
+    public static PanelBlock LET_WAY_PANEL = new PanelBlock(Form.UPSIDE_TRIANGLE);
     @ObjectHolder("sign:diamond_panel")
-    public static DiamondPanelBlock DIAMOND_PANEL = new DiamondPanelBlock();
+    public static PanelBlock DIAMOND_PANEL = new PanelBlock(Form.DIAMOND);
     @ObjectHolder("sign:direction_panel")
-    public static ArrowPanelBlock DIRECTION_PANEL = new ArrowPanelBlock();
+    public static PanelBlock DIRECTION_PANEL = new PanelBlock(Form.ARROW);
     @ObjectHolder("sign:huge_direction_panel")
-    public static PlainSquarePanelBlock HUGE_DIRECTION_PANEL = new PlainSquarePanelBlock();
+    public static PanelBlock HUGE_DIRECTION_PANEL = new PanelBlock(Form.PLAIN_SQUARE);
     @ObjectHolder("sign:stop_panel")
-    public static OctagonPanelBlock STOP_PANEL = new OctagonPanelBlock();
+    public static PanelBlock STOP_PANEL = new PanelBlock(Form.OCTAGON);
     @ObjectHolder("sign:rectangle_panel")
-    public static RectanglePanelBlock RECTANGLE_PANEL = new RectanglePanelBlock();
+    public static PanelBlock RECTANGLE_PANEL = new PanelBlock(Form.RECTANGLE);
 
 
 
