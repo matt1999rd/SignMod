@@ -79,10 +79,18 @@ public class Text {
     public int getColor(){ return this.color.getRGB(); }
 
     public float getLength(boolean scaled){
-        return getLength(this.content,this.styles,scale,scaled);
+        return getLength(scaled,true);
+    }
+
+    public float getLength(boolean scaled,boolean withFrame){
+        return getLength(this.content,this.styles,scale,scaled,withFrame);
     }
 
     public static float getLength(String content,TextStyles styles,float scale,boolean scaled){
+        return getLength(content,styles,scale,scaled,true);
+    }
+
+    public static float getLength(String content,TextStyles styles,float scale,boolean scaled,boolean withFrame){
         int n=content.length();
         float length = 0;
         for (int i=0;i<n;i++){
@@ -103,7 +111,7 @@ public class Text {
         if (styles.isItalic()){
             length+=TextStyles.italicOffset;
         }
-        if (styles.hasStraightFrame() || styles.hasCurveFrame()){
+        if ((styles.hasStraightFrame() || styles.hasCurveFrame()) && withFrame){
             length+=2*TextStyles.sideFrameGap;
         }
         return scaled ? (length * scale) : length;
@@ -113,13 +121,19 @@ public class Text {
         return scale;
     }
 
-    public int getHeight(){
+    public float getHeight(){
+        return getHeight(true);
+    }
+
+    public float getHeight(boolean withFrame){
+        float height = defaultHeight;
         if (styles.isUnderline()){
-            return (defaultHeight + TextStyles.underLineGap) * scale;
-        }else if (styles.hasCurveFrame() || styles.hasStraightFrame()){
-            return (defaultHeight + TextStyles.upFrameGap * 2) * scale;
+            height += TextStyles.underLineGap;
         }
-        return defaultHeight * scale;
+        if ((styles.hasCurveFrame() || styles.hasStraightFrame()) && withFrame){
+            height += TextStyles.upFrameGap * 2;
+        }
+        return height * scale;
     }
 
     public TextStyles getStyles(){ return styles; }

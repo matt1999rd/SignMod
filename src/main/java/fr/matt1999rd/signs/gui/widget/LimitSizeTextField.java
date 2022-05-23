@@ -1,5 +1,7 @@
 package fr.matt1999rd.signs.gui.widget;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
+import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.gui.AddTextScreen;
 import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.gui.screenutils.ColorType;
@@ -11,11 +13,13 @@ import net.minecraft.client.Minecraft;
 import static fr.matt1999rd.signs.util.Functions.*;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nullable;
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 
 public class LimitSizeTextField extends TextFieldWidget implements Option {
     float xText,yText;
@@ -25,6 +29,7 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
     TextStyles styles ;
     //boolean isEnd,isTextCentered;
     int limitLength;
+    ResourceLocation BUTTON = new ResourceLocation(SignMod.MODID, "textures/gui/buttons.png");
 
     public LimitSizeTextField(Minecraft mc, int relX, int relY, Form form,@Nullable Text oldText) {
         super(mc.font, relX, relY, 90, 12, ITextComponent.nullToEmpty(" "));
@@ -61,6 +66,8 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
     public int getScale() {
         return scale;
     }
+
+    public TextStyles getStyles() { return styles; }
 
     public void incrementScale(boolean increase) {
         if (increase){
@@ -201,5 +208,64 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
             xText = 64 - L / 2F;
             if (init) yText = Form.offsetLetWay;
         }
+    }
+
+    @Override
+    public void renderButton(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
+        Minecraft.getInstance().getTextureManager().bind(BUTTON);
+        //button italic
+        blit(stack,x,y-11,0,88 + (styles.isItalic()? 10 : 0),10,10);
+        //button bold
+        blit(stack,x+10,y-11,10,88 + (styles.isBold()? 10 : 0),10,10);
+        //button underline
+        blit(stack,x+20,y-11,20,88 + (styles.isUnderline()? 10 : 0),10,10);
+        //button highlight
+        blit(stack,x+30,y-11,30,88 + (styles.hasHighlightColor()? 10 : 0),10,10);
+        if (styles.hasHighlightColor()) {
+            //button highlight color slider
+            blit(stack, x + 40, y - 31, 40, 88, 40, 30);
+        }
+        //button frames
+        blit(stack,x+80,y-11,80,88 + (styles.hasCurveFrame()? 20 : styles.hasStraightFrame()? 10 : 0),10,10);
+        super.renderButton(stack, mouseX, mouseY, partialTicks);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        boolean mouseClicked = super.mouseClicked(mouseX, mouseY, button);
+        Rectangle2D italicButton = new Rectangle2D.Float(x,y-11,10,10);
+        Rectangle2D boldButton = new Rectangle2D.Float(x+10,y-11,10,10);
+        Rectangle2D underlineButton = new Rectangle2D.Float(x+20,y-11,10,10);
+        Rectangle2D highlightButton = new Rectangle2D.Float(x+30,y-11,10,10);
+        Rectangle2D frameButton = new Rectangle2D.Float(x+80,y-11,10,10);
+        if (!mouseClicked){
+            if (italicButton.contains(mouseX,mouseY)){
+                if (styles.isItalic())styles = styles.unItalic();
+                else styles = styles.italic();
+            }
+            if (boldButton.contains(mouseX,mouseY)){
+                if (styles.isBold())styles = styles.unBold();
+                else styles = styles.bold();
+            }
+            if (underlineButton.contains(mouseX,mouseY)){
+                if (styles.isUnderline())styles = styles.unUnderLine();
+                else styles = styles.underline();
+            }
+            if (highlightButton.contains(mouseX,mouseY)){
+                if (styles.hasHighlightColor())styles.removeHighlightColor();
+                else styles.addHighlightColor(Color.GREEN);
+            }
+            if (frameButton.contains(mouseX,mouseY)){
+                if (styles.hasStraightFrame()){
+                    styles = styles.withoutStraightFrame().withCurveFrame();
+                }
+                else if (styles.hasCurveFrame()){
+                    styles = styles.withoutCurveFrame();
+                }
+                else styles = styles.withStraightFrame();
+            }
+            System.out.println("mouse clicked action !");
+        }
+        return mouseClicked;
     }
 }

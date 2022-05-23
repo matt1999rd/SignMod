@@ -233,7 +233,7 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
             centerText.active = true;
             x = sideGapPixelNumber; //writing on the left
         }
-        int text_height = t.getHeight();
+        float text_height = t.getHeight();
         int y_offset = 25 * ind + ind / 2;
         int height = (ind % 2 == 0) ? 25 : (ind == 1) ? 26 : 27;
         float y = (height - text_height) / 2.0F + y_offset;
@@ -361,15 +361,15 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
 
     //when ticking one of the 5 part direction we need to update cursor possibility
     public void updateCursorAuthorisation(int ind,boolean selected) {
-        if (ind == 0){
-            arrowDirection[0].active = selected;
-        }else if (ind == 2){
-            arrowDirection[1].active = selected;
-        }else if (ind == 4){
-            arrowDirection[2].active = selected;
+        if (ind % 2 == 0){
+            arrowDirection[ind/2].active = selected; //when we remove one main panel, we disable the cursor
         }
+        //all the following code is for automatic movement when we connect two main panel with different cursor position
+        // automatically the first one is imposing its position (*)
         DirectionSignTileEntity dste = getTileEntity();
         boolean tryUpdateThirdButton = (ind == 3);
+        // this boolean is here because we can update the third button
+        // when we click on the checkbox between the first and the second panel and not on the other side (see (*))
         if (selected){
             if (ind == 1 && dste.isRightArrow(0) != dste.isRightArrow(2)){
                 arrowDirection[1].rawOnPress();
@@ -385,6 +385,7 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
 
     public void updateOtherArrowSide(int ind){
         DirectionSignTileEntity dste = getTileEntity();
+
         if (ind == 0){
             if (dste.is12connected() && dste.isCellPresent(2)){
                 arrowDirection[1].rawOnPress();

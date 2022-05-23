@@ -167,7 +167,7 @@ public class AddTextScreen extends withColorSliderScreen {
         Text newText = new Text(field.getX(),
                 field.getY(),
                 field.getValue(),
-                new Color(field.getColor()),field.getScale());
+                new Color(field.getColor()),field.getScale(),field.getStyles());
         Minecraft.getInstance().setScreen(parentScreen.getScreen());
         parentScreen.addOrEditText(newText);
     }
