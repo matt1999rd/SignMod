@@ -153,6 +153,10 @@ public class Text {
         }
     }
 
+    public void setStyles(TextStyles styles){
+        this.styles = styles;
+    }
+
     public void setText(String content){
         this.content = content;
     }

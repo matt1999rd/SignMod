@@ -16,10 +16,7 @@ import fr.matt1999rd.signs.networking.Networking;
 import fr.matt1999rd.signs.networking.PacketAddOrEditText;
 import fr.matt1999rd.signs.networking.PacketPSScreenOperation;
 import fr.matt1999rd.signs.tileentity.primary.PlainSquareSignTileEntity;
-import fr.matt1999rd.signs.util.Functions;
-import fr.matt1999rd.signs.util.Letter;
-import fr.matt1999rd.signs.util.Text;
-import fr.matt1999rd.signs.util.Vector2i;
+import fr.matt1999rd.signs.util.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
@@ -41,8 +38,12 @@ import java.awt.geom.Rectangle2D;
 import java.util.Objects;
 
 public class PlainSquareScreen extends withColorSliderScreen {
-    private static final Rectangle displayModeBtnRectangle = new Rectangle(241,113,265-241,137-113);
+    private static final Rectangle displayModeBtnRectangle = new Rectangle(241,113,24,24);
+    private static final Vector2i startDisplayModeBtnTexture = new Vector2i(315,64);
 
+    //todo : correct bug with styles (frame are applied to text that has been changed in the same screen)
+
+    //todo : change position of the text to ensure that styles do not overlap (especially underline and frame)
     private boolean isBgColorDisplayed = true;
 
     //the panelPos is the position of the DEFAULT_RIGHT_POSITION -> DOWN_RIGHT
@@ -64,7 +65,7 @@ public class PlainSquareScreen extends withColorSliderScreen {
     protected PlainSquareScreen(BlockPos panelPos) {
         super(new StringTextComponent("Plain Square screen"));
         this.panelPos = panelPos;
-        this.DIMENSION = new Vector2i(315,171);
+        this.DIMENSION = new Vector2i(315,199);
     }
 
     @Override
@@ -152,7 +153,8 @@ public class PlainSquareScreen extends withColorSliderScreen {
             psDisplayModeButton[i] =  new enableImageButton(
                     guiLeft+149, guiTop+6+BUTTON_LENGTH*i, //position on gui
                     BUTTON_LENGTH, BUTTON_LENGTH, //dimension of the button
-                    i*BUTTON_LENGTH,DIMENSION.getY(),i*BUTTON_LENGTH,DIMENSION.getY()+2*BUTTON_LENGTH,BUTTON_LENGTH,//mapping on button texture (uv and v for hovered mode)
+                    startDisplayModeBtnTexture.getX()+i*BUTTON_LENGTH,startDisplayModeBtnTexture.getY(),
+                    startDisplayModeBtnTexture.getX()+i*BUTTON_LENGTH,startDisplayModeBtnTexture.getY()+2*BUTTON_LENGTH,BUTTON_LENGTH,//mapping on button texture (uv and v for hovered mode)
                     PLAIN_SQUARE, // texture resource
                     button -> changeDisplayMode(mode) ) ; //the action to do when clicking on the button
             this.addButton(psDisplayModeButton[i]);
@@ -168,7 +170,8 @@ public class PlainSquareScreen extends withColorSliderScreen {
             arrowDirectionButton[i] = new enableImageButton(
                     guiLeft+211+i*(BUTTON_LENGTH+8),guiTop+6,
                     BUTTON_LENGTH, ARROW_BUTTON_LENGTH,
-                    100+i*BUTTON_LENGTH,DIMENSION.getY(),100+i*BUTTON_LENGTH,DIMENSION.getY()+2*ARROW_BUTTON_LENGTH,ARROW_BUTTON_LENGTH,
+                    startDisplayModeBtnTexture.getX() +100+i*BUTTON_LENGTH,startDisplayModeBtnTexture.getY(),
+                    startDisplayModeBtnTexture.getX() +100+i*BUTTON_LENGTH,startDisplayModeBtnTexture.getY()+2*ARROW_BUTTON_LENGTH,ARROW_BUTTON_LENGTH,
                     PLAIN_SQUARE,
                     button -> changeArrowDirection(finalI) );
             this.addButton(arrowDirectionButton[i]);
@@ -180,7 +183,7 @@ public class PlainSquareScreen extends withColorSliderScreen {
 
         applyColorButton = new Button(guiLeft+148,guiTop+116,74,20,nullToEmpty("Apply Color"), button->applyColor());
         this.addButton(applyColorButton);
-        textField = new LimitSizeTextField(this.minecraft,guiLeft+10,guiTop+148,Form.PLAIN_SQUARE,Text.getDefaultText());
+        textField = new LimitSizeTextField(this.minecraft,guiLeft+10,guiTop+176,Form.PLAIN_SQUARE,Text.getDefaultText());
         textField.setFilter(Letter.VALIDATOR_FOR_TEXT_DISPLAY);
         textField.setResponder(this::onTextWritten);
         this.selectText(0);
@@ -210,6 +213,20 @@ public class PlainSquareScreen extends withColorSliderScreen {
             PlainSquareSignTileEntity psste = getTileEntity();
             Text t = psste.getText(selTextIndex);
             t.setText(text);
+            PSDisplayMode mode = psste.getMode();
+            if (!mode.is2by2()) {
+                t.centerText(mode,selTextIndex);
+            }
+            psste.setText(t,selTextIndex);
+            Networking.INSTANCE.sendToServer(new PacketAddOrEditText(panelPos,t,selTextIndex));
+        }
+    }
+
+    public void setStyles(TextStyles styles){
+        if (selTextIndex != -1){
+            PlainSquareSignTileEntity psste = getTileEntity();
+            Text t = psste.getText(selTextIndex);
+            t.setStyles(styles);
             PSDisplayMode mode = psste.getMode();
             if (!mode.is2by2()) {
                 t.centerText(mode,selTextIndex);

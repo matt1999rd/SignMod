@@ -7,12 +7,17 @@ import fr.matt1999rd.signs.SignMod;
 import net.minecraft.util.math.vector.Matrix4f;
 
 import javax.annotation.Nullable;
-import java.awt.*;
+import java.awt.Color;
 import java.awt.geom.Rectangle2D;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class TextStyles {
     private byte flag = 0x00000;
     private final Color Transparent = new Color(0,0,0,0);
+    private final Color defaultColor = Color.RED;
     private Color highlightColor;
     public static final float italicOffset = 7.0F * 0.25F;
     public static final int sideFrameGap = 5;
@@ -20,7 +25,7 @@ public class TextStyles {
     public static final float underLineGap = 1F;
     private static final int overhangGap = 2;
 
-    //all style possible :
+    // all style possible :
     // BOLD -> just an offset and a second rendering
     // ITALIC -> mapping with offset
     // HIGHLIGHT (with a color) -> rendering a background color
@@ -34,38 +39,16 @@ public class TextStyles {
     }
 
     public static TextStyles defaultStyle(){
-        TextStyles styles = new TextStyles();
-        //styles.addHighlightColor(Color.GREEN);
-        return styles.underline();
+        return new TextStyles();
     }
 
     //BOLD FORMAT
-
-    public TextStyles bold(){
-        this.addFormat(Format.BOLD);
-        return this;
-    }
-
-    public TextStyles unBold(){
-        this.removeFormat(Format.BOLD);
-        return this;
-    }
 
     public boolean isBold(){
         return is(Format.BOLD);
     }
 
     //ITALIC FORMAT
-
-    public TextStyles italic(){
-        this.addFormat(Format.ITALIC);
-        return this;
-    }
-
-    public TextStyles unItalic(){
-        this.removeFormat(Format.ITALIC);
-        return this;
-    }
 
     public boolean isItalic(){
         return is(Format.ITALIC);
@@ -122,27 +105,17 @@ public class TextStyles {
 
     //UNDERLINE FORMAT
 
-    public TextStyles underline(){
-        this.addFormat(Format.UNDERLINE);
-        return this;
-    }
-
-    public TextStyles unUnderLine(){
-        this.removeFormat(Format.UNDERLINE);
-        return this;
-    }
-
     public boolean isUnderline(){
         return is(Format.UNDERLINE);
     }
 
     //HIGHLIGHT FORMAT
 
-    public int getHighlightColor(){
-        return highlightColor.getRGB();
+    public Color getHighlightColor(){
+        return highlightColor;
     }
 
-    public void addHighlightColor(Color color){
+    public void setHighlightColor(Color color){
         highlightColor = color;
     }
 
@@ -156,7 +129,7 @@ public class TextStyles {
 
     public void addFormat(Format format){
         if (format == Format.HIGHLIGHT){
-            addFormat(format,Color.GREEN); //default color
+            addFormat(format,defaultColor); //default color
         }else {
             addFormat(format,null);
         }
@@ -167,7 +140,7 @@ public class TextStyles {
         // when we have bold for instance,
         // we do operation : 0xABCDE or 0x00001 -> 0xABCD1
         if (format == Format.HIGHLIGHT){
-            addHighlightColor(color);
+            setHighlightColor(color);
         }
         int offset = format.offset;
         flag = (byte) (flag | 1<<offset);
@@ -197,7 +170,7 @@ public class TextStyles {
     public void render(MatrixStack stack, IVertexBuilder builder, Color color, int combinedLight,Text t,boolean isOnScreen) {
         // isOnScreen is mandatory because minecraft does not handle layering in screen -> if z != 0 it will render messing texture
         if (t.isEmpty())return;
-        for (Format format : Format.values()){
+        for (Format format : Format.formatByRenderOrder){
             if (is(format)){
                 format.render(stack,builder,color,combinedLight,t,isOnScreen,this);
             }
@@ -219,19 +192,24 @@ public class TextStyles {
     }
 
     public enum Format {
-        ITALIC(0),
-        BOLD(1),
-        UNDERLINE(2),
-        HIGHLIGHT(3),
-        FRAMED_STRAIGHT(4),
-        FRAMED_CURVE(5);
+        ITALIC(0,5),
+        BOLD(1,4),
+        UNDERLINE(2,3),
+        HIGHLIGHT(3,0),
+        FRAMED_STRAIGHT(4,1),
+        FRAMED_CURVE(5,2);
         final int offset;
+        final int renderOrder;
+        public static final List<Format> formatByRenderOrder = Arrays.stream(Format.values())
+                        .sorted(Comparator.comparingInt(format -> format.renderOrder))
+                        .collect(Collectors.toList());
         private final Rectangle2D lineUVRectangle = new Rectangle2D.Float(8,37,1,1);
         private final Rectangle2D semiLeftCircleUVRectangle  = new Rectangle2D.Float(2, 37,7,15);
         private final Rectangle2D semiRightCircleUVRectangle = new Rectangle2D.Float(10,37,7,15);
 
-        Format(int offset) {
+        Format(int offset,int renderOrder) {
             this.offset = offset;
+            this.renderOrder = renderOrder;
         }
 
         public void render(MatrixStack stack, IVertexBuilder builder, Color color, int combinedLight, Text t, boolean isOnScreen,TextStyles styles) {
@@ -239,7 +217,7 @@ public class TextStyles {
             Matrix4f matrix4f = stack.last().pose();
             switch (this){
                 case UNDERLINE:
-                    renderTexture(matrix4f,builder,new Rectangle2D.Float(0,t.getHeight(false)-1,t.getLength(false,false),1),lineUVRectangle,combinedLight,color,false);
+                    renderTexture(matrix4f,builder,new Rectangle2D.Float(0,t.getHeight(false),t.getLength(false,false),underLineGap),lineUVRectangle,combinedLight,color,false);
                     break;
                 case HIGHLIGHT:
                     RenderSystem.enableBlend();
