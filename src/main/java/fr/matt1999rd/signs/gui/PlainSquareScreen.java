@@ -41,8 +41,6 @@ public class PlainSquareScreen extends withColorSliderScreen {
     private static final Rectangle displayModeBtnRectangle = new Rectangle(241,113,24,24);
     private static final Vector2i startDisplayModeBtnTexture = new Vector2i(315,64);
 
-    //todo : correct bug with styles (frame are applied to text that has been changed in the same screen)
-
     //todo : change position of the text to ensure that styles do not overlap (especially underline and frame)
     private boolean isBgColorDisplayed = true;
 
@@ -212,6 +210,7 @@ public class PlainSquareScreen extends withColorSliderScreen {
         if (selTextIndex != -1){
             PlainSquareSignTileEntity psste = getTileEntity();
             Text t = psste.getText(selTextIndex);
+            if (t.getText().equals(text))return;
             t.setText(text);
             PSDisplayMode mode = psste.getMode();
             if (!mode.is2by2()) {
@@ -227,10 +226,6 @@ public class PlainSquareScreen extends withColorSliderScreen {
             PlainSquareSignTileEntity psste = getTileEntity();
             Text t = psste.getText(selTextIndex);
             t.setStyles(styles);
-            PSDisplayMode mode = psste.getMode();
-            if (!mode.is2by2()) {
-                t.centerText(mode,selTextIndex);
-            }
             psste.setText(t,selTextIndex);
             Networking.INSTANCE.sendToServer(new PacketAddOrEditText(panelPos,t,selTextIndex));
         }
@@ -311,7 +306,7 @@ public class PlainSquareScreen extends withColorSliderScreen {
         }else {
             if (wasNotVisible)textField.visible = true;
             PlainSquareSignTileEntity psste = getTileEntity();
-            textField.setValue(psste.getText(newSelTextIndex).getText());
+            textField.setText(psste.getText(newSelTextIndex));
             textField.setLengthLimit(getMaxLength());
         }
     }

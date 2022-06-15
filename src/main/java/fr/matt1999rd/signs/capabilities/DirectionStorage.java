@@ -169,13 +169,10 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
             warn("getText",ind);
             return Text.getDefaultText();
         }
-        if (panelPlacement[ind]) {
-            if (isEnd) {
-                return endTexts[ind];
-            }
-            return texts[ind];
+        if (isEnd) {
+            return endTexts[ind];
         }
-        return Text.getDefaultText();
+        return texts[ind];
     }
 
     @Override
@@ -184,7 +181,7 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
             warn("setText",ind);
             return;
         }
-        if (panelPlacement[ind]) {
+        if (isCellPresent(ind)) {
             if (isEnd) {
                 endTexts[ind] = newText;
             } else {
@@ -220,6 +217,13 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
 
     public boolean[] getPanelPlacement() {
         return panelPlacement;
+    }
+
+    public boolean isCellPresent(int i){
+        if (i == 1 || i == 3){
+            return panelPlacement[i] && panelPlacement[i-1] && panelPlacement[i+1];
+        }
+        return panelPlacement[i];
     }
 
     //for registering storage

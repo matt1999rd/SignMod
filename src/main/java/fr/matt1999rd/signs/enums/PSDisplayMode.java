@@ -11,28 +11,28 @@ public enum PSDisplayMode implements IStringSerializable {
             new Vector2f(25.0F,1.0F), new Vector2f(6.0F,6.0F),
             new Vector2f(0.0F,14.0F),new Vector2f(12.0F,12.0F),
             new QuadPSPositions(
-                    new QuadPSPositions.QuadPSPosition(3, 6,45,2),
-                    new QuadPSPositions.QuadPSPosition(3,24,58,4))),
+                    new QuadPSPositions.QuadPSPosition(3, 3,45,2),
+                    new QuadPSPositions.QuadPSPosition(3,23,58,4))),
     DIRECTION(1,"direction",
             new Vector2f(2.0F,24.0F), new Vector2f(10.0F,7.0F),
             new Vector2f(20.0F,0.0F), new Vector2f(20.0F,14.0F),
             new QuadPSPositions(
-                    new QuadPSPositions.QuadPSPosition(4,3,88,5)
+                    new QuadPSPositions.QuadPSPosition(4,6,88,4)
             )),
     SCH_EXIT(2,"scheme_exit",
             new Vector2f(12.0F,12.5F), new Vector2f(10.0F,19.0F),
             new Vector2f(12.0F,14.0F), new Vector2f(20.0F,38.0F),
             new QuadPSPositions(
-                    new QuadPSPositions.QuadPSPosition(7,  5,39,2),
-                    new QuadPSPositions.QuadPSPosition(51,22,39,4)
+                    new QuadPSPositions.QuadPSPosition(7,  4,39,2),
+                    new QuadPSPositions.QuadPSPosition(51,21,39,4)
             )),
     SCH_MUL_EXIT(3,"scheme_round_about",
             new Vector2f(11.0F,8.0F),  new Vector2f(26.0F,23.5F),
             new Vector2f(32.0F,14.0F), new Vector2f(52.0F,47.0F),
             new QuadPSPositions(
-                    new QuadPSPositions.QuadPSPosition(28, 2,39,1),
-                    new QuadPSPositions.QuadPSPosition(3, 50,39,1),
-                    new QuadPSPositions.QuadPSPosition(54,50,39,1)
+                    new QuadPSPositions.QuadPSPosition(28, 4,39,1),
+                    new QuadPSPositions.QuadPSPosition(3, 51,39,1),
+                    new QuadPSPositions.QuadPSPosition(54,51,39,1)
             ));
 
 
@@ -77,16 +77,7 @@ public enum PSDisplayMode implements IStringSerializable {
     }
 
     public int getTotalText(){
-        switch (this){
-            case EXIT:
-            case SCH_EXIT:
-                return 6;
-            case DIRECTION:
-                return 5;
-            case SCH_MUL_EXIT:
-                return 3;
-        }
-        return 0;
+        return this.textPositions.getTotalText();
     }
 
     public Vector2i getTextBegPosition(int ind){

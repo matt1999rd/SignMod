@@ -26,7 +26,6 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 
 import java.awt.Color;
-import java.util.List;
 
 import static net.minecraft.util.text.ITextComponent.nullToEmpty;
 
@@ -126,7 +125,7 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
         }
         applyColorButton = new Button(relX+330,relY+145,75,20,nullToEmpty("apply Color"),b->applyColor());
         addButton(applyColorButton);
-        addOrSetTextButton = new Button(relX+70,relY+145,75,20,nullToEmpty("Add Text"),b->openTextGui());
+        addOrSetTextButton = new Button(relX+70,relY+145,75,20,nullToEmpty("Set Text"),b->openTextGui());
         addButton(addOrSetTextButton);
         isTextCenter = dste.isTextCentered();
         centerText = new CheckboxButton(relX+196,relY+146,20,20,nullToEmpty("center_text"),isTextCenter);
@@ -183,7 +182,7 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
             }
         }
         // 4 and 14 are offset to the place of rendering
-        dste.renderOnScreen(stack,relX+4,relY+14);
+        dste.renderOnScreen(stack,relX+4,relY+14,selTextInd);
         super.render(stack,mouseX, mouseY, partialTicks);
 
     }
@@ -207,6 +206,7 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
         if (!newBool && selTextInd/2 == ind){
             //unselect text if we remove the panel
             selTextInd = -1;
+            onChangeIndices();
         }
         DirectionSignTileEntity dste = getTileEntity();
         Networking.INSTANCE.sendToServer(new PacketSetBoolean(panelPos,ind,newBool));
@@ -215,7 +215,8 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
 
     @Override
     public void addOrEditText(Text t) {
-        float text_length = t.getLength(true);
+        //don't take style into account because the text need to be placed independently of frame if we are centered (centering text using length)
+        float text_length = t.getLength(true,false);
         DirectionSignTileEntity dste = getTileEntity();
         int ind= (selTextInd/2);
         boolean isEndSelected = selTextInd%2 == 1;
@@ -228,12 +229,12 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
             x = (horPixelNumber - text_length) / 2.0F;
         } else if ((form == Form.ARROW && !dste.isRightArrow(ind)) != isEndSelected) {
             centerText.active = true;
-            x = horPixelNumber - (text_length + sideGapPixelNumber) ; //writing on the right
+            x = horPixelNumber-text_length-sideGapPixelNumber+t.offsetX() ; //writing on the right -> remove style offset
         }else {
             centerText.active = true;
-            x = sideGapPixelNumber; //writing on the left
+            x = sideGapPixelNumber - t.offsetX(); //writing on the left -> add style offset
         }
-        float text_height = t.getHeight();
+        float text_height = t.getHeight(true);
         int y_offset = 25 * ind + ind / 2;
         int height = (ind % 2 == 0) ? 25 : (ind == 1) ? 26 : 27;
         float y = (height - text_height) / 2.0F + y_offset;

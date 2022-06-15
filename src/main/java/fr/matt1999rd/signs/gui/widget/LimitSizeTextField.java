@@ -89,15 +89,21 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
         String text = this.getValue();
         if (Letter.isIn(c) || c == ' '){
             String newText = text+c;
-            float length = Text.getLength(newText,styles,scale,true);
-            int height = 7*scale;
-            if (form.hasLengthPredefinedLimit()) {
-                if (length <= limitLength) {
-                    return super.charTyped(c, p_charTyped_2_);
-                }
-            } else if (form.rectangleIsIn(xText,xText+length-1,yText,yText+height-1)){
-                return super.charTyped(c,p_charTyped_2_);
+            boolean charIsWritable = checkLimit(newText,styles);
+            if (charIsWritable)return super.charTyped(c,p_charTyped_2_);
+        }
+        return false;
+    }
+
+    public boolean checkLimit(String newText,TextStyles newStyles){
+        float length = Text.getLength(newText,newStyles,scale,true);
+        int height = 7*scale;
+        if (form.hasLengthPredefinedLimit()) {
+            if (length <= limitLength) {
+                return true;
             }
+        } else if (form.rectangleIsIn(xText+newStyles.offsetX(scale),xText+newStyles.offsetX(scale)+length-1,yText+newStyles.offsetY(scale),yText+newStyles.offsetY(scale)+height-1)){
+            return true;
         }
         return false;
     }
@@ -185,9 +191,9 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
     }
 
     public void updatePlusButton() {
-        float length = Text.getLength(this.getValue(),styles,scale,true);
         Screen screen = Minecraft.getInstance().screen;
         if (screen instanceof AddTextScreen){
+            float length = Text.getLength(this.getValue(),styles,scale,true);
             float upperLength = (scale+1)*length/scale;
             int upperHeight = (scale+1)*7/scale;
             AddTextScreen addTextScreen = (AddTextScreen)screen;
@@ -197,9 +203,11 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
                 } else {
                     addTextScreen.enablePlusButton();
                 }
-            } else if (!form.rectangleIsIn(xText,xText+length-1,yText,yText+7*scale-1) && form != Form.PLAIN_SQUARE){
+            } else if (!form.rectangleIsIn(xText + styles.offsetX(scale),xText+styles.offsetX(scale) + length-1,
+                    yText+ styles.offsetY(scale),yText+styles.offsetY(scale) + 7*scale-1) && form != Form.PLAIN_SQUARE){
                 this.setValue("");
-            }else if (!form.rectangleIsIn(xText,xText+upperLength-1,yText,yText+upperHeight-1)){
+            }else if (!form.rectangleIsIn(xText + styles.offsetX(scale),xText+styles.offsetX(scale)+upperLength-1,
+                    yText + styles.offsetY(scale),yText + styles.offsetY(scale) +upperHeight-1)){
                 addTextScreen.disablePlusButton();
             }else {
                 addTextScreen.enablePlusButton();
@@ -294,7 +302,10 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
             }else if(styles.hasCurveFrame()){
                 styles = styles.withoutCurveFrame();
             }else {
-                styles = styles.withStraightFrame();
+                if (checkLimit(this.getValue(),TextStyles.copy(styles).withStraightFrame())){
+                    //todo : function not working correctly : no offset taken into account
+                    styles = styles.withStraightFrame();
+                }
             }
             formatChanged = true;
         }
@@ -307,5 +318,10 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
     public boolean mouseDragged(double mouseX, double mouseY,int button, double oldMouseX, double oldMouseY) {
         if (onSliderClicked(mouseX,mouseY))onStyleChanged();
         return super.mouseDragged(mouseX, mouseY, button, oldMouseX, oldMouseY);
+    }
+
+    public void setText(Text text){
+        this.setValue(text.getText());
+        this.styles = text.getStyles();
     }
 }

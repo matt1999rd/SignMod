@@ -8,8 +8,18 @@ import java.util.stream.Collectors;
 
 public class QuadPSPositions {
     private final ArrayList<QuadPSPosition> positions;
+    public static final int gapBetweenText = Text.defaultHeight + 3;
+    private int totalText = 0;
+    // 4 for the gap between end of the first text and beginning of the following one -> consider the frame and underline
     public QuadPSPositions(QuadPSPosition... positions){
         this.positions = Lists.newArrayList(positions);
+        for (QuadPSPosition position : this.positions){
+            totalText += position.maxText;
+        }
+    }
+
+    public int getTotalText(){
+        return totalText;
     }
 
     public Vector2i getPosition(int ind){
@@ -54,7 +64,7 @@ public class QuadPSPositions {
         public int getLengthMax(){ return maxLength; }
 
         public Vector2i makePosition(int relativeIndices){
-            return new Vector2i(begPosition.getX(), begPosition.getY() + 9*relativeIndices);
+            return new Vector2i(begPosition.getX(), begPosition.getY() + gapBetweenText*relativeIndices);
         }
     }
 

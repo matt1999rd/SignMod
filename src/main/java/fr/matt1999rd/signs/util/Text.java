@@ -64,12 +64,12 @@ public class Text {
     }
 
     public float getX(boolean handleStyle){
-        float offsetX = handleStyle ? styles.offsetX() : 0;
-        return x+offsetX;
+        float offsetX = handleStyle ? offsetX() : 0;
+        return x + offsetX;
     }
 
     public float getY(boolean handleStyle){
-        float offsetY = handleStyle ? styles.offsetY() : 0;
+        float offsetY = handleStyle ? offsetY() : 0;
         return y + offsetY;
     }
     public String getText(){
@@ -148,13 +148,13 @@ public class Text {
 
     public void setPosition(float x,float y,boolean handleOffset,boolean validateCoordinate){
         if (Functions.isValidCoordinate(x,y) || !validateCoordinate){
-            this.x = x - (handleOffset? styles.offsetX() : 0);
-            this.y = y - (handleOffset? styles.offsetY() : 0);
+            this.x = x - (handleOffset? offsetX() : 0);
+            this.y = y - (handleOffset? offsetY() : 0);
         }
     }
 
     public void setStyles(TextStyles styles){
-        this.styles = styles;
+        this.styles = TextStyles.copy(styles);
     }
 
     public void setText(String content){
@@ -232,6 +232,7 @@ public class Text {
         txtNBT.putString("text_content",content);
         txtNBT.putInt("color",color.getRGB());
         txtNBT.putInt("scale",scale);
+        txtNBT.put("styles",styles.serializeNBT());
         return txtNBT;
     }
 
@@ -242,6 +243,7 @@ public class Text {
         buf.writeInt(color.getRGB());
         buf.writeUtf(content);
         buf.writeInt(scale);
+        styles.writeStyle(buf);
     }
 
     public static Text readText(PacketBuffer buf){
@@ -251,7 +253,8 @@ public class Text {
         int color = buf.readInt();
         String content = buf.readUtf();
         int scale = buf.readInt();
-        return new Text(x,y,content,new Color(color,true),scale);
+        TextStyles styles = TextStyles.readStyles(buf);
+        return new Text(x,y,content,new Color(color,true),scale,styles);
     }
 
     public static Text getTextFromNBT(CompoundNBT nbt){
@@ -260,7 +263,8 @@ public class Text {
         String content = nbt.getString("text_content");
         int color =nbt.getInt("color");
         int scale =nbt.getInt("scale");
-        return new Text(x,y,content,new Color(color,true),scale);
+        TextStyles styles = TextStyles.getStylesFromNBT(nbt.getCompound("styles"));
+        return new Text(x,y,content,new Color(color,true),scale,styles);
     }
 
     public boolean isEmpty() {
@@ -284,5 +288,13 @@ public class Text {
         Vector2i begPosition = mode.getTextBegPosition(index);
         float length = this.getLength(true);
         this.setPosition(begPosition.getX() + (maxLength - length) / 2.0F, this.getY(false),false,false);
+    }
+
+    public float offsetX(){
+        return this.getStyles().offsetX(this.scale);
+    }
+
+    public float offsetY(){
+        return this.getStyles().offsetY(this.scale);
     }
 }

@@ -4,7 +4,10 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import fr.matt1999rd.signs.SignMod;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.vector.Matrix4f;
+import org.lwjgl.system.CallbackI;
 
 import javax.annotation.Nullable;
 import java.awt.Color;
@@ -15,14 +18,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class TextStyles {
-    private byte flag = 0x00000;
     private final Color Transparent = new Color(0,0,0,0);
     private final Color defaultColor = Color.RED;
+    private byte flag = 0x00000;
     private Color highlightColor;
     public static final float italicOffset = 7.0F * 0.25F;
     public static final int sideFrameGap = 5;
-    public static final int upFrameGap = 3;
-    public static final float underLineGap = 1F;
+    public static final int upFrameGap = 2;
+    public static final float underLineGap = 0.5F;
     private static final int overhangGap = 2;
 
     // all style possible :
@@ -38,8 +41,26 @@ public class TextStyles {
         removeHighlightColor();
     }
 
+    private TextStyles(byte flag,int color){
+        this.setFlag(flag);
+        this.setHighlightColor(new Color(color,true));
+    }
+
     public static TextStyles defaultStyle(){
         return new TextStyles();
+    }
+
+    public void setFlag(byte flag){
+        this.flag = flag;
+    }
+
+    public static TextStyles copy(TextStyles styles) {
+        TextStyles copy = TextStyles.defaultStyle();
+        copy.flag = styles.flag;
+        if (styles.hasHighlightColor()){
+            copy.setHighlightColor(styles.getHighlightColor());
+        }
+        return copy;
     }
 
     //BOLD FORMAT
@@ -177,18 +198,42 @@ public class TextStyles {
         }
     }
 
-    public float offsetX() {
+    public float offsetX(int scale) {
         if (hasCurveFrame() || hasStraightFrame()){
-            return -sideFrameGap;
+            return -sideFrameGap * scale;
         }
         return 0;
     }
 
-    public float offsetY() {
+    public float offsetY(int scale) {
         if (hasCurveFrame() || hasStraightFrame()){
-            return -upFrameGap;
+            return -upFrameGap * scale;
         }
         return 0;
+    }
+
+    public CompoundNBT serializeNBT(){
+        CompoundNBT nbt = new CompoundNBT();
+        nbt.putByte("flag",flag);
+        nbt.putInt("color",highlightColor.getRGB());
+        return nbt;
+    }
+
+    public static TextStyles getStylesFromNBT(CompoundNBT nbt) {
+        byte flag = nbt.getByte("flag");
+        int color = nbt.getInt("color");
+        return new TextStyles(flag,color);
+    }
+
+    public void writeStyle(PacketBuffer buf) {
+        buf.writeByte(flag);
+        buf.writeInt(highlightColor.getRGB());
+    }
+
+    public static TextStyles readStyles(PacketBuffer buf) {
+        byte flag = buf.readByte();
+        int color = buf.readInt();
+        return new TextStyles(flag,color);
     }
 
     public enum Format {
@@ -259,19 +304,20 @@ public class TextStyles {
         }
 
         private void renderFrame(MatrixStack stack,IVertexBuilder builder,Color color,int combinedLight,Text t,boolean isCurve){
-            stack.translate(-sideFrameGap,-upFrameGap,0);
+            stack.translate(-sideFrameGap*t.getScale(),-upFrameGap*t.getScale(),0);
             Matrix4f matrix4f = stack.last().pose();
-            float L = t.getLength(false);
-            float H = t.getHeight();
-            float sidePartWidth = isCurve ? sideFrameGap + overhangGap : 1;
+            float L = t.getLength(true); // sideFrameGap is included in the function
+            float H = t.getHeight(); //upFrameGap is included in the function
+            float heightGap = isCurve ? t.getScale()-1.5F : 1; //todo : check the value of the gap -> ensure that circle part and line part matches
+            float sidePartWidth = (isCurve ? (sideFrameGap + overhangGap)*t.getScale() : 1);
             float horLineWidth = L - 2*sidePartWidth;
 
             renderTexture(matrix4f,builder,new Rectangle2D.Float(0,0,sidePartWidth,H),isCurve?semiLeftCircleUVRectangle:lineUVRectangle,combinedLight,color,false); //left semi circle
-            renderTexture(matrix4f,builder,new Rectangle2D.Float(sidePartWidth,0, horLineWidth,1),lineUVRectangle,combinedLight,color,false); //up horizontal line
-            renderTexture(matrix4f,builder,new Rectangle2D.Float(sidePartWidth,H-1, horLineWidth,1),lineUVRectangle,combinedLight,color,false); //down horizontal line
+            renderTexture(matrix4f,builder,new Rectangle2D.Float(sidePartWidth,0, horLineWidth,heightGap),lineUVRectangle,combinedLight,color,false); //up horizontal line
+            renderTexture(matrix4f,builder,new Rectangle2D.Float(sidePartWidth,H-heightGap, horLineWidth,heightGap),lineUVRectangle,combinedLight,color,false); //down horizontal line
             renderTexture(matrix4f,builder,new Rectangle2D.Float(L - sidePartWidth,0,sidePartWidth,H),isCurve?semiRightCircleUVRectangle:lineUVRectangle,combinedLight,color,false); //right semi circle
 
-            stack.translate(sideFrameGap,upFrameGap,0);
+            stack.translate(sideFrameGap*t.getScale(),upFrameGap*t.getScale(),0);
         }
 
         public int getUXOffset() {

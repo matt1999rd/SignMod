@@ -2,7 +2,6 @@ package fr.matt1999rd.signs.tileentity;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import fr.matt1999rd.signs.fixedpanel.panelblock.AbstractPanelBlock;
-import fr.matt1999rd.signs.util.Functions;
 import fr.matt1999rd.signs.util.Text;
 import fr.matt1999rd.signs.capabilities.DirectionCapability;
 import fr.matt1999rd.signs.capabilities.DirectionStorage;
@@ -191,7 +190,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         }
     }
 
-    public void renderOnScreen(MatrixStack stack,int guiLeft, int guiTop){
+    public void renderOnScreen(MatrixStack stack,int guiLeft, int guiTop,int selTextInd){
         int flag = getLFlag();
         if (flag == 0)return;
         for (int i=0;i<6;i++){
@@ -199,7 +198,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
                 renderPart(stack,i,guiLeft,guiTop);
             }
         }
-        renderText(stack,guiLeft,guiTop);
+        renderText(stack,guiLeft,guiTop,selTextInd);
     }
 
     //render each of the 6 part 0->L1P1 1->L1P2 2->L1P3 3->L3P12 4->L3P23 5->L5
@@ -245,54 +244,47 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
     }
 
     public boolean isCellPresent(int i){
-         return storage.map(directionStorage -> {
-            boolean[] panelPlacement = directionStorage.getPanelPlacement();
-            if (i == 1 || i == 3){
-                return panelPlacement[i] && panelPlacement[i-1] && panelPlacement[i+1];
-            }
-            return panelPlacement[i];
-         }).orElse(false);
+         return storage.map(directionStorage -> directionStorage.isCellPresent(i)).orElse(false);
     }
 
 
-    private void renderText(MatrixStack stack,int guiLeft,int guiTop){
-        Vector2i origin = new Vector2i(guiLeft,guiTop);
+    private void renderText(MatrixStack stack,int guiLeft,int guiTop,int selTextInd){
+        Vector2i origin = new Vector2i(guiLeft,guiTop); //todo : two bugs found : 2 -> position of text when using style is incorrect : length and height must be managed differently
         Vector2f pixelDimension = new Vector2f(1.0F,1.0F);
         for (int i=0;i<5;i++){
             // flag indicates if we have to display the gray empty text rectangle
             boolean flag = isCellPresent(i);
+            boolean isSelected;
+            if (!flag)continue;
             if (!isTextCentered()){
                 Text endText= getText(i,true);
+                isSelected = selTextInd == 2*i+1;
                 if (!endText.isEmpty()){
-                    endText.renderOnScreen(stack,origin,pixelDimension,false,false); //todo : add possibility to display the text selected with a specific rendering
-                }else if (flag)renderGrayRectangle(stack,guiLeft, guiTop, i, true);
+                    endText.renderOnScreen(stack,origin,pixelDimension,isSelected,false);
+                }else renderGrayRectangle(stack,guiLeft, guiTop, i, true,isSelected);
             }
             Text begText= getText(i,false);
+            isSelected = selTextInd == 2*i;
             if (!begText.isEmpty()){
-                begText.renderOnScreen(stack,origin,pixelDimension,false,false);
-            }else if (flag)renderGrayRectangle(stack,guiLeft, guiTop, i,false);
+                begText.renderOnScreen(stack,origin,pixelDimension,isSelected,false);
+            }else renderGrayRectangle(stack,guiLeft, guiTop, i,false,isSelected);
 
         }
     }
 
     private void flipSpecifiedText(int ind){
-        Text beg = getText(ind,false);
-        if (!beg.isEmpty()) {
-            float length = beg.getLength(true);
-            float x = ((beg.getX(false) == sideGapPixelNumber) ? horPixelNumber - length - sideGapPixelNumber: sideGapPixelNumber);
-            float y = beg.getY(false);
-            beg.setPosition(x, y,false,false); //todo : same problem as found in keyPressed function in DrawingScreen
+        Text[] allText = new Text[]{getText(ind,false),getText(ind,true)};
+        for (int i=0;i<2;i++){
+            Text t = allText[i];
+            if (!t.isEmpty()){
+                float length = t.getLength(true,false);
+                float x = horPixelNumber - length - t.getX(false);
+                float y = t.getY(false);
+                t.setPosition(x, y,false,false);
+            }
         }
-        setText(ind,false,new Text(beg));
-
-        Text end = getText(ind,true);
-        if (!end.isEmpty()) {
-            float length = end.getLength(true);
-            float x = ((end.getX(false) == sideGapPixelNumber) ? horPixelNumber - length - sideGapPixelNumber: sideGapPixelNumber);
-            float y = end.getY(false);
-            end.setPosition(x, y,false,false);
-        }
-        setText(ind,true,new Text(end));
+        setText(ind,false,new Text(allText[0]));
+        setText(ind,true, new Text(allText[1]));
     }
 
     //flip all text that are in area connected to this one 1 or 2 or 3
@@ -320,7 +312,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         }
     }
 
-    private void renderGrayRectangle(MatrixStack stack,int guiLeft,int guiTop,int ind,boolean isEnd) {
+    private void renderGrayRectangle(MatrixStack stack,int guiLeft,int guiTop,int ind,boolean isEnd,boolean isSelected) {
         int x1,length;
         if (isTextCentered()) {
             x1 = guiLeft + sideGapPixelNumber;
@@ -335,7 +327,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         }
         //a gap of 25 and then 26
         int y1 = guiTop+2+(25*ind)+ind-(ind==0?0:1);
-        AbstractGui.fill(stack,x1,y1,x1+length,y1+21, Color.GRAY.getRGB());
+        AbstractGui.fill(stack,x1,y1,x1+length,y1+21, (isSelected ? Color.DARK_GRAY : Color.GRAY).getRGB());
     }
 
     @Nonnull
