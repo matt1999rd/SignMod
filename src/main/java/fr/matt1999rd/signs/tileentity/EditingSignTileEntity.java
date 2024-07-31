@@ -2,6 +2,7 @@ package fr.matt1999rd.signs.tileentity;
 
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.matt1999rd.signs.util.Text;
@@ -10,9 +11,11 @@ import fr.matt1999rd.signs.capabilities.TextStorage;
 import fr.matt1999rd.signs.util.Vector2i;
 import net.minecraft.block.BlockState;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Vector2f;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -24,7 +27,9 @@ import javax.annotation.Nullable;
 
 public abstract class EditingSignTileEntity extends PanelTileEntity {
 
-    private LazyOptional<TextStorage> storage = LazyOptional.of(this::getStorage).cast();
+    private final LazyOptional<TextStorage> storage = LazyOptional.of(this::getStorage).cast();
+    private final ResourceLocation TEXT = new ResourceLocation(SignMod.MODID,"textures/gui/letter.png");
+
     public EditingSignTileEntity(TileEntityType<?> tileEntityTypeIn) {
         super(tileEntityTypeIn);
     }

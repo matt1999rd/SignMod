@@ -108,7 +108,8 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
             return;
         }
         Text t = texts.get(ind);
-        if (form.rectangleIsIn(newX,newX+t.getLength(true)-1,newY,newY+t.getHeight()-1))t.setPosition(newX,newY);
+        if (form.rectangleIsIn(newX,newX+t.getLength(true,true),
+                newY,newY+t.getHeight()))t.setPosition(newX,newY);
         else SignMod.LOGGER.info("coordinate leads to out pass the limit of the text : no position set !");
     }
 
@@ -119,6 +120,10 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
 
     public void setBackGround(int newColor){
         bg_color = new Color(newColor,true);
+    }
+
+    public int getBackGround(){
+        return bg_color.getRGB();
     }
 
 

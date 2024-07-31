@@ -66,10 +66,10 @@ public class EditingScreen extends Screen implements IWithEditTextScreen{
         assert this.minecraft != null;
         this.minecraft.getTextureManager().bind(location);
         this.blit(stack,relX,relY,0,0,LENGTH,HEIGHT);
-        super.render(stack,p_render_1_,p_render_2_,p_render_3_);
         EditingSignTileEntity este = getTileEntity();
         int dec = (form == Form.OCTAGON)? 8 : 4;
         este.renderOnScreen(stack,relX+dec,relY+dec);
+        super.render(stack,p_render_1_,p_render_2_,p_render_3_);
     }
 
 

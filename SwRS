@@ -1,6 +1,7 @@
 Specification de code pour les prochaines améliorations
 -> DrawingPanel :
     -> Ajouter la creation de ligne entre le dernier pixel réalisé et le nouveau pixel si la touche shift est enfoncé (fonctionnalité de photofiltre)
+    -> Ajouter le basculement en pick mode sur le bouton controle (fonctionnalité de gimp)
     -> Ajouter un menu de forme à ajouter (cercle, conique, ligne en dent de scie)
     -> Ajouter un menu de logo specifique (voiture, piéton, velo, bus, autoroute, croisement autoroute)
     -> Ajouter la création d'un liseret de couleur autour des panneaux

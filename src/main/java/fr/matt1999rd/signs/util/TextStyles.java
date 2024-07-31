@@ -7,7 +7,6 @@ import fr.matt1999rd.signs.SignMod;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.vector.Matrix4f;
-import org.lwjgl.system.CallbackI;
 
 import javax.annotation.Nullable;
 import java.awt.Color;
@@ -27,6 +26,8 @@ public class TextStyles {
     public static final int upFrameGap = 2;
     public static final float underLineGap = 0.5F;
     private static final int overhangGap = 2;
+    private static final int uvCircleDiameter = 15;
+    public static final int highlightGap = 1;
 
     // all style possible :
     // BOLD -> just an offset and a second rendering
@@ -124,6 +125,13 @@ public class TextStyles {
         return is(Format.FRAMED_STRAIGHT);
     }
 
+    public TextStyles withoutFrame(){
+        TextStyles copy = TextStyles.copy(this);
+        if (this.hasCurveFrame())return copy.withoutCurveFrame();
+        else if (this.hasStraightFrame())return copy.withoutStraightFrame();
+        return copy;
+    }
+
     //UNDERLINE FORMAT
 
     public boolean isUnderline(){
@@ -199,17 +207,25 @@ public class TextStyles {
     }
 
     public float offsetX(int scale) {
-        if (hasCurveFrame() || hasStraightFrame()){
-            return -sideFrameGap * scale;
+        float offset = 0;
+        if (hasHighlightColor()){
+            offset -= highlightGap; //negative value
         }
-        return 0;
+        if (hasCurveFrame() || hasStraightFrame()){
+            offset -= sideFrameGap * scale; //negative value
+        }
+        return offset;
     }
 
     public float offsetY(int scale) {
-        if (hasCurveFrame() || hasStraightFrame()){
-            return -upFrameGap * scale;
+        float offset = 0;
+        if (hasHighlightColor()){
+            offset -= highlightGap; //negative value
         }
-        return 0;
+        if (hasCurveFrame() || hasStraightFrame()){
+            offset -= upFrameGap * scale; //negative value
+        }
+        return offset;
     }
 
     public CompoundNBT serializeNBT(){
@@ -236,6 +252,31 @@ public class TextStyles {
         return new TextStyles(flag,color);
     }
 
+    public float getLength(float scale) {
+        float length=0.0F;
+        if (this.hasStraightFrame() || this.hasCurveFrame()){
+            length += 2*TextStyles.sideFrameGap;
+        }
+        if (this.hasHighlightColor()){
+            length += 2.0F*TextStyles.highlightGap/scale;
+        }
+        return length;
+    }
+
+    public float getHeight(float scale) {
+        float height = 0;
+        if (this.isUnderline()){
+            height += 2*TextStyles.underLineGap/scale;
+        }
+        if (this.hasCurveFrame() || this.hasStraightFrame()){
+            height += 2*TextStyles.upFrameGap;
+        }
+        if (this.hasHighlightColor()){
+            height += 2*TextStyles.highlightGap/scale;
+        }
+        return height;
+    }
+
     public enum Format {
         ITALIC(0,5),
         BOLD(1,4),
@@ -249,8 +290,8 @@ public class TextStyles {
                         .sorted(Comparator.comparingInt(format -> format.renderOrder))
                         .collect(Collectors.toList());
         private final Rectangle2D lineUVRectangle = new Rectangle2D.Float(8,37,1,1);
-        private final Rectangle2D semiLeftCircleUVRectangle  = new Rectangle2D.Float(2, 37,7,15);
-        private final Rectangle2D semiRightCircleUVRectangle = new Rectangle2D.Float(10,37,7,15);
+        private final Rectangle2D semiLeftCircleUVRectangle  = new Rectangle2D.Float(2, 37,(float) (uvCircleDiameter/2),uvCircleDiameter);
+        private final Rectangle2D semiRightCircleUVRectangle = new Rectangle2D.Float(10,37,(float) (uvCircleDiameter/2),uvCircleDiameter);
 
         Format(int offset,int renderOrder) {
             this.offset = offset;
@@ -262,60 +303,63 @@ public class TextStyles {
             Matrix4f matrix4f = stack.last().pose();
             switch (this){
                 case UNDERLINE:
-                    renderTexture(matrix4f,builder,new Rectangle2D.Float(0,t.getHeight(false),t.getLength(false,false),underLineGap),lineUVRectangle,combinedLight,color,false);
+                    renderTexture(matrix4f,builder,new Rectangle2D.Float(0,t.getHeight(false)+underLineGap,
+                            t.getLength(true,false),underLineGap),
+                            lineUVRectangle,combinedLight,color,0);
                     break;
                 case HIGHLIGHT:
                     RenderSystem.enableBlend();
                     RenderSystem.disableTexture();
                     RenderSystem.defaultBlendFunc();
-                    boolean hasFrame = styles.hasCurveFrame() || styles.hasStraightFrame();
-                    // last boolean is the boolean isBackground which offset the rendering of the texture.
+                    // last parameter is for background layering.
                     // It must be done in real rendering but mustn't be done on Screen (see comment in render function)
+                    float length = t.getLength(true,true);
+                    float height = t.getHeight(true);
                     renderTexture(matrix4f,builder,
                             new Rectangle2D.Float(
-                                    -1-(hasFrame?sideFrameGap:0),
-                                    -1-(hasFrame?upFrameGap:0),
-                                    t.getLength(false,false)+2+(hasFrame?2*sideFrameGap:0),
-                                    t.getHeight(false)+2+(hasFrame?2*upFrameGap:0)),
-                            lineUVRectangle,combinedLight,styles.highlightColor,!isOnScreen);
+                                    t.offsetX(),
+                                    t.offsetY(),
+                                    length,
+                                    height),
+                            lineUVRectangle,combinedLight,styles.highlightColor,isOnScreen?0:2);
                     RenderSystem.disableBlend();
                     RenderSystem.enableTexture();
                     break;
                 case FRAMED_CURVE:
-                    renderFrame(stack,builder,color,combinedLight,t,true);
+                    renderFrame(stack,builder,color,combinedLight,t,true,styles.hasHighlightColor());
                     break;
                 case FRAMED_STRAIGHT:
-                    renderFrame(stack,builder,color,combinedLight,t,false);
+                    renderFrame(stack,builder,color,combinedLight,t,false,styles.hasHighlightColor());
                     break;
             }
             stack.popPose();
         }
 
-        private void renderTexture(Matrix4f matrix4f, IVertexBuilder builder, Rectangle2D vertexRectangle, Rectangle2D uvRectangle, int light, Color color,boolean isBackground){
+        private void renderTexture(Matrix4f matrix4f, IVertexBuilder builder, Rectangle2D vertexRectangle, Rectangle2D uvRectangle, int light, Color color,int layer){
             int red = color.getRed();
             int green = color.getGreen();
             int blue = color.getBlue();
             int alpha = color.getAlpha();
-            float z = isBackground ? 0.0005F : 0;
+            float z = 0.00001F * layer;
             builder.vertex(matrix4f, (float) vertexRectangle.getMinX(), (float) vertexRectangle.getMinY(),z).color(red,green,blue,alpha).uv((float) uvRectangle.getMinX()/256F, (float) uvRectangle.getMinY()/256F).uv2(light).endVertex();
             builder.vertex(matrix4f, (float) vertexRectangle.getMinX(), (float) vertexRectangle.getMaxY(),z).color(red,green,blue,alpha).uv((float) uvRectangle.getMinX()/256F, (float) uvRectangle.getMaxY()/256F).uv2(light).endVertex();
             builder.vertex(matrix4f, (float) vertexRectangle.getMaxX(), (float) vertexRectangle.getMaxY(),z).color(red,green,blue,alpha).uv((float) uvRectangle.getMaxX()/256F, (float) uvRectangle.getMaxY()/256F).uv2(light).endVertex();
             builder.vertex(matrix4f, (float) vertexRectangle.getMaxX(), (float) vertexRectangle.getMinY(),z).color(red,green,blue,alpha).uv((float) uvRectangle.getMaxX()/256F, (float) uvRectangle.getMinY()/256F).uv2(light).endVertex();
         }
 
-        private void renderFrame(MatrixStack stack,IVertexBuilder builder,Color color,int combinedLight,Text t,boolean isCurve){
+        private void renderFrame(MatrixStack stack,IVertexBuilder builder,Color color,int combinedLight,Text t,boolean isCurve,boolean hasHighlight){
             stack.translate(-sideFrameGap*t.getScale(),-upFrameGap*t.getScale(),0);
             Matrix4f matrix4f = stack.last().pose();
-            float L = t.getLength(true); // sideFrameGap is included in the function
-            float H = t.getHeight(); //upFrameGap is included in the function
-            float heightGap = isCurve ? t.getScale()-1.5F : 1; //todo : check the value of the gap -> ensure that circle part and line part matches
+            float L = t.getLength(true,false) + 2*sideFrameGap*t.getScale(); // sideFrameGap is included in the function todo : change this calculation
+            float H = t.getHeight(true)-(hasHighlight ? 2*TextStyles.highlightGap:0); //upFrameGap is included in the function
+            float heightGap = isCurve ? H/uvCircleDiameter : 1;
             float sidePartWidth = (isCurve ? (sideFrameGap + overhangGap)*t.getScale() : 1);
             float horLineWidth = L - 2*sidePartWidth;
 
-            renderTexture(matrix4f,builder,new Rectangle2D.Float(0,0,sidePartWidth,H),isCurve?semiLeftCircleUVRectangle:lineUVRectangle,combinedLight,color,false); //left semi circle
-            renderTexture(matrix4f,builder,new Rectangle2D.Float(sidePartWidth,0, horLineWidth,heightGap),lineUVRectangle,combinedLight,color,false); //up horizontal line
-            renderTexture(matrix4f,builder,new Rectangle2D.Float(sidePartWidth,H-heightGap, horLineWidth,heightGap),lineUVRectangle,combinedLight,color,false); //down horizontal line
-            renderTexture(matrix4f,builder,new Rectangle2D.Float(L - sidePartWidth,0,sidePartWidth,H),isCurve?semiRightCircleUVRectangle:lineUVRectangle,combinedLight,color,false); //right semi circle
+            renderTexture(matrix4f,builder,new Rectangle2D.Float(0,0,sidePartWidth,H),isCurve?semiLeftCircleUVRectangle:lineUVRectangle,combinedLight,color,1); //left semi circle
+            renderTexture(matrix4f,builder,new Rectangle2D.Float(sidePartWidth,0, horLineWidth,heightGap),lineUVRectangle,combinedLight,color,1); //up horizontal line
+            renderTexture(matrix4f,builder,new Rectangle2D.Float(sidePartWidth,H-heightGap, horLineWidth,heightGap),lineUVRectangle,combinedLight,color,1); //down horizontal line
+            renderTexture(matrix4f,builder,new Rectangle2D.Float(L - sidePartWidth,0,sidePartWidth,H),isCurve?semiRightCircleUVRectangle:lineUVRectangle,combinedLight,color,1); //right semi circle
 
             stack.translate(sideFrameGap*t.getScale(),upFrameGap*t.getScale(),0);
         }

@@ -26,7 +26,7 @@ public class Text {
     private Color color;
     private TextStyles styles = TextStyles.defaultStyle();
     public static final ResourceLocation TEXT = new ResourceLocation(SignMod.MODID,"textures/gui/letter.png");
-    private static final RenderType textRenderType = RenderType.text(TEXT);
+    private static final RenderType textRenderType = RenderType.text(TEXT); // text function is for texture !!
     public static final int UNSELECTED_TEXT_ID = -1;
     public static final int defaultHeight = 7;
 
@@ -63,6 +63,14 @@ public class Text {
         return new Text(0,0,"",Color.WHITE,1);
     }
 
+    public void setX(float x) {
+        this.x = x;
+    }
+
+    public void setY(float y) {
+        this.y = y;
+    }
+
     public float getX(boolean handleStyle){
         float offsetX = handleStyle ? offsetX() : 0;
         return x + offsetX;
@@ -78,19 +86,17 @@ public class Text {
 
     public int getColor(){ return this.color.getRGB(); }
 
-    public float getLength(boolean scaled){
-        return getLength(scaled,true);
+    //used for rendering and authorisation after creating text
+    public float getLength(boolean scaled,boolean handleStyle){
+        return getLength(this.content,this.styles,scale,scaled,handleStyle);
     }
 
-    public float getLength(boolean scaled,boolean withFrame){
-        return getLength(this.content,this.styles,scale,scaled,withFrame);
+    //used for action before creating text
+    public static float getLength(String content,TextStyles styles,float scale){
+        return getLength(content,styles,scale,true,true);
     }
 
-    public static float getLength(String content,TextStyles styles,float scale,boolean scaled){
-        return getLength(content,styles,scale,scaled,true);
-    }
-
-    public static float getLength(String content,TextStyles styles,float scale,boolean scaled,boolean withFrame){
+    private static float getLength(String content,TextStyles styles,float scale,boolean scaled,boolean handleStyle){
         int n=content.length();
         float length = 0;
         for (int i=0;i<n;i++){
@@ -111,8 +117,8 @@ public class Text {
         if (styles.isItalic()){
             length+=TextStyles.italicOffset;
         }
-        if ((styles.hasStraightFrame() || styles.hasCurveFrame()) && withFrame){
-            length+=2*TextStyles.sideFrameGap;
+        if (handleStyle){
+            length += styles.getLength(scale);
         }
         return scaled ? (length * scale) : length;
     }
@@ -125,14 +131,12 @@ public class Text {
         return getHeight(true);
     }
 
-    public float getHeight(boolean withFrame){
+    public float getHeight(boolean handleStyle){
         float height = defaultHeight;
-        if (styles.isUnderline()){
-            height += TextStyles.underLineGap;
+        if (handleStyle){
+            height += styles.getHeight(scale);
         }
-        if ((styles.hasCurveFrame() || styles.hasStraightFrame()) && withFrame){
-            height += TextStyles.upFrameGap * 2;
-        }
+
         return height * scale;
     }
 
@@ -144,6 +148,10 @@ public class Text {
 
     public void setPosition(int x,int y){
         setPosition((float) x,(float) y,true,true);
+    }
+
+    public void setPosition(float x,float y){
+        setPosition(x, y,true,true);
     }
 
     public void setPosition(float x,float y,boolean handleOffset,boolean validateCoordinate){
@@ -207,20 +215,20 @@ public class Text {
             Functions.renderTextLimit(
                     origin.getX() + this.getX(true) * pixelDimension.x,
                     origin.getY() + this.getY(true) * pixelDimension.y,
-                    2 * this.getLength(true) * pixelDimension.x / pixelDimension.y,
+                    2 * this.getLength(true,true) * pixelDimension.x / pixelDimension.y,
                     2 * this.getHeight(), isSelected);
         }else {
             //dste function
             Functions.renderTextLimit(
                     origin.getX() + this.getX(true),
                     origin.getY() + this.getY(true),
-                    this.getLength(true),
+                    this.getLength(true,true),
                     this.getHeight(), isSelected);
         }
     }
 
     public boolean isIn(double mouseX,double mouseY,int guiLeft,int guiTop,float scaleX,float scaleY){
-        float L = getLength(true)*scaleX/scaleY;
+        float L = getLength(true,true)*scaleX/scaleY;
         float h = getHeight();
         return (mouseX>guiLeft-1+getX(true)*scaleX && mouseX<guiLeft+getX(true)*scaleX+L+1) && (mouseY>guiTop-1+getY(true)*scaleY && mouseY<guiTop+getY(true)*scaleY+h+1);
     }
@@ -276,17 +284,16 @@ public class Text {
     }
 
     public void cutText(int maxLength) {
-        int stringLength = this.content.length();
-        while (this.getLength(true)>maxLength){
+        while (this.getLength(true,true)>maxLength){
+            int stringLength = this.content.length();
             this.content = this.content.substring(0,stringLength - 1);
-            stringLength = this.content.length();
         }
     }
 
     public void centerText(PSDisplayMode mode,int index) {
         int maxLength = mode.getMaxLength(index);
         Vector2i begPosition = mode.getTextBegPosition(index);
-        float length = this.getLength(true);
+        float length = this.getLength(true,false);
         this.setPosition(begPosition.getX() + (maxLength - length) / 2.0F, this.getY(false),false,false);
     }
 

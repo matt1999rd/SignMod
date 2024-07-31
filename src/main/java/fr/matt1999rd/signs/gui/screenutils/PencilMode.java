@@ -25,4 +25,6 @@ public enum PencilMode {
     public boolean enableSlider(){
         return this == WRITE || this == FILL;
     }
+
+    public boolean enablePencilLength(){ return this == WRITE || this == ERASE;}
 }

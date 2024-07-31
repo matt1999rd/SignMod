@@ -234,10 +234,14 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
             centerText.active = true;
             x = sideGapPixelNumber - t.offsetX(); //writing on the left -> add style offset
         }
+        int[] panelsHeight = new int[]{25,26,25,27,25};
         float text_height = t.getHeight(true);
-        int y_offset = 25 * ind + ind / 2;
-        int height = (ind % 2 == 0) ? 25 : (ind == 1) ? 26 : 27;
-        float y = (height - text_height) / 2.0F + y_offset;
+        int y_offset = 0;
+        for (int i=0;i<ind;i++){
+            y_offset += panelsHeight[i];
+        }
+        int height = panelsHeight[ind]; // 25 - 26 - 25 - 27 - 25 : height of the five parts
+        float y = (height - text_height) / 2.0F + y_offset + 4; //todo: an offset is necessary -> need to give meaning to it
         t.setPosition(x,y,false,false);
         dste.setText(ind,isEndSelected,t);
         Networking.INSTANCE.sendToServer(new PacketAddOrEditText(panelPos,t,selTextInd));
@@ -340,7 +344,7 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
             } else {
                 x1 = guiLeft + ((isEnd) ? sideGapPixelNumber : endTextPixelNumber+sideGapPixelNumber+centerGapPixelNumber);
             }
-            length = (isEnd) ? endTextPixelNumber : horPixelNumber-endTextPixelNumber-8; //todo : add more constant in this function
+            length = (isEnd) ? endTextPixelNumber : horPixelNumber-endTextPixelNumber-8;
         }
         //a gap of 25 and then 26
         int y1 = guiTop+16+(25*ind)+ind-(ind==0?0:1);

@@ -8,7 +8,8 @@ import java.util.stream.Collectors;
 
 public class QuadPSPositions {
     private final ArrayList<QuadPSPosition> positions;
-    public static final int gapBetweenText = Text.defaultHeight + 3;
+    //include default height with frame height offset and underline height
+    public static final int gapBetweenText = Text.defaultHeight + (int)(2*(TextStyles.upFrameGap+TextStyles.underLineGap))-1;
     private int totalText = 0;
     // 4 for the gap between end of the first text and beginning of the following one -> consider the frame and underline
     public QuadPSPositions(QuadPSPosition... positions){

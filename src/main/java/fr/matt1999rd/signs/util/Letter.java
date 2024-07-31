@@ -1,6 +1,5 @@
 package fr.matt1999rd.signs.util;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector2f;
@@ -85,7 +84,7 @@ public class Letter {
         float y2 = y1 + Text.defaultHeight * scale;
         float italicOffset = scale * (styles.isItalic() ? TextStyles.italicOffset : 0.0F);
         if (styles.isBold()){
-            drawBuffer(builder,matrix4f,x1+1,y1,x2,y2,color,light,italicOffset);
+            drawBuffer(builder,matrix4f,x1+scale,y1,x2,y2,color,light,italicOffset);
         }
         drawBuffer(builder,matrix4f,x1,y1,x2,y2,color,light,italicOffset);
     }

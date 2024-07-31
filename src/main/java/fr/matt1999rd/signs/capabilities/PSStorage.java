@@ -123,6 +123,7 @@ public class PSStorage implements IPSStorage, INBTSerializable<CompoundNBT> {
         this.mode = mode;
         for (int i=0;i<mode.getTotalText();i++){
             Text t = new Text(mode.getTextBegPosition(i),getText(i).getText(),getForegroundColor(),1); //todo : when creating the text with style frame ensure beg position is adapted
+            t.setStyles(getText(i).getStyles());
             t.cutText(mode.getMaxLength(i));
             if (!mode.is2by2())t.centerText(mode, i);
             setText(t,i);

@@ -10,12 +10,14 @@ import fr.matt1999rd.signs.gui.screenutils.Option;
 import fr.matt1999rd.signs.util.Letter;
 import fr.matt1999rd.signs.util.Text;
 import fr.matt1999rd.signs.util.TextStyles;
+import fr.matt1999rd.signs.util.Vector2i;
 import net.minecraft.client.Minecraft;
 import static fr.matt1999rd.signs.util.Functions.*;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.vector.Vector2f;
 import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nullable;
@@ -96,16 +98,24 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
     }
 
     public boolean checkLimit(String newText,TextStyles newStyles){
-        float length = Text.getLength(newText,newStyles,scale,true);
-        int height = 7*scale;
+        float length = Text.getLength(newText,newStyles,scale);
         if (form.hasLengthPredefinedLimit()) {
-            if (length <= limitLength) {
-                return true;
-            }
-        } else if (form.rectangleIsIn(xText+newStyles.offsetX(scale),xText+newStyles.offsetX(scale)+length-1,yText+newStyles.offsetY(scale),yText+newStyles.offsetY(scale)+height-1)){
-            return true;
-        }
-        return false;
+            return length <= limitLength;
+        } else return checkLimit(newText, form, new Vector2f(xText, yText), scale, newStyles);
+    }
+
+    public static boolean checkLimit(String newText,Form form, Vector2f textPosition, int scale, TextStyles newStyles){
+        float length = Text.getLength(newText,newStyles,scale);
+        int height = 7*scale;
+        return checkLimit(form,textPosition,new Vector2f(length,height),scale,newStyles);
+    }
+
+    public static boolean checkLimit(Form form, Vector2f textPosition,Vector2f textDimension, int scale, TextStyles newStyles){
+        return form.rectangleIsIn(
+                textPosition.x +newStyles.offsetX(scale),
+                textPosition.x +newStyles.offsetX(scale)+textDimension.x-1,
+                textPosition.y +newStyles.offsetY(scale),
+                textPosition.y +newStyles.offsetY(scale)+textDimension.y-1);
     }
 
     @Override
@@ -157,7 +167,7 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
             bColor = getBlueValue(newColor);
             if (bColor>255)bColor=255;
         }
-        this.color = new Color(rColor, gColor, bColor, 255);
+        color =new Color(rColor, gColor, bColor, 255);
     }
 
     public int getColor(ColorType type){
@@ -190,12 +200,22 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
         }
     }
 
+    private boolean makeOffsetForStyle(TextStyles newStyle){ //this function is moving the text when : changing scale of text with frame (1); adding frame to text without it (2)
+        if (checkLimit(this.getValue(),form,new Vector2f(xText+TextStyles.sideFrameGap,yText+TextStyles.upFrameGap),scale,newStyle)){
+            xText += TextStyles.sideFrameGap*this.scale;
+            yText += TextStyles.upFrameGap*this.scale;
+            return true;
+        }
+        return false;
+    }
+
     public void updatePlusButton() {
         Screen screen = Minecraft.getInstance().screen;
         if (screen instanceof AddTextScreen){
-            float length = Text.getLength(this.getValue(),styles,scale,true);
+            float length = Text.getLength(getValue(),styles,scale);
+            int height = 7*scale;
             float upperLength = (scale+1)*length/scale;
-            int upperHeight = (scale+1)*7/scale;
+            int upperHeight = (scale+1)*height/scale;
             AddTextScreen addTextScreen = (AddTextScreen)screen;
             if (form.hasLengthPredefinedLimit()){
                 if (scale == 3 || upperLength> limitLength){
@@ -203,11 +223,9 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
                 } else {
                     addTextScreen.enablePlusButton();
                 }
-            } else if (!form.rectangleIsIn(xText + styles.offsetX(scale),xText+styles.offsetX(scale) + length-1,
-                    yText+ styles.offsetY(scale),yText+styles.offsetY(scale) + 7*scale-1) && form != Form.PLAIN_SQUARE){
-                this.setValue("");
-            }else if (!form.rectangleIsIn(xText + styles.offsetX(scale),xText+styles.offsetX(scale)+upperLength-1,
-                    yText + styles.offsetY(scale),yText + styles.offsetY(scale) +upperHeight-1)){
+            } else if (!checkLimit(form,new Vector2f(xText,yText),new Vector2f(length,height),scale,styles) && form != Form.PLAIN_SQUARE){
+                this.setValue(""); //security loop which is irreversible
+            }else if (!checkLimit(form,new Vector2f(xText,yText),new Vector2f(upperLength,upperHeight),scale+1,styles)){
                 addTextScreen.disablePlusButton();
             }else {
                 addTextScreen.enablePlusButton();
@@ -217,7 +235,7 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
 
     public void updateTextPosition(boolean init){
         if (form.isNotForEditing())return;
-        float L = Text.getLength(this.getValue(),styles,scale,true);
+        float L = Text.getLength(getValue(),styles,scale);
         if (form == Form.OCTAGON) {
             int H = 7*scale;
             xText = 64 - L / 2F;
@@ -232,7 +250,7 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
     public void renderButton(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
         Minecraft.getInstance().getTextureManager().bind(BUTTON);
         for (TextStyles.Format format : TextStyles.Format.values()){
-            if (!format.isFrame() || this.styles.is(format)) {
+            if (!format.isFrame() || styles.is(format)) {
                 blit(stack, x + format.getUXOffset(), y - 11, format.getUXOffset(), 88 + format.getVOffset(styles), 10, 10);
             }
         }
@@ -302,7 +320,12 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
             }else if(styles.hasCurveFrame()){
                 styles = styles.withoutCurveFrame();
             }else {
-                if (checkLimit(this.getValue(),TextStyles.copy(styles).withStraightFrame())){
+                TextStyles newStyle = TextStyles.copy(styles).withStraightFrame();
+                boolean limitChecked = checkLimit(this.getValue(),newStyle);
+                if (!limitChecked){
+                    limitChecked = makeOffsetForStyle(newStyle);
+                }
+                if (limitChecked){
                     //todo : function not working correctly : no offset taken into account
                     styles = styles.withStraightFrame();
                 }

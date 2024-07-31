@@ -157,11 +157,15 @@ public enum Form {
     }
 
     public boolean rectangleIsIn(int i_min,int i_max,int j_min,int j_max){
+        //we can ensure that it is going to check all place because form are all convex -> check only the limit
         for (int i=i_min;i<i_max+1;i++){
-            for (int j=j_min;j<j_max+1;j++){
-                if (!isIn(i,j)){
-                    return false;
-                }
+            if (!isIn(i,j_min) || !isIn(i,j_max)){
+                return false;
+            }
+        }
+        for (int j=j_min;j<j_max+1;j++){
+            if (!isIn(i_min,j) || !isIn(i_max,j)){
+                return false;
             }
         }
         return true;

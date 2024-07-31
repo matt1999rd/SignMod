@@ -143,7 +143,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
     public void centerText(boolean center){
         for (int i=0;i<5;i++){
             Text beg = getText(i,false);
-            float text_length = beg.getLength(true);
+            float text_length = beg.getLength(true,true);
             float x = ((center) ? (horPixelNumber-text_length)/2.0F: sideGapPixelNumber);
             float y = beg.getY(false);
             beg.setPosition(x,y,false,false);

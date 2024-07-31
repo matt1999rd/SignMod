@@ -50,9 +50,11 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
 
     @OnlyIn(Dist.CLIENT)
     public int getPixelColor(int i,int j){
-        return storage.map(signStorage -> {
-            return signStorage.getRGBPixel(i,j);
-        }).orElse(0);
+        return storage.map(signStorage -> signStorage.getRGBPixel(i,j)).orElse(0);
+    }
+
+    public int getBGColor(){
+        return storage.map(SignStorage::getBackGround).orElse(0);
     }
 
     public int getNumberOfText(){
@@ -99,7 +101,6 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
             }
         }
         List<Text> texts = storage.map(SignStorage::getTexts).orElse(new ArrayList<>());
-        Minecraft.getInstance().getTextureManager().bind(TEXT);
         AtomicInteger ind = new AtomicInteger(0);
         Vector2i origin = new Vector2i(guiLeft,guiTop);
         Vector2f pixelDimension = new Vector2f(1.0F,1.0F);
@@ -125,7 +126,7 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
                 });
                 break;
             case MOVE_TEXT:
-                //information !! : color is not a color but indice of text
+                //information !! : color is not a color but indices of text
                 int ind = color;
                 if (ind != -1) {
                     storage.ifPresent(signStorage -> {

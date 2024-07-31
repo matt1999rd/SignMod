@@ -19,6 +19,7 @@ import fr.matt1999rd.signs.tileentity.DrawingSignTileEntity;
 import fr.matt1999rd.signs.util.Text;
 import fr.matt1999rd.signs.util.Vector2i;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
@@ -131,8 +132,8 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
         int gap = (length>9) ? 6:0;
         drawString(stack,renderer,"Color of pencil :" ,relX+180,relY+93,white);
         drawString(stack,renderer,"Length of pencil :",relX+160,relY+124,white);
-        drawString(stack,renderer,""+length,relX+272-gap,relY+126,white);
-
+        if (option.getMode().enablePencilLength()) drawString(stack,renderer,""+length,relX+272-gap,relY+126,white);
+        if (option.getMode() != PencilMode.SELECT) AbstractGui.fill(stack,relX+83,relY+171,relX+83+9,relY+171+9,dste.getBGColor());
     }
 
     /** IPressable Consumer object for button in drawing screen **/
@@ -244,6 +245,11 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
             changeSliderDisplay(newMode.enableSlider());
         }
 
+        if (oldMode.enablePencilLength() != newMode.enablePencilLength()){
+            changePencilLengthButtonDisplay(newMode.enablePencilLength());
+        }
+
+
     }
 
     private void changeSliderDisplay(boolean enableSlider){
@@ -254,6 +260,11 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
         for (DyeColor dyeColor : DyeColor.values()){
             this.dye_color_button[dyeColor.getId()].visible = enableSlider;
         }
+    }
+
+    private void changePencilLengthButtonDisplay(boolean enablePencilLength){
+        this.plusButton.visible = enablePencilLength;
+        this.minusButton.visible = enablePencilLength;
     }
 
 
@@ -303,7 +314,7 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
             Text t = indexAndText.getSecond();
             if (t != null){
                 //the text is moved so that the position where the mouse was clicked is the center of the rectangle formed by text limit
-                x = getXOnScreen(mouseX - t.getLength(true)/2F);
+                x = getXOnScreen(mouseX - t.getLength(true,false)/2F);
                 y = getYOnScreen(mouseY - t.getHeight()/2F);
             }
             makeAction = option.isTextSelected();
