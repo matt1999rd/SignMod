@@ -4,17 +4,15 @@ package fr.matt1999rd.signs.capabilities;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.PSDisplayMode;
 import fr.matt1999rd.signs.enums.PSPosition;
-import fr.matt1999rd.signs.util.QuadPSPositions;
 import fr.matt1999rd.signs.util.Text;
 import net.minecraft.nbt.*;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
-import java.util.List;
 
 
-public class PSStorage implements IPSStorage, INBTSerializable<CompoundNBT> {
+public class PSStorage implements IPSStorage, INBTSerializable<CompoundTag> {
     PSPosition position;
     PSDisplayMode mode;
     Text[] texts;
@@ -54,19 +52,19 @@ public class PSStorage implements IPSStorage, INBTSerializable<CompoundNBT> {
         try {
             texts[ind] = t;
         } catch (IndexOutOfBoundsException e){
-            SignMod.LOGGER.warn("Try to set text that is not with the right indices : "+ind);
+            SignMod.LOGGER.warn("Try to set text that is not with the right indices : {}", ind);
         }
     }
 
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT nbt = new CompoundNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag nbt = new CompoundTag();
         nbt.putByte("mode",mode.getMeta());
         nbt.putByte("ps_pos",position.getMeta());
-        ListNBT textsNBT = new ListNBT();
+        ListTag textsNBT = new ListTag();
         for (Text t : texts){
-            CompoundNBT txtNBT = t.serializeNBT();
+            CompoundTag txtNBT = t.serializeNBT();
             textsNBT.add(txtNBT);
         }
         nbt.put("texts",textsNBT);
@@ -74,20 +72,20 @@ public class PSStorage implements IPSStorage, INBTSerializable<CompoundNBT> {
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
+    public void deserializeNBT(CompoundTag nbt) {
         byte modeMeta = nbt.getByte("mode");
         this.mode = PSDisplayMode.byIndex(modeMeta);
         byte posMeta = nbt.getByte("ps_pos");
         this.position = PSPosition.byIndex(posMeta);
-        ListNBT textsNBT = (ListNBT) nbt.get("texts");
+        ListTag textsNBT = (ListTag) nbt.get("texts");
         assert textsNBT != null;
         if (textsNBT.size() > 6){
             SignMod.LOGGER.error("Error when registering text of PS square panel : too much element registered");
             return;
         }
         int increment = 0;
-        for (INBT iNBT : textsNBT) {
-            CompoundNBT textNBT = (CompoundNBT)iNBT;
+        for (Tag iNBT : textsNBT) {
+            CompoundTag textNBT = (CompoundTag)iNBT;
             Text t =Text.getTextFromNBT(textNBT);
             this.texts[increment] = t;
             increment++;

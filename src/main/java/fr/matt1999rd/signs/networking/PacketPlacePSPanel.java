@@ -1,16 +1,18 @@
 package fr.matt1999rd.signs.networking;
 
+import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.enums.PSDisplayMode;
 import fr.matt1999rd.signs.enums.PSPosition;
 import fr.matt1999rd.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.matt1999rd.signs.tileentity.primary.PlainSquareSignTileEntity;
-import net.minecraft.block.BlockState;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -24,7 +26,7 @@ public class PacketPlacePSPanel {
     private final byte facing;
     private final boolean rotated;
 
-    public PacketPlacePSPanel(PacketBuffer buf){
+    public PacketPlacePSPanel(FriendlyByteBuf buf){
         panelFuturePos = buf.readBlockPos();
         byte[] array = buf.readByteArray();
         displayMode = array[0];
@@ -32,7 +34,7 @@ public class PacketPlacePSPanel {
         rotated = buf.readBoolean();
     }
 
-    public void toBytes(PacketBuffer buf){
+    public void toBytes(FriendlyByteBuf buf){
         buf.writeBlockPos(panelFuturePos);
         byte[] array = new byte[2];
         array[0] = (byte)displayMode;
@@ -50,10 +52,9 @@ public class PacketPlacePSPanel {
 
     public void handle(Supplier<NetworkEvent.Context> ctx){
         ctx.get().enqueueWork(()->{
-            ServerWorld world = Objects.requireNonNull(ctx.get().getSender()).getLevel();
+            ServerLevel world = Objects.requireNonNull(ctx.get().getSender()).getLevel();
             BlockState supportState = world.getBlockState(panelFuturePos);
-            //form meta for plain square is 7
-            BlockState panelState = AbstractPanelBlock.getBlockStateFromSupport(7,supportState,facing,rotated);
+            BlockState panelState = AbstractPanelBlock.getBlockStateFromSupport(Form.PLAIN_SQUARE,supportState,facing,rotated);
             PSDisplayMode m = PSDisplayMode.byIndex((byte) displayMode);
             if (m == null) {
                 return;
@@ -68,15 +69,16 @@ public class PacketPlacePSPanel {
             for (PSPosition neiPos : neighbors.keySet()){
                 BlockPos neiBlockPos = neighbors.get(neiPos);
                 world.setBlock(neiBlockPos, panelState,11);
-                TileEntity tileEntity = world.getBlockEntity(neiBlockPos);
+                BlockEntity tileEntity = world.getBlockEntity(neiBlockPos);
                 if (tileEntity instanceof PlainSquareSignTileEntity){
                     ((PlainSquareSignTileEntity) tileEntity).registerData(neiPos,m);
                 }else {
-                    tileEntity = panelState.getBlock().createTileEntity(panelState,world);
+                    EntityBlock entityBlock = (EntityBlock) panelState.getBlock();
+                    tileEntity = entityBlock.newBlockEntity(neiBlockPos,panelState);
                     assert tileEntity != null;
                     ((PlainSquareSignTileEntity) tileEntity).registerData(neiPos,m);
                 }
-                world.setBlockEntity(neiBlockPos,tileEntity);
+                world.setBlockEntity(tileEntity); //todo : a check need to be done here to ensure good porting
             }
         });
         ctx.get().setPacketHandled(true);

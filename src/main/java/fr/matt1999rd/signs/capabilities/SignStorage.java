@@ -5,9 +5,9 @@ import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.util.Functions;
 import fr.matt1999rd.signs.util.Text;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.ListTag;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.awt.Point;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Queue;
 
 
-public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> {
+public class SignStorage implements ISignStorage, INBTSerializable<CompoundTag> {
 
     int[][] picture = new int[128][128];
     List<Text> texts = new ArrayList<>();
@@ -97,14 +97,14 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
         try {
             texts.set(ind,t);
         } catch (IndexOutOfBoundsException e){
-            SignMod.LOGGER.warn("Try to set text that is not with the right indices : "+ind);
+            SignMod.LOGGER.warn("Try to set text that is not with the right indices : {}", ind);
         }
     }
 
     @Override
     public void setTextPosition(int ind, int newX, int newY, Form form) {
         if (ind == -1 || ind>texts.size()){
-            SignMod.LOGGER.warn("skip bad move text operation. indices is invalid :"+ind);
+            SignMod.LOGGER.warn("skip bad move text operation. indices is invalid :{}", ind);
             return;
         }
         Text t = texts.get(ind);
@@ -128,20 +128,20 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
 
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT nbt = new CompoundNBT();
-        ListNBT pixels = new ListNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag nbt = new CompoundTag();
+        ListTag pixels = new ListTag();
         for (int i=0;i<128;i++){
             for (int j=0;j<128;j++){
-                CompoundNBT pixelNBT = new CompoundNBT();
+                CompoundTag pixelNBT = new CompoundTag();
                 pixelNBT.putInt("pixel",getRGBPixel(i,j));
                 pixels.add(pixelNBT);
             }
         }
         nbt.put("pixels",pixels);
-        ListNBT textsNBT = new ListNBT();
+        ListTag textsNBT = new ListTag();
         for (Text t : texts){
-            CompoundNBT txtNBT = t.serializeNBT();
+            CompoundTag txtNBT = t.serializeNBT();
             textsNBT.add(txtNBT);
         }
         nbt.put("texts",textsNBT);
@@ -149,14 +149,14 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
-        ListNBT pixelsNBT = (ListNBT) nbt.get("pixels");
+    public void deserializeNBT(CompoundTag nbt) {
+        ListTag pixelsNBT = (ListTag) nbt.get("pixels");
         int i=0;
         int j=0;
         assert pixelsNBT != null;
-        for (INBT iNBT : pixelsNBT) {
+        for (Tag iNBT : pixelsNBT) {
             if (i < 128) {
-                CompoundNBT pixelNBT = (CompoundNBT) iNBT;
+                CompoundTag pixelNBT = (CompoundTag) iNBT;
                 setPixel(i, j, pixelNBT.getInt("pixel"),1);
                 j++;
                 if (j > 127) {
@@ -165,10 +165,10 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundNBT> 
                 }
             }
         }
-        ListNBT textsNBT = (ListNBT) nbt.get("texts");
+        ListTag textsNBT = (ListTag) nbt.get("texts");
         assert textsNBT != null;
-        for (INBT iNBT : textsNBT) {
-            CompoundNBT textNBT = (CompoundNBT)iNBT;
+        for (Tag iNBT : textsNBT) {
+            CompoundTag textNBT = (CompoundTag)iNBT;
             Text t =Text.getTextFromNBT(textNBT);
             if (!(texts.contains(t))){
                 texts.add(t);

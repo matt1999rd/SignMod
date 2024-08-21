@@ -6,10 +6,11 @@ import fr.matt1999rd.signs.gui.DirectionScreen;
 import fr.matt1999rd.signs.gui.DrawingScreen;
 import fr.matt1999rd.signs.gui.EditingScreen;
 import fr.matt1999rd.signs.gui.PlainSquareScreen;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.BlockPos;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public class PacketOpenScreen {
@@ -17,13 +18,13 @@ public class PacketOpenScreen {
     private final byte form;
     private final int screenType;
 
-    public PacketOpenScreen(PacketBuffer buf){
+    public PacketOpenScreen(FriendlyByteBuf buf){
         panelPos = buf.readBlockPos();
         form = buf.readByte();
         screenType = buf.readInt();
     }
 
-    public void toBytes(PacketBuffer buf){
+    public void toBytes(FriendlyByteBuf buf){
         buf.writeBlockPos(panelPos);
         buf.writeByte(form);
         buf.writeInt(screenType);
@@ -38,7 +39,7 @@ public class PacketOpenScreen {
     public void handle(Supplier<NetworkEvent.Context> ctx){
         ctx.get().enqueueWork(()->{
             ScreenType type = ScreenType.getType(screenType);
-            switch (type){
+            switch (Objects.requireNonNull(type)){
                 case PLAIN_SQUARE_SCREEN:
                     PlainSquareScreen.open(panelPos);
                     break;

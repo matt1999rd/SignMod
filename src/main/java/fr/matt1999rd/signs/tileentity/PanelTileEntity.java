@@ -3,31 +3,29 @@ package fr.matt1999rd.signs.tileentity;
 import fr.matt1999rd.signs.enums.ExtendDirection;
 import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
 import fr.matt1999rd.signs.util.Functions;
-import net.minecraft.block.BlockState;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
 
-public abstract class PanelTileEntity extends TileEntity implements ITickableTileEntity {
+public abstract class PanelTileEntity extends BlockEntity {
 
-    public PanelTileEntity(TileEntityType<?> tileEntityTypeIn) {
-        super(tileEntityTypeIn);
+    public PanelTileEntity(BlockEntityType<?> tileEntityTypeIn,BlockPos pos,BlockState state) {
+        super(tileEntityTypeIn,pos,state);
     }
 
-    @Override
-    public void tick() {
+    public void tick(Level level, BlockState blockState, BlockPos blockPos, PanelTileEntity t) {
         if (!level.isClientSide){
-            updateState();
+            updateState(level,blockState,blockPos);
         }
     }
 
-    private void updateState() {
-        BlockState state = this.getBlockState();
-        int flags = ExtendDirection.makeFlagsFromFunction(direction -> {
-            BlockPos pos1 = direction.relative(worldPosition);
+    private void updateState(Level level,BlockState state,BlockPos pos) {
+        int flags = ExtendDirection.makeFlagsFromFunction(direction -> { //todo : check this function for sign support and grid support tile entity
+            BlockPos pos1 = direction.relative(pos);
             BlockState state1 = level.getBlockState(pos1);
             boolean isGrid = Functions.isGridSupport(state1);
             boolean matchState = false;
@@ -40,7 +38,8 @@ public abstract class PanelTileEntity extends TileEntity implements ITickableTil
             }
             return matchState;
         });
-        Functions.setBlockState(level,worldPosition,state,flags);
+        Functions.setBlockState(level,pos,state,flags);
     }
-    
+
+
 }

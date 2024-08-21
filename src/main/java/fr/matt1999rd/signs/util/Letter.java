@@ -1,8 +1,8 @@
 package fr.matt1999rd.signs.util;
 
-import com.mojang.blaze3d.vertex.IVertexBuilder;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Vector2f;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Matrix4f;
+import net.minecraft.world.phys.Vec2;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -61,7 +61,7 @@ public class Letter {
             throw new IllegalArgumentException("letter here is not implemented within glyph provider : "+letter);
         }
         this.letter = letter;
-        Vector2f v = lowGetLengthAndPlace();
+        Vec2 v = lowGetLengthAndPlace();
         this.length = (int) v.x;
         this.charPlace = (int) v.y;
         this.shift = shift;
@@ -77,7 +77,7 @@ public class Letter {
         return length;
     }
 
-    public void render(Matrix4f matrix4f, IVertexBuilder builder, Color color, int light){
+    public void render(Matrix4f matrix4f, VertexConsumer builder, Color color, int light){
         float x1 = shift;
         float y1 = 0;
         float x2 = x1 + length * scale;
@@ -89,7 +89,7 @@ public class Letter {
         drawBuffer(builder,matrix4f,x1,y1,x2,y2,color,light,italicOffset);
     }
 
-    private void drawBuffer(IVertexBuilder builder, Matrix4f matrix4f, float x1, float y1, float x2, float y2, Color color, int light, float italicOffset){
+    private void drawBuffer(VertexConsumer builder, Matrix4f matrix4f, float x1, float y1, float x2, float y2, Color color, int light, float italicOffset){
         float u = getUMapping()/256.0F;
         float v = getVMapping()/256.0F;
         int red = color.getRed();
@@ -113,7 +113,7 @@ public class Letter {
 
 
 
-    private Vector2f lowGetLengthAndPlace(){
+    private Vec2 lowGetLengthAndPlace(){
         int length = 0;
         boolean isFound = false;
         AtomicInteger place = new AtomicInteger(0);
@@ -124,7 +124,7 @@ public class Letter {
                 isFound = true;
             }
         }
-        return new Vector2f(length,place.get());
+        return new Vec2(length,place.get());
     }
 
     private boolean isIn(int letterLength, char letter,AtomicInteger i) {

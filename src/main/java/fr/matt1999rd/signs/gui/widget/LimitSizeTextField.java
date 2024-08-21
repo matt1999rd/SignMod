@@ -1,6 +1,7 @@
 package fr.matt1999rd.signs.gui.widget;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.gui.AddTextScreen;
 import fr.matt1999rd.signs.enums.Form;
@@ -10,23 +11,21 @@ import fr.matt1999rd.signs.gui.screenutils.Option;
 import fr.matt1999rd.signs.util.Letter;
 import fr.matt1999rd.signs.util.Text;
 import fr.matt1999rd.signs.util.TextStyles;
-import fr.matt1999rd.signs.util.Vector2i;
 import net.minecraft.client.Minecraft;
 import static fr.matt1999rd.signs.util.Functions.*;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector2f;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
-public class LimitSizeTextField extends TextFieldWidget implements Option {
+public class LimitSizeTextField extends EditBox implements Option {
     float xText,yText;
     Form form;
     int scale;
@@ -37,7 +36,7 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
     ResourceLocation BUTTON = new ResourceLocation(SignMod.MODID, "textures/gui/buttons.png");
 
     public LimitSizeTextField(Minecraft mc, int relX, int relY, Form form,@Nullable Text oldText) {
-        super(mc.font, relX, relY, 90, 12, ITextComponent.nullToEmpty(" "));
+        super(mc.font, relX, relY, 90, 12, Component.nullToEmpty(" "));
         float xText= (oldText != null) ? oldText.getX(false) : form.getXBeginning(7); //todo : same problem as found in keyPressed function in DrawingScreen
         float yText= (oldText != null) ? oldText.getY(false) : form.getYBeginning(7);
         int scale = (oldText != null) ? oldText.getScale() : 1;
@@ -81,7 +80,7 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
             scale--;
         }
         if (form == Form.UPSIDE_TRIANGLE){
-            xText = 5+MathHelper.ceil(3.5f*scale-0.5);
+            xText = 5+Mth.ceil(3.5f*scale-0.5);
         }
     }
 
@@ -101,16 +100,16 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
         float length = Text.getLength(newText,newStyles,scale);
         if (form.hasLengthPredefinedLimit()) {
             return length <= limitLength;
-        } else return checkLimit(newText, form, new Vector2f(xText, yText), scale, newStyles);
+        } else return checkLimit(newText, form, new Vec2(xText, yText), scale, newStyles);
     }
 
-    public static boolean checkLimit(String newText,Form form, Vector2f textPosition, int scale, TextStyles newStyles){
+    public static boolean checkLimit(String newText,Form form, Vec2 textPosition, int scale, TextStyles newStyles){
         float length = Text.getLength(newText,newStyles,scale);
         int height = 7*scale;
-        return checkLimit(form,textPosition,new Vector2f(length,height),scale,newStyles);
+        return checkLimit(form,textPosition,new Vec2(length,height),scale,newStyles);
     }
 
-    public static boolean checkLimit(Form form, Vector2f textPosition,Vector2f textDimension, int scale, TextStyles newStyles){
+    public static boolean checkLimit(Form form, Vec2 textPosition,Vec2 textDimension, int scale, TextStyles newStyles){
         return form.rectangleIsIn(
                 textPosition.x +newStyles.offsetX(scale),
                 textPosition.x +newStyles.offsetX(scale)+textDimension.x-1,
@@ -170,17 +169,17 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
         color =new Color(rColor, gColor, bColor, 255);
     }
 
+    @Override
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
     public int getColor(ColorType type){
-        switch (type){
-            case RED:
-                return color.getRed();
-            case BLUE:
-                return color.getBlue();
-            case GREEN:
-                return color.getGreen();
-            default:
-                return -1;
-        }
+        return switch (type) {
+            case RED -> color.getRed();
+            case BLUE -> color.getBlue();
+            case GREEN -> color.getGreen();
+        };
     }
 
     @Override
@@ -201,7 +200,7 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
     }
 
     private boolean makeOffsetForStyle(TextStyles newStyle){ //this function is moving the text when : changing scale of text with frame (1); adding frame to text without it (2)
-        if (checkLimit(this.getValue(),form,new Vector2f(xText+TextStyles.sideFrameGap,yText+TextStyles.upFrameGap),scale,newStyle)){
+        if (checkLimit(this.getValue(),form,new Vec2(xText+TextStyles.sideFrameGap,yText+TextStyles.upFrameGap),scale,newStyle)){
             xText += TextStyles.sideFrameGap*this.scale;
             yText += TextStyles.upFrameGap*this.scale;
             return true;
@@ -211,21 +210,20 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
 
     public void updatePlusButton() {
         Screen screen = Minecraft.getInstance().screen;
-        if (screen instanceof AddTextScreen){
+        if (screen instanceof AddTextScreen addTextScreen){
             float length = Text.getLength(getValue(),styles,scale);
             int height = 7*scale;
             float upperLength = (scale+1)*length/scale;
             int upperHeight = (scale+1)*height/scale;
-            AddTextScreen addTextScreen = (AddTextScreen)screen;
             if (form.hasLengthPredefinedLimit()){
                 if (scale == 3 || upperLength> limitLength){
                     addTextScreen.disablePlusButton();
                 } else {
                     addTextScreen.enablePlusButton();
                 }
-            } else if (!checkLimit(form,new Vector2f(xText,yText),new Vector2f(length,height),scale,styles) && form != Form.PLAIN_SQUARE){
+            } else if (!checkLimit(form,new Vec2(xText,yText),new Vec2(length,height),scale,styles) && form != Form.PLAIN_SQUARE){
                 this.setValue(""); //security loop which is irreversible
-            }else if (!checkLimit(form,new Vector2f(xText,yText),new Vector2f(upperLength,upperHeight),scale+1,styles)){
+            }else if (!checkLimit(form,new Vec2(xText,yText),new Vec2(upperLength,upperHeight),scale+1,styles)){
                 addTextScreen.disablePlusButton();
             }else {
                 addTextScreen.enablePlusButton();
@@ -247,8 +245,8 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
     }
 
     @Override
-    public void renderButton(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
-        Minecraft.getInstance().getTextureManager().bind(BUTTON);
+    public void renderButton(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
+        RenderSystem.setShaderTexture(0,BUTTON);
         for (TextStyles.Format format : TextStyles.Format.values()){
             if (!format.isFrame() || styles.is(format)) {
                 blit(stack, x + format.getUXOffset(), y - 11, format.getUXOffset(), 88 + format.getVOffset(styles), 10, 10);
@@ -287,7 +285,7 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
         if (sliderButton.contains(mouseX,mouseY)){
             double relMouseX = mouseX - sliderButton.getMinX();
             double relMouseY = mouseY - sliderButton.getMinY();
-            int index = MathHelper.clamp(MathHelper.fastFloor(relMouseX),1,37) - 1;
+            int index = Mth.clamp(Mth.fastFloor(relMouseX),1,37) - 1;
             int component = (int) (index/36.0F*255);
             Color color = styles.getHighlightColor();
             if (relMouseY <= 8){
@@ -306,7 +304,7 @@ public class LimitSizeTextField extends TextFieldWidget implements Option {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         Rectangle2D frameButton = new Rectangle2D.Float(x + TextStyles.Format.FRAMED_CURVE.getUXOffset(),y-11,10,10);
         boolean formatChanged = false;
-        for (TextStyles.Format format : Arrays.stream(TextStyles.Format.values()).filter(format -> !format.isFrame()).collect(Collectors.toList())){
+        for (TextStyles.Format format : Arrays.stream(TextStyles.Format.values()).filter(format -> !format.isFrame()).toList()){
             Rectangle2D formatButton = new Rectangle2D.Float(x+format.getUXOffset(),y-11,10,10);
             if (formatButton.contains(mouseX,mouseY)){
                 if (styles.is(format))styles.removeFormat(format);

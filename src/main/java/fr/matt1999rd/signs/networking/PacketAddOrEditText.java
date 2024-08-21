@@ -6,11 +6,12 @@ import fr.matt1999rd.signs.tileentity.DirectionSignTileEntity;
 import fr.matt1999rd.signs.tileentity.DrawingSignTileEntity;
 import fr.matt1999rd.signs.tileentity.EditingSignTileEntity;
 import fr.matt1999rd.signs.tileentity.primary.PlainSquareSignTileEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public class PacketAddOrEditText {
@@ -23,13 +24,13 @@ public class PacketAddOrEditText {
         this.ind = ind;
     }
 
-    public PacketAddOrEditText(PacketBuffer buf){
+    public PacketAddOrEditText(FriendlyByteBuf buf){
         panelPos = buf.readBlockPos();
         t = Text.readText(buf);
         ind = buf.readInt();
     }
 
-    public void toBytes(PacketBuffer buf){
+    public void toBytes(FriendlyByteBuf buf){
         buf.writeBlockPos(panelPos);
         t.writeText(buf);
         buf.writeInt(ind);
@@ -37,18 +38,14 @@ public class PacketAddOrEditText {
 
     public void handle(Supplier<NetworkEvent.Context> ctx){
         ctx.get().enqueueWork(()-> {
-            TileEntity te = ctx.get().getSender().getLevel().getBlockEntity(panelPos);
-            if (te instanceof DrawingSignTileEntity){
-                DrawingSignTileEntity dste = (DrawingSignTileEntity)te;
+            BlockEntity te = Objects.requireNonNull(ctx.get().getSender()).getLevel().getBlockEntity(panelPos);
+            if (te instanceof DrawingSignTileEntity dste){
                 dste.addOrEditText(t,ind);
-            }else if (te instanceof EditingSignTileEntity){
-                EditingSignTileEntity este = (EditingSignTileEntity)te;
+            }else if (te instanceof EditingSignTileEntity este){
                 este.setText(t);
-            }else if (te instanceof DirectionSignTileEntity) {
-                DirectionSignTileEntity dste = (DirectionSignTileEntity) te;
+            }else if (te instanceof DirectionSignTileEntity dste) {
                 dste.setText(ind / 2, ind % 2 == 1, t);
-            }else if (te instanceof PlainSquareSignTileEntity){
-                PlainSquareSignTileEntity psste = (PlainSquareSignTileEntity) te;
+            }else if (te instanceof PlainSquareSignTileEntity psste){
                 psste.setText(t,ind);
             }else {
                 SignMod.LOGGER.warn("unable to send packet to server : invalid position send");

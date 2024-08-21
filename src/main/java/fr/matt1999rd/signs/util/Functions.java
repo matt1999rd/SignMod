@@ -1,9 +1,11 @@
 package fr.matt1999rd.signs.util;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.google.common.collect.Lists;
+import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
 import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.datafixers.util.Pair;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.ExtendDirection;
 import fr.matt1999rd.signs.enums.PSPosition;
@@ -11,34 +13,36 @@ import fr.matt1999rd.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.matt1999rd.signs.fixedpanel.panelblock.PanelBlock;
 import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
 import fr.matt1999rd.signs.fixedpanel.support.SignSupport;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.util.math.vector.Vector2f;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.world.World;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
+import com.mojang.math.Vector3f;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Functions {
 
@@ -67,7 +71,7 @@ public class Functions {
     //give the direction after placement for updating block state
 
     public static Direction getDirectionFromEntity(LivingEntity placer, BlockPos pos) {
-        Vector3d vec = placer.position();
+        Vec3 vec = placer.position();
         Direction d = Direction.getNearest(vec.x-pos.getX(),vec.y-pos.getY(),vec.z-pos.getZ());
         if (d== Direction.DOWN || d== Direction.UP){
             return Direction.NORTH;
@@ -82,7 +86,7 @@ public class Functions {
         return ExtendDirection.makeFlagsFromFunction(extendDirection -> state.getValue(extendDirection.getSupportProperty()));
     }
 
-    //give the block state with the new state property of signs stored in the flags. the flags are stored as follow :
+    //give the block state with the new state property of signs stored in the flags. the flags are stored as follows :
     // flags = 0x[(SE)(NE)(NW)(SW)ENWS] where each boolean value correspond to a specific value of boolean property
     // SE : ExtendDirection.SOUTH_EAST.getSupportProperty()
 
@@ -96,7 +100,7 @@ public class Functions {
 
     //useful in support-like block to update the block state given in the position of grids into the flags table
 
-    public static void setBlockState(World world,BlockPos pos, BlockState state, int flags) {
+    public static void setBlockState(Level world,BlockPos pos, BlockState state, int flags) {
         BlockState newState = getNewBlockState(state,flags);
         world.setBlockAndUpdate(pos,newState);
     }
@@ -104,8 +108,8 @@ public class Functions {
     //convert a block position into vec3d and adding an offset on x and z coordinate
     // (use in the conversion to vec3d of support and grid center block position)
 
-    public static Vector3d getVecFromBlockPos (BlockPos pos, float horOffset){
-        return new Vector3d(pos.getX()+horOffset,pos.getY(),pos.getZ()+horOffset);
+    public static Vec3 getVecFromBlockPos (BlockPos pos, float horOffset){
+        return new Vec3(pos.getX()+horOffset,pos.getY(),pos.getZ()+horOffset);
     }
 
     //useful if we need to convert to degree (use for openGL rotation)
@@ -130,7 +134,7 @@ public class Functions {
 
     //useful for the rotation of matrix stack -> rotate around an axis
 
-    public static void rotate(MatrixStack stack, Direction.Axis axis, float angle){
+    public static void rotate(PoseStack stack, Direction.Axis axis, float angle){
         Vector3f vector3f = (axis == Direction.Axis.X) ? Vector3f.XP :
                 (axis == Direction.Axis.Y) ? Vector3f.YP : Vector3f.ZP;
         stack.mulPose(vector3f.rotationDegrees(angle));
@@ -168,7 +172,7 @@ public class Functions {
 
     //delete Grid Row following direction dir from the grid at basePos in worldIn by player
 
-    public static void deleteGridRow(ExtendDirection dir, BlockPos basePos, World worldIn, PlayerEntity player){
+    public static void deleteGridRow(ExtendDirection dir, BlockPos basePos, Level worldIn, Player player){
         BlockPos offset_pos = dir.relative(basePos);
         //check all the row of grid in the direction dir1 and stop when it is not a grid.
         while (isGridSupport(worldIn.getBlockState(offset_pos))){
@@ -191,7 +195,7 @@ public class Functions {
     }
 
     //manage the deletion of supported block : generic function for sign support and abstract panel block
-    public static void manageDeletionOfSupportedBlock(World world, BlockPos pos, BlockState state, PlayerEntity player){
+    public static void manageDeletionOfSupportedBlock(Level world, BlockPos pos, BlockState state, Player player){
         Functions.deleteConnectingGrid(pos,world,player,state);
         BlockPos offset_pos = pos.above();
         BlockState upSupportState = world.getBlockState(offset_pos);
@@ -204,7 +208,7 @@ public class Functions {
 
     //delete connecting grid of a sign support (with or without panel) at position pos in worldIn by player
 
-    public static void deleteConnectingGrid(BlockPos pos, World worldIn, PlayerEntity player,BlockState state) {
+    public static void deleteConnectingGrid(BlockPos pos, Level worldIn, Player player,BlockState state) {
         int flags = getFlagsFromState(state);
         for (ExtendDirection direction : ExtendDirection.values()){
             if ((flags&1)==1){
@@ -216,7 +220,7 @@ public class Functions {
 
     //delete block at position pos by playerEntity in world
 
-    public static void deleteBlock(BlockPos pos, World world, PlayerEntity playerEntity){
+    public static void deleteBlock(BlockPos pos, Level world, Player playerEntity){
         ItemStack stack = playerEntity.getMainHandItem();
         BlockState state1 = world.getBlockState(pos);
         world.levelEvent(playerEntity,2001,pos,Block.getId(state1));
@@ -228,7 +232,7 @@ public class Functions {
 
     //useful to delete the other grid of a grid or a support
 
-    public static void deleteOtherGrid(BlockPos pos, World worldIn, PlayerEntity player,BlockState state) {
+    public static void deleteOtherGrid(BlockPos pos, Level worldIn, Player player,BlockState state) {
         boolean isRotated = state.getValue(GridSupport.ROTATED);
         Direction.Axis axis;
         if (state.hasProperty(BlockStateProperties.HORIZONTAL_AXIS)){
@@ -291,7 +295,7 @@ public class Functions {
             v = ((firstColorValue >> (8 * i) & 255) - (secondColorValue >> (8 * i) & 255));
             d += v*v;
         }
-        return MathHelper.sqrt(d);
+        return Mth.sqrt(d);
     }
 
     public static VoxelShape getSupportShape(){
@@ -299,21 +303,21 @@ public class Functions {
     }
 
     public static VoxelShape getGridShape(boolean isRotated,Direction facing){
-        VoxelInts vi_plane = new VoxelInts(7.5,2,0,1,12,8,true);
-        VoxelInts[] vi_diag = new VoxelInts[]{
-                new VoxelInts(15,2,0,1,12,1, true),
-                new VoxelInts(14,2,1,1,12,1, true),
-                new VoxelInts(13,2,2,1,12,1, true),
-                new VoxelInts(12,2,3,1,12,1, true),
-                new VoxelInts(11,2,4,1,12,1, true),
-                new VoxelInts(10,2,5,1,12,1, true),
-                new VoxelInts(9 ,2,6,1,12,1, true),
-                new VoxelInts(8 ,2,7,1,12,1, true)
+        VoxelDouble vi_plane = new VoxelDouble(7.5,2,0,1,12,8,true);
+        VoxelDouble[] vi_diagonal = new VoxelDouble[]{
+                new VoxelDouble(15,2,0,1,12,1, true),
+                new VoxelDouble(14,2,1,1,12,1, true),
+                new VoxelDouble(13,2,2,1,12,1, true),
+                new VoxelDouble(12,2,3,1,12,1, true),
+                new VoxelDouble(11,2,4,1,12,1, true),
+                new VoxelDouble(10,2,5,1,12,1, true),
+                new VoxelDouble(9 ,2,6,1,12,1, true),
+                new VoxelDouble(8 ,2,7,1,12,1, true)
         };
         if (isRotated){
-            VoxelShape vs = VoxelShapes.empty();
+            VoxelShape vs = Shapes.empty();
             for (int i=0;i<7;i++){
-                vs = VoxelShapes.or(vs,vi_diag[i].rotate(Direction.EAST,facing).getAssociatedShape());
+                vs = Shapes.or(vs,vi_diagonal[i].rotate(Direction.EAST,facing).getAssociatedShape());
             }
             return vs;
         }else {
@@ -325,7 +329,7 @@ public class Functions {
         RenderSystem.enableDepthTest();
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(SourceFactor.SRC_ALPHA.value, DestFactor.ONE_MINUS_SRC_ALPHA.value, SourceFactor.ONE.value, DestFactor.ZERO.value);
-        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     public static void resetWorldGLState() {
@@ -346,13 +350,13 @@ public class Functions {
     }
 
     public static float distance(float x, float y) {
-        return MathHelper.sqrt(x*x+y*y);
+        return Mth.sqrt(x*x+y*y);
     }
 
     //has 4 grid return true if the grid support at blockPos pos
-    public static boolean has4Grid(ItemUseContext context) {
+    public static boolean has4Grid(UseOnContext context) {
         BlockPos pos = context.getClickedPos();
-        World world = context.getLevel();
+        Level world = context.getLevel();
         BlockState state = world.getBlockState(pos);
         Block block = state.getBlock();
         if (!(block instanceof GridSupport)){
@@ -384,7 +388,7 @@ public class Functions {
     // 0 -> nothing, 1-> only 2 by 2, 2-> 3 by 2 in left, 3 -> 3 by 2 in right,
     // 4 -> all side >> for the enable/disable of reduce/expand side button in gui (allowPanel = true)
 
-    public static byte getAuthoring(World world, BlockPos futurePos, Direction futureFacing,boolean allowPanel) {
+    public static byte getAuthoring(Level world, BlockPos futurePos, Direction futureFacing,boolean allowPanel) {
         List<PSPosition> placementDir = PSPosition.listPlaceable(world,futurePos,futureFacing,true,allowPanel);
         if (placementDir.isEmpty()){
             return NO_PANEL;
@@ -410,8 +414,8 @@ public class Functions {
     // rhombus bounding equation (with axis XY as diagonal) are of the form : |y-yC|̀ ≤ yD (1 - |x-xC|/xD) (x,y) ∈ ℝ²
     // where the middle of the square (intersection of the two diagonals) is C(xC,yC) and
     // the length of the x diagonal is xD and the length of the y diagonal is yD
-    public static boolean isInRhombus(Vector2f point,Vector2f center,float xD,float yD){
-        return MathHelper.abs(point.y-center.y) <= yD * (1 - MathHelper.abs(point.x-center.x)/xD);
+    public static boolean isInRhombus(Vec2 point,Vec2 center,float xD,float yD){
+        return Mth.abs(point.y-center.y) <= yD * (1 - Mth.abs(point.x-center.x)/xD);
     }
 
     public static void renderTextLimit(float guiLeft,float guiTop,float L,float h,boolean isSelected){
@@ -432,15 +436,34 @@ public class Functions {
     }
 
     private static void renderTexture(Rectangle2D vertex,Rectangle2D uvMapping){
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder builder = tessellator.getBuilder();
-        builder.begin(7, DefaultVertexFormats.POSITION_TEX);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder builder = tesselator.getBuilder();
+        builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
         builder.vertex(vertex.getMinX(),vertex.getMinY(),0).uv((float) uvMapping.getMinX(), (float) uvMapping.getMinY()).endVertex();
         builder.vertex(vertex.getMinX(),vertex.getMaxY(),0).uv((float) uvMapping.getMinX(), (float) uvMapping.getMaxY()).endVertex();
         builder.vertex(vertex.getMaxX(),vertex.getMaxY(),0).uv((float) uvMapping.getMaxX(), (float) uvMapping.getMaxY()).endVertex();
         builder.vertex(vertex.getMaxX(),vertex.getMinY(),0).uv((float) uvMapping.getMaxX(), (float) uvMapping.getMinY()).endVertex();
-        RenderSystem.enableAlphaTest();
-        tessellator.end();
+        //RenderSystem.enableAlphaTest();
+        tesselator.end();
+    }
+
+    //Function to bake model
+    public static ModelPart bake(CubeListBuilder builder){
+        List<ModelPart.Cube> modelCube = Lists.newArrayList();
+        builder.getCubes().forEach(cubeDefinition -> modelCube.add(cubeDefinition.bake(0,0)));
+        return new ModelPart(modelCube, Map.of());
+    }
+
+    @SafeVarargs
+    public static ModelPart bake(CubeListBuilder builder, Pair<String,ModelPart>... child){
+        List<ModelPart.Cube> modelCube = Lists.newArrayList();
+        builder.getCubes().forEach(cubeDefinition -> modelCube.add(cubeDefinition.bake(0,0)));
+        HashMap<String,ModelPart> children = new HashMap<>();
+        for (Pair<String,ModelPart> c : child){
+            children.put(c.getFirst(),c.getSecond());
+        }
+        return new ModelPart(modelCube, children);
     }
 
 

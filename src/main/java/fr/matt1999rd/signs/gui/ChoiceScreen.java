@@ -1,6 +1,7 @@
 package fr.matt1999rd.signs.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.networking.Networking;
@@ -8,12 +9,12 @@ import fr.matt1999rd.signs.networking.PacketPlacePSPanel;
 import fr.matt1999rd.signs.networking.PacketPlacePanel;
 import fr.matt1999rd.signs.util.Functions;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.ImageButton;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TextComponent;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -38,7 +39,7 @@ public class ChoiceScreen extends Screen {
     private final ResourceLocation FORM = new ResourceLocation(SignMod.MODID, "textures/gui/choice_button.png");
 
     public ChoiceScreen(BlockPos futurePanelPos,Direction futureFacing,boolean rotated,boolean isGrid,boolean has4Grid) {
-        super(new StringTextComponent("Choose form of signs"));
+        super(new TextComponent("Choose form of signs"));
         this.futurePanelPos = futurePanelPos;
         this.futureFacing = futureFacing;
         this.rotated = rotated;
@@ -68,7 +69,7 @@ public class ChoiceScreen extends Screen {
                             FORM,
                             button -> place(k)
                 );
-                addButton(mainMenuButtons[k]);
+                addRenderableWidget(mainMenuButtons[k]);
             }
         }
         for (int i=0;i<2;i++){
@@ -85,7 +86,7 @@ public class ChoiceScreen extends Screen {
                         SUB_MENU_TEX_WIDTH,
                         SUB_MENU_TEX_HEIGHT,
                         button -> placePSPanel(k));
-                addButton(subMenuButtons[k]);
+                addRenderableWidget(subMenuButtons[k]);
             }
         }
         changeButtonDisplayed();
@@ -125,9 +126,8 @@ public class ChoiceScreen extends Screen {
     }
 
     @Override
-    public void render(MatrixStack stack,int mouseX, int mouseY, float partialTicks) {
-        assert this.minecraft != null;
-        this.minecraft.getTextureManager().bind(getGUI());
+    public void render(PoseStack stack,int mouseX, int mouseY, float partialTicks) {
+        RenderSystem.setShaderTexture(0,getGUI());
         int relX = (this.width-LENGTH) / 2;
         int relY = (this.height-LENGTH) / 2;
         if (isSubMenu){

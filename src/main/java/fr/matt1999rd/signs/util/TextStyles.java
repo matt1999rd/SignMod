@@ -1,12 +1,12 @@
 package fr.matt1999rd.signs.util;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import fr.matt1999rd.signs.SignMod;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import com.mojang.math.Matrix4f;
 
 import javax.annotation.Nullable;
 import java.awt.Color;
@@ -114,7 +114,7 @@ public class TextStyles {
 
     public TextStyles withoutStraightFrame(){
         if (!this.hasStraightFrame()){
-            SignMod.LOGGER.warn("Try removing framed curve format to style that has not this frame!");
+            SignMod.LOGGER.warn("Try removing framed straight format to style that has not this frame!");
         }else {
             this.removeFormat(Format.FRAMED_STRAIGHT);
         }
@@ -196,7 +196,7 @@ public class TextStyles {
 
     //RENDERING FUNCTION
 
-    public void render(MatrixStack stack, IVertexBuilder builder, Color color, int combinedLight,Text t,boolean isOnScreen) {
+    public void render(PoseStack stack, VertexConsumer builder, Color color, int combinedLight,Text t,boolean isOnScreen) {
         // isOnScreen is mandatory because minecraft does not handle layering in screen -> if z != 0 it will render messing texture
         if (t.isEmpty())return;
         for (Format format : Format.formatByRenderOrder){
@@ -228,25 +228,25 @@ public class TextStyles {
         return offset;
     }
 
-    public CompoundNBT serializeNBT(){
-        CompoundNBT nbt = new CompoundNBT();
+    public CompoundTag serializeNBT(){
+        CompoundTag nbt = new CompoundTag();
         nbt.putByte("flag",flag);
         nbt.putInt("color",highlightColor.getRGB());
         return nbt;
     }
 
-    public static TextStyles getStylesFromNBT(CompoundNBT nbt) {
+    public static TextStyles getStylesFromNBT(CompoundTag nbt) {
         byte flag = nbt.getByte("flag");
         int color = nbt.getInt("color");
         return new TextStyles(flag,color);
     }
 
-    public void writeStyle(PacketBuffer buf) {
+    public void writeStyle(FriendlyByteBuf buf) {
         buf.writeByte(flag);
         buf.writeInt(highlightColor.getRGB());
     }
 
-    public static TextStyles readStyles(PacketBuffer buf) {
+    public static TextStyles readStyles(FriendlyByteBuf buf) {
         byte flag = buf.readByte();
         int color = buf.readInt();
         return new TextStyles(flag,color);
@@ -298,7 +298,7 @@ public class TextStyles {
             this.renderOrder = renderOrder;
         }
 
-        public void render(MatrixStack stack, IVertexBuilder builder, Color color, int combinedLight, Text t, boolean isOnScreen,TextStyles styles) {
+        public void render(PoseStack stack, VertexConsumer builder, Color color, int combinedLight, Text t, boolean isOnScreen,TextStyles styles) {
             stack.pushPose();
             Matrix4f matrix4f = stack.last().pose();
             switch (this){
@@ -335,7 +335,7 @@ public class TextStyles {
             stack.popPose();
         }
 
-        private void renderTexture(Matrix4f matrix4f, IVertexBuilder builder, Rectangle2D vertexRectangle, Rectangle2D uvRectangle, int light, Color color,int layer){
+        private void renderTexture(Matrix4f matrix4f, VertexConsumer builder, Rectangle2D vertexRectangle, Rectangle2D uvRectangle, int light, Color color,int layer){
             int red = color.getRed();
             int green = color.getGreen();
             int blue = color.getBlue();
@@ -347,7 +347,7 @@ public class TextStyles {
             builder.vertex(matrix4f, (float) vertexRectangle.getMaxX(), (float) vertexRectangle.getMinY(),z).color(red,green,blue,alpha).uv((float) uvRectangle.getMaxX()/256F, (float) uvRectangle.getMinY()/256F).uv2(light).endVertex();
         }
 
-        private void renderFrame(MatrixStack stack,IVertexBuilder builder,Color color,int combinedLight,Text t,boolean isCurve,boolean hasHighlight){
+        private void renderFrame(PoseStack stack,VertexConsumer builder,Color color,int combinedLight,Text t,boolean isCurve,boolean hasHighlight){
             stack.translate(-sideFrameGap*t.getScale(),-upFrameGap*t.getScale(),0);
             Matrix4f matrix4f = stack.last().pose();
             float L = t.getLength(true,false) + 2*sideFrameGap*t.getScale(); // sideFrameGap is included in the function todo : change this calculation

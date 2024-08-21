@@ -1,6 +1,7 @@
 package fr.matt1999rd.signs.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.gui.screenutils.ColorType;
@@ -11,15 +12,16 @@ import fr.matt1999rd.signs.util.Letter;
 import fr.matt1999rd.signs.util.Text;
 import fr.matt1999rd.signs.util.Vector2i;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.TextComponent;
+
 import static fr.matt1999rd.signs.util.DirectionSignConstants.*;
-import static net.minecraft.util.text.ITextComponent.nullToEmpty;
+import static net.minecraft.network.chat.Component.nullToEmpty;
 
 import java.awt.*;
 
-public class AddTextScreen extends withColorSliderScreen {
+public class AddTextScreen extends WithColorSliderScreen {
     IWithEditTextScreen parentScreen;
     Text oldText;
     private static final int white =Color.WHITE.getRGB();
@@ -30,7 +32,7 @@ public class AddTextScreen extends withColorSliderScreen {
     ColorSlider RED_SLIDER, GREEN_SLIDER, BLUE_SLIDER;
 
     protected AddTextScreen(IWithEditTextScreen parentScreen,Text textToEdit) {
-        super(new StringTextComponent("Add Text Screen"));
+        super(new TextComponent("Add Text Screen"));
         this.parentScreen = parentScreen;
         oldText = textToEdit;
         this.DIMENSION = new Vector2i(197,203);
@@ -78,11 +80,11 @@ public class AddTextScreen extends withColorSliderScreen {
         minusButton = new Button(relX+162,relY+129,21,20,nullToEmpty("-"),b->changeScale(false));
         minusButton.active = (field.getScale() != 1);
         if (oldText != null)field.updatePlusButton();
-        this.addButton(cancelButton);
-        this.addButton(addTextButton);
-        this.addButton(plusButton);
-        this.addButton(minusButton);
-        this.addButton(field);
+        this.addRenderableWidget(cancelButton);
+        this.addRenderableWidget(addTextButton);
+        this.addRenderableWidget(plusButton);
+        this.addRenderableWidget(minusButton);
+        this.addRenderableWidget(field);
     }
 
     @Override
@@ -91,11 +93,10 @@ public class AddTextScreen extends withColorSliderScreen {
     }
 
     @Override
-    public void render(MatrixStack stack,int mouseX, int mouseY, float partialTicks) {
+    public void render(PoseStack stack,int mouseX, int mouseY, float partialTicks) {
         int relX = getGuiStartXPosition();
         int relY = getGuiStartYPosition();
-        assert this.minecraft != null;
-        this.minecraft.getTextureManager().bind(BACKGROUND);
+        RenderSystem.setShaderTexture(0, BACKGROUND);
         blit(stack,relX, relY,this.getBlitOffset() , 0.0F, 0.0F, DIMENSION.getX(), DIMENSION.getY(), 256, 256);
         super.render(stack,mouseX, mouseY, partialTicks);
         //AbstractGui.fill(relX + 143, relY + 93, relX + 143 + 9, relY + 93 + 9, field.getColor());
@@ -132,9 +133,9 @@ public class AddTextScreen extends withColorSliderScreen {
         RED_SLIDER = new ColorSlider(relX + 53, relY + 7, field, ColorType.RED,135);
         GREEN_SLIDER = new ColorSlider(relX + 53, relY + 32, field, ColorType.GREEN,135);
         BLUE_SLIDER = new ColorSlider(relX + 53, relY + 57, field, ColorType.BLUE,135);
-        this.addButton(RED_SLIDER);
-        this.addButton(BLUE_SLIDER);
-        this.addButton(GREEN_SLIDER);
+        this.addRenderableWidget(RED_SLIDER);
+        this.addRenderableWidget(BLUE_SLIDER);
+        this.addRenderableWidget(GREEN_SLIDER);
     }
 
     protected int getGuiStartXPosition(){
@@ -160,7 +161,7 @@ public class AddTextScreen extends withColorSliderScreen {
     }
 
     private void addText() {
-        if (field.getValue().equals("") && parentScreen instanceof DrawingScreen){
+        if (field.getValue().isEmpty() && parentScreen instanceof DrawingScreen){
             cancel();
             return;
         }

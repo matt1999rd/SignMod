@@ -1,49 +1,48 @@
 package fr.matt1999rd.signs.util;
 
-import net.minecraft.client.renderer.RenderState;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import fr.matt1999rd.signs.SignMod;
+
+import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.resources.ResourceLocation;
 
-public class PictureRenderState extends RenderState {
+public class PictureRenderState extends RenderStateShard {
 
-    public static final RenderType pictureRenderType = RenderType.create("picture_rendering",
-            DefaultVertexFormats.POSITION_COLOR_LIGHTMAP,
-            GL11.GL_QUADS,
-            65536,false,false,
-            RenderType.State.builder()
-                    .setAlphaState(RenderState.DEFAULT_ALPHA)
-                    .setTransparencyState(RenderState.TRANSLUCENT_TRANSPARENCY)
-                    .setLayeringState(RenderState.NO_LAYERING)
-                    .setLightmapState(RenderState.LIGHTMAP).createCompositeState(false));
+    public static RenderType pictureRenderType(){
+        ShaderInstance panelShader = SignMod.getPanelShader();
+        if (panelShader == null){
+            throw new IllegalStateException("Custom shader has not been registered properly.");
+        }
+        RenderStateShard.ShaderStateShard PANEL_SHADER = new ShaderStateShard(() -> panelShader);
 
-    public static RenderType getModelRenderType(ResourceLocation location){
-        return RenderType.create("picture_rendering",
-                        DefaultVertexFormats.NEW_ENTITY,
-                        GL11.GL_QUADS,
-                        256,true,false,
-                        RenderType.State.builder()
-                                .setTextureState(new RenderState.TextureState(location, false, true))
-                                .setTransparencyState(RenderState.NO_TRANSPARENCY)
-                                .setAlphaState(RenderState.DEFAULT_ALPHA)
-                                .setCullState(RenderState.CULL)
-                                .setLightmapState(RenderState.LIGHTMAP)
-                                .setDiffuseLightingState(RenderState.DIFFUSE_LIGHTING)
-                                .createCompositeState(false));
+        return RenderType.create("picture_rendering_test",
+                DefaultVertexFormat.POSITION_COLOR_TEX,
+                VertexFormat.Mode.QUADS,
+                65536,false,true,
+                RenderType.CompositeState.builder()
+                        .setLightmapState(RenderStateShard.LIGHTMAP)
+                        .setShaderState(PANEL_SHADER)
+                        .setTransparencyState(RenderStateShard.NO_TRANSPARENCY)
+                        .setCullState(RenderStateShard.CULL)
+                        .setLayeringState(RenderStateShard.NO_LAYERING)
+                        .createCompositeState(false));
     }
 
     public static RenderType getTextureRenderType(ResourceLocation location){
         return RenderType.create("texture_rendering",
-                DefaultVertexFormats.POSITION_COLOR_TEX_LIGHTMAP,
-                GL11.GL_QUADS,
+                DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
+                VertexFormat.Mode.QUADS,
                 256,true,false,
-                RenderType.State.builder()
-                        .setTextureState(new RenderState.TextureState(location, false, false))
-                        .setTransparencyState(RenderState.NO_TRANSPARENCY)
-                        .setAlphaState(RenderState.DEFAULT_ALPHA)
-                        .setCullState(RenderState.CULL)
-                        .setLightmapState(RenderState.LIGHTMAP)
+                RenderType.CompositeState.builder()
+                        .setTextureState(new RenderStateShard.TextureStateShard(location, false, false))
+                        .setTransparencyState(RenderStateShard.NO_TRANSPARENCY)
+                        .setShaderState(RenderStateShard.RENDERTYPE_ENTITY_CUTOUT_SHADER)
+                        //.setAlphaState(RenderStateShard.DEFAULT_ALPHA)
+                        .setCullState(RenderStateShard.CULL)
+                        .setLightmapState(RenderStateShard.LIGHTMAP)
                         .createCompositeState(false));
     }
 

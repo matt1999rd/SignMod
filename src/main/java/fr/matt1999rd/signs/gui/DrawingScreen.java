@@ -1,7 +1,8 @@
 package fr.matt1999rd.signs.gui;
 
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.ClientAction;
@@ -19,24 +20,26 @@ import fr.matt1999rd.signs.tileentity.DrawingSignTileEntity;
 import fr.matt1999rd.signs.util.Text;
 import fr.matt1999rd.signs.util.Vector2i;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.gui.widget.button.ImageButton;
-import net.minecraft.item.DyeColor;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.Level;
 import org.lwjgl.glfw.GLFW;
 
-import static net.minecraft.util.text.ITextComponent.nullToEmpty;
+import java.awt.*;
 
-public class DrawingScreen extends withColorSliderScreen implements IWithEditTextScreen {
-    private static final int white = MathHelper.color(1.0F,1.0F,1.0F);
+import static net.minecraft.network.chat.Component.nullToEmpty;
+
+public class DrawingScreen extends WithColorSliderScreen implements IWithEditTextScreen {
+    private static final int white = Mth.color(1.0F,1.0F,1.0F);
 
     Form form ;
     BlockPos panelPos;
@@ -50,7 +53,7 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
     ResourceLocation PENCIL_BUTTONS = new ResourceLocation(SignMod.MODID,"textures/gui/buttons.png");
 
     protected DrawingScreen(Form form,BlockPos panelPos) {
-        super(new StringTextComponent("Drawing Screen"));
+        super(new TextComponent("Drawing Screen"));
         this.form = form;
         this.panelPos = panelPos;
         this.DIMENSION = new Vector2i(325,203);
@@ -79,7 +82,7 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
                     BUTTON_LENGTH, // y diff text when hovered
                     PENCIL_BUTTONS,
                     button -> this.changePencilMode(PencilMode.getPencilMode(finalI)));
-            this.addButton(pencil_button[i]);
+            this.addRenderableWidget(pencil_button[i]);
         }
         chBgButton = new ImageButton(relX+75,
                 relY+135,
@@ -89,20 +92,20 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
                 0,BUTTON_LENGTH,
                 PENCIL_BUTTONS,
                 button -> this.chBgButton(option.getColor()));
-        this.addButton(chBgButton);
+        this.addRenderableWidget(chBgButton);
         //todo : init is redone when exiting the gui add text -> correct bug due to this action
         int modeIndices = option.getMode().getMeta();
         pencil_button[modeIndices].visible = false;
         pencil_button[modeIndices].active = false;
         plusButton = new Button(relX+290,relY+109,21,20,nullToEmpty("+"),button-> this.increaseLength());
         minusButton = new Button(relX+290,relY+129,21,20,nullToEmpty("-"), button-> this.decreaseLength());
-        this.addButton(plusButton);
-        this.addButton(minusButton);
+        this.addRenderableWidget(plusButton);
+        this.addRenderableWidget(minusButton);
 
         addTextButton = new Button(relX+132,relY+142,74,20,nullToEmpty("Add Text"),b->openTextGui());
         delTextButton = new Button(relX+132,relY+165,74,20,nullToEmpty("Delete Text"),b->deleteSelText());
-        this.addButton(addTextButton);
-        this.addButton(delTextButton);
+        this.addRenderableWidget(addTextButton);
+        this.addRenderableWidget(delTextButton);
         addTextButton.active = option.getMode() == PencilMode.SELECT;
         delTextButton.active = option.getMode() == PencilMode.SELECT && option.isTextSelected();
         minusButton.active = option.getLength() != 1;
@@ -117,23 +120,23 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
     /** display function **/
 
     @Override
-    public void render(MatrixStack stack,int mouseX, int mouseY, float partialTicks) {
+    public void render(PoseStack stack,int mouseX, int mouseY, float partialTicks) {
         int relX = getGuiStartXPosition();
         int relY = getGuiStartYPosition();
-        assert this.minecraft != null;
-        this.minecraft.getTextureManager().bind(BACKGROUND);
+        RenderSystem.setShaderTexture(0,BACKGROUND);
         blit(stack,relX, relY,this.getBlitOffset() , 0.0F, 0.0F, DIMENSION.getX(), DIMENSION.getY(), 256, 512);
         DrawingSignTileEntity dste = getTileEntity();
         dste.renderOnScreen(stack,relX+30,relY+4,option.getTextIndices());
         super.render(stack,mouseX, mouseY, partialTicks);
         // rendering of color is done before following action -> not the case before
-        FontRenderer renderer = this.minecraft.font;
+        assert this.minecraft != null;
+        Font renderer = this.minecraft.font;
         int length = option.getLength();
         int gap = (length>9) ? 6:0;
         drawString(stack,renderer,"Color of pencil :" ,relX+180,relY+93,white);
         drawString(stack,renderer,"Length of pencil :",relX+160,relY+124,white);
         if (option.getMode().enablePencilLength()) drawString(stack,renderer,""+length,relX+272-gap,relY+126,white);
-        if (option.getMode() != PencilMode.SELECT) AbstractGui.fill(stack,relX+83,relY+171,relX+83+9,relY+171+9,dste.getBGColor());
+        if (option.getMode() != PencilMode.SELECT) GuiComponent.fill(stack,relX+83,relY+171,relX+83+9,relY+171+9,dste.getBGColor());
     }
 
     /** IPressable Consumer object for button in drawing screen **/
@@ -181,9 +184,9 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
         RED_SLIDER  =  new ColorSlider(relX+181,relY+7 ,option,ColorType.RED,135);
         GREEN_SLIDER = new ColorSlider(relX+181,relY+32,option,ColorType.GREEN,135);
         BLUE_SLIDER  = new ColorSlider(relX+181,relY+57,option,ColorType.BLUE,135);
-        this.addButton(RED_SLIDER);
-        this.addButton(BLUE_SLIDER);
-        this.addButton(GREEN_SLIDER);
+        this.addRenderableWidget(RED_SLIDER);
+        this.addRenderableWidget(BLUE_SLIDER);
+        this.addRenderableWidget(GREEN_SLIDER);
     }
 
     @Override
@@ -289,13 +292,13 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
     private void manageClickOnScreen(double mouseX, double mouseY, int button) {
         int x = getXOnScreen(mouseX);
         int y = getYOnScreen(mouseY);
-        int color,length;
+        int length,color;
         boolean makeAction = true;
         if (option.getMode() == PencilMode.PICK){
             DrawingSignTileEntity te = getTileEntity();
             color = te.getPixelColor(x,y);
             if (color != option.getColor()){
-                super.fixColor(color);
+                super.fixColor(new Color(color));
             }
             length = 0;
             makeAction = false;
@@ -307,7 +310,7 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
             int newInd = indexAndText.getFirst();
             // if we have no text selected, and we click on left mouse button to select a text with success
             if ((!option.isTextSelected() && newInd != Text.UNSELECTED_TEXT_ID && button == GLFW.GLFW_MOUSE_BUTTON_LEFT) ||
-                    // if we have a text selected and we click on right button to unselect the text with success
+                    // if we have a text selected, and we click on right button to unselect the text with success
                     (option.isTextSelected() && newInd == Text.UNSELECTED_TEXT_ID && button == GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
                 onTextSelected(newInd);
             }
@@ -356,14 +359,14 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
         int relY = getGuiStartYPosition();
         float screenTop = relY + 4;
         double offsetMouseY = mouseY-screenTop;
-        return MathHelper.fastFloor(offsetMouseY);
+        return Mth.fastFloor(offsetMouseY);
     }
 
     private int getXOnScreen(double mouseX) {
         int relX = getGuiStartXPosition();
         float screenLeft = relX + 30;
         double offsetMouseX = mouseX-screenLeft;
-        return MathHelper.fastFloor(offsetMouseX);
+        return Mth.fastFloor(offsetMouseX);
     }
 
     private boolean mouseOnScreen(double mouseX, double mouseY) {
@@ -400,9 +403,9 @@ public class DrawingScreen extends withColorSliderScreen implements IWithEditTex
 
     private DrawingSignTileEntity getTileEntity(){
         assert this.minecraft != null;
-        World world = this.minecraft.level;
+        Level world = this.minecraft.level;
         assert world != null;
-        TileEntity te = world.getBlockEntity(panelPos);
+        BlockEntity te = world.getBlockEntity(panelPos);
         if (te instanceof DrawingSignTileEntity){
             return (DrawingSignTileEntity)te;
         }

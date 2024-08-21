@@ -1,21 +1,18 @@
 package fr.matt1999rd.signs.util;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.PSDisplayMode;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Vector2f;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import com.mojang.math.Matrix4f;
+import net.minecraft.world.phys.Vec2;
+import com.mojang.math.Vector3f;
 
 import java.awt.*;
 
@@ -169,12 +166,12 @@ public class Text {
         this.content = content;
     }
 
-    public void render(MatrixStack stack, IRenderTypeBuffer buffer,Vector3f origin, Vector2f pixelDimension, int combinedLight){
-        IVertexBuilder builder = buffer.getBuffer(textRenderType);
+    public void render(PoseStack stack, MultiBufferSource buffer,Vector3f origin, Vec2 pixelDimension, int combinedLight){
+        VertexConsumer builder = buffer.getBuffer(textRenderType);
         render(stack,builder,origin,pixelDimension,combinedLight,false);
     }
 
-    private void render(MatrixStack stack,IVertexBuilder builder,Vector3f origin, Vector2f pixelDimension,int combinedLight,boolean isOnScreen){
+    private void render(PoseStack stack,VertexConsumer builder,Vector3f origin, Vec2 pixelDimension,int combinedLight,boolean isOnScreen){
         stack.pushPose();
         stack.translate(origin.x(),origin.y(),origin.z());
         stack.scale((isOnScreen?1:-1)*pixelDimension.x,(isOnScreen?1:-1)*pixelDimension.y,1);
@@ -202,14 +199,16 @@ public class Text {
         stack.popPose();
     }
 
-    public void renderOnScreen(MatrixStack stack,Vector2i origin,Vector2f pixelDimension,boolean isSelected,boolean needScale){
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder builder = tessellator.getBuilder();
-        builder.begin(7, DefaultVertexFormats.POSITION_COLOR_TEX);
-        Minecraft.getInstance().getTextureManager().bind(TEXT);
+    public void renderOnScreen(PoseStack stack,Vector2i origin,Vec2 pixelDimension,boolean isSelected,boolean needScale){
+
+        RenderSystem.setShader(GameRenderer::getPositionColorTexLightmapShader);
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder builder = tesselator.getBuilder();
+        builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP);
+        RenderSystem.setShaderTexture(0,TEXT);
         render(stack,builder,new Vector3f(origin.getX(),origin.getY(),0),pixelDimension,
               15728880,true);
-        tessellator.end();
+        tesselator.end();
         if (needScale) {
             //psste function
             Functions.renderTextLimit(
@@ -233,8 +232,8 @@ public class Text {
         return (mouseX>guiLeft-1+getX(true)*scaleX && mouseX<guiLeft+getX(true)*scaleX+L+1) && (mouseY>guiTop-1+getY(true)*scaleY && mouseY<guiTop+getY(true)*scaleY+h+1);
     }
 
-    public CompoundNBT serializeNBT() {
-        CompoundNBT txtNBT = new CompoundNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag txtNBT = new CompoundTag();
         txtNBT.putFloat("x_coor",x);
         txtNBT.putFloat("y_coor",y);
         txtNBT.putString("text_content",content);
@@ -245,7 +244,7 @@ public class Text {
     }
 
 
-    public void writeText(PacketBuffer buf){
+    public void writeText(FriendlyByteBuf buf){
         buf.writeFloat(x);
         buf.writeFloat(y);
         buf.writeInt(color.getRGB());
@@ -254,7 +253,7 @@ public class Text {
         styles.writeStyle(buf);
     }
 
-    public static Text readText(PacketBuffer buf){
+    public static Text readText(FriendlyByteBuf buf){
         float x,y;
         x=buf.readFloat();
         y=buf.readFloat();
@@ -265,7 +264,7 @@ public class Text {
         return new Text(x,y,content,new Color(color,true),scale,styles);
     }
 
-    public static Text getTextFromNBT(CompoundNBT nbt){
+    public static Text getTextFromNBT(CompoundTag nbt){
         float x = nbt.getFloat("x_coor");
         float y = nbt.getFloat("y_coor");
         String content = nbt.getString("text_content");

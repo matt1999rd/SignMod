@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 public class QuadPSPositions {
     private final ArrayList<QuadPSPosition> positions;
@@ -24,7 +24,7 @@ public class QuadPSPositions {
     }
 
     public Vector2i getPosition(int ind){
-        List<Integer> maxTexts = this.positions.stream().map(quadPSPosition -> quadPSPosition.maxText).collect(Collectors.toList());
+        List<Integer> maxTexts = this.positions.stream().map(quadPSPosition -> quadPSPosition.maxText).toList();
         int accumulator = 0;
         int oldAccumulator = 0;
         int index = 0;
@@ -39,7 +39,7 @@ public class QuadPSPositions {
     }
 
     public QuadPSPosition getQuadPSPosition(int ind){
-        List<Integer> maxTexts = this.positions.stream().map(quadPSPosition -> quadPSPosition.maxText).collect(Collectors.toList());
+        List<Integer> maxTexts = this.positions.stream().map(quadPSPosition -> quadPSPosition.maxText).toList();
         int accumulator = 0;
         int index = 0;
         while (accumulator<=ind && index<maxTexts.size()){

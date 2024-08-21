@@ -2,11 +2,12 @@ package fr.matt1999rd.signs.networking;
 
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.tileentity.primary.PlainSquareSignTileEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public class PacketPSScreenOperation {
@@ -14,13 +15,13 @@ public class PacketPSScreenOperation {
     private final int colorModeOrArrowDir;
     private final int operationId;
 
-     public PacketPSScreenOperation(PacketBuffer buffer){
+     public PacketPSScreenOperation(FriendlyByteBuf buffer){
          panelPos = buffer.readBlockPos();
          colorModeOrArrowDir = buffer.readInt();
          operationId = buffer.readByte();
      }
 
-     public void toBytes(PacketBuffer buffer){
+     public void toBytes(FriendlyByteBuf buffer){
          buffer.writeBlockPos(panelPos);
          buffer.writeInt(colorModeOrArrowDir);
          buffer.writeByte(operationId);
@@ -34,9 +35,8 @@ public class PacketPSScreenOperation {
 
      public void handle(Supplier<NetworkEvent.Context> ctx){
          ctx.get().enqueueWork(()->{
-             TileEntity te = ctx.get().getSender().getLevel().getBlockEntity(panelPos);
-             if (te instanceof PlainSquareSignTileEntity){
-                 PlainSquareSignTileEntity psste = (PlainSquareSignTileEntity) te;
+             BlockEntity te = Objects.requireNonNull(ctx.get().getSender()).getLevel().getBlockEntity(panelPos);
+             if (te instanceof PlainSquareSignTileEntity psste){
                  psste.doOperation(operationId,colorModeOrArrowDir);
              }else {
                  SignMod.LOGGER.warn("unable to send packet to server : invalid position send");

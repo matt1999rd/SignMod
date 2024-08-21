@@ -55,17 +55,16 @@ public class PencilOption implements Option{
         this.color = new Color(rColor, gColor, bColor, 255);
     }
 
+    public void setColor(Color color){
+        this.color = color;
+    }
+
     public int getColor(ColorType type){
-        switch (type){
-            case RED:
-                return color.getRed();
-            case BLUE:
-                return color.getBlue();
-            case GREEN:
-                return color.getGreen();
-            default:
-                return -1;
-        }
+        return switch (type) {
+            case RED -> color.getRed();
+            case BLUE -> color.getBlue();
+            case GREEN -> color.getGreen();
+        };
     }
 
     public void changePencilMode(PencilMode newMode) {

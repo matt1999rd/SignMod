@@ -1,33 +1,34 @@
 package fr.matt1999rd.signs.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.gui.screenutils.Option;
 import fr.matt1999rd.signs.gui.widget.ColorSlider;
-import fr.matt1999rd.signs.util.Functions;
 import fr.matt1999rd.signs.util.Vector2i;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.ImageButton;
-import net.minecraft.item.DyeColor;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
 
-public abstract class withColorSliderScreen extends Screen {
+import java.awt.*;
+
+public abstract class WithColorSliderScreen extends Screen {
     ImageButton[] dye_color_button= new ImageButton[16];
     ResourceLocation COLOR_BUTTONS = new ResourceLocation(SignMod.MODID,"textures/gui/buttons.png");
     protected Vector2i DIMENSION;
-    protected withColorSliderScreen(ITextComponent titleIn) {
+    protected WithColorSliderScreen(Component titleIn) {
         super(titleIn);
     }
 
-    void fixColor(int color) {
+    void fixColor(Color color) {
         Option option = getColorOption();
-        option.setColor(color,null);
+        option.setColor(color);
         ColorSlider[] sliders = getActiveSliders();
-        sliders[0].updateSlider(Functions.getRedValue(color));
-        sliders[1].updateSlider(Functions.getGreenValue(color));
-        sliders[2].updateSlider(Functions.getBlueValue(color));
+        sliders[0].updateSlider(color.getRed());
+        sliders[1].updateSlider(color.getGreen());
+        sliders[2].updateSlider(color.getBlue());
     }
 
     abstract Vector2i getDyeButtonsBeginning();
@@ -69,8 +70,11 @@ public abstract class withColorSliderScreen extends Screen {
                     6*25+i*dye_button_length,
                     0,
                     dye_button_length,COLOR_BUTTONS,
-                    b-> fixColor(color.getColorValue()));
-            this.addButton(dye_color_button[i]);
+                    b-> {
+                        float[] colorRGB = color.getTextureDiffuseColors();
+                        fixColor(new Color(colorRGB[0],colorRGB[1],colorRGB[2]));
+                    });
+            this.addRenderableWidget(dye_color_button[i]);
         }
         // making the three sliders Red Blue Green that can be moved on screen
         // to apply a color in the dedicated tile entity
@@ -78,7 +82,7 @@ public abstract class withColorSliderScreen extends Screen {
     }
 
     @Override
-    public void render(MatrixStack stack,int mouseX, int mouseY, float partialTicks) {
+    public void render(PoseStack stack,int mouseX, int mouseY, float partialTicks) {
         super.render(stack,mouseX, mouseY, partialTicks);
         Vector2i guiDimension = getGuiDimension();
         int colorDisplayLength = 9;
@@ -89,7 +93,7 @@ public abstract class withColorSliderScreen extends Screen {
         int yColorDisplayBeginning = colorDisplayBeginning.getY();
         Option option = getColorOption();
         if (renderColor()){
-            AbstractGui.fill(stack,
+            GuiComponent.fill(stack,
                     relX + xColorDisplayBeginning,
                     relY + yColorDisplayBeginning,
                     relX + xColorDisplayBeginning + colorDisplayLength,

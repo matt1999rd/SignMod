@@ -27,17 +27,12 @@ public enum ClientAction {
     }
 
     public static ClientAction getActionFromMode(PencilMode mode){
-        switch (mode){
-            case WRITE:
-                return SET_PIXEL;
-            case ERASE:
-                return ERASE_PIXEL;
-            case FILL:
-                return FILL_PIXEL;
-            case SELECT:
-                return MOVE_TEXT;
-            default:
-                return null;
-        }
+        return switch (mode) {
+            case WRITE -> SET_PIXEL;
+            case ERASE -> ERASE_PIXEL;
+            case FILL -> FILL_PIXEL;
+            case SELECT -> MOVE_TEXT;
+            default -> null;
+        };
     }
 }

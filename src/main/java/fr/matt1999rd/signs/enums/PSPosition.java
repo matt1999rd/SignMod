@@ -3,15 +3,15 @@ package fr.matt1999rd.signs.enums;
 import com.google.common.collect.Lists;
 import fr.matt1999rd.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
-import net.minecraft.block.Block;
-import net.minecraft.util.Direction;
-import net.minecraft.util.IStringSerializable;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.core.Direction;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.util.*;
 
-public enum PSPosition implements IStringSerializable {
+public enum PSPosition implements StringRepresentable {
     UP_LEFT(0,"up_left"),
     UP_MIDDLE(1,"up_middle"),
     UP_RIGHT(2,"up_right"),
@@ -71,7 +71,7 @@ public enum PSPosition implements IStringSerializable {
         return meta/3 == 0;
     }
 
-    public boolean isPlaceable(World world, BlockPos pos, Direction facing,boolean isFor2by2,boolean allowPanel){
+    public boolean isPlaceable(Level world, BlockPos pos, Direction facing,boolean isFor2by2,boolean allowPanel){
         List<BlockPos> posToCheck = Lists.newArrayList();
         Direction leftDirection = facing.getClockWise();
         if (isFor2by2 && isMiddle()){
@@ -131,7 +131,7 @@ public enum PSPosition implements IStringSerializable {
         return true;
     }
 
-    public static List<PSPosition> listPlaceable(World world, BlockPos pos, Direction facing,boolean isFor2by2,boolean allowPanel){
+    public static List<PSPosition> listPlaceable(Level world, BlockPos pos, Direction facing,boolean isFor2by2,boolean allowPanel){
         List<PSPosition> positions = Lists.newArrayList();
         for (PSPosition position : PSPosition.values()){
             if (position.isPlaceable(world,pos,facing,isFor2by2,allowPanel)){

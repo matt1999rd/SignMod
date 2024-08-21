@@ -1,6 +1,6 @@
 package fr.matt1999rd.signs.tileentity;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import fr.matt1999rd.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.matt1999rd.signs.util.Text;
 import fr.matt1999rd.signs.capabilities.DirectionCapability;
@@ -8,12 +8,14 @@ import fr.matt1999rd.signs.capabilities.DirectionStorage;
 import fr.matt1999rd.signs.tileentity.primary.ArrowSignTileEntity;
 import fr.matt1999rd.signs.tileentity.primary.RectangleSignTileEntity;
 import fr.matt1999rd.signs.util.Vector2i;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.vector.Vector2f;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec2;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
@@ -27,16 +29,15 @@ import java.awt.*;
 public abstract class DirectionSignTileEntity extends PanelTileEntity{
 
     private final LazyOptional<DirectionStorage> storage = LazyOptional.of(this::getStorage).cast();
-    public DirectionSignTileEntity(TileEntityType<?> tileEntityTypeIn) {
-        super(tileEntityTypeIn);
+    public DirectionSignTileEntity(BlockEntityType<?> tileEntityTypeIn,BlockPos pos, BlockState state) {
+        super(tileEntityTypeIn,pos,state);
     }
 
     @Override
-    public void tick() {
-        BlockState state = getBlockState();
+    public void tick(Level level, BlockState state, BlockPos blockPos, PanelTileEntity t) {
         if (!state.getValue(AbstractPanelBlock.GRID)){
             //if it is a support with grid
-            super.tick();
+            super.tick(level, state, blockPos, t);
         }
     }
 
@@ -190,7 +191,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         }
     }
 
-    public void renderOnScreen(MatrixStack stack,int guiLeft, int guiTop,int selTextInd){
+    public void renderOnScreen(PoseStack stack,int guiLeft, int guiTop,int selTextInd){
         int flag = getLFlag();
         if (flag == 0)return;
         for (int i=0;i<6;i++){
@@ -202,7 +203,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
     }
 
     //render each of the 6 part 0->L1P1 1->L1P2 2->L1P3 3->L3P12 4->L3P23 5->L5
-    private void renderPart(MatrixStack stack,int indFlag, int guiLeft, int guiTop){
+    private void renderPart(PoseStack stack,int indFlag, int guiLeft, int guiTop){
         if (indFlag<0 || indFlag>5)return;
         int x1 = guiLeft,y1 = guiTop-14,H,bgColor,limColor;
         //start condition
@@ -232,15 +233,15 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         }else {
             H = 126;
         }
-        AbstractGui.fill(stack,x1+1,y1+1,x1+ horPixelNumber-1,y1+1+H,bgColor);
+        GuiComponent.fill(stack,x1+1,y1+1,x1+ horPixelNumber-1,y1+1+H,bgColor);
         //up limit
-        AbstractGui.fill(stack,x1,y1,x1+ horPixelNumber,y1+1,limColor);
+        GuiComponent.fill(stack,x1,y1,x1+ horPixelNumber,y1+1,limColor);
         //down limit
-        AbstractGui.fill(stack,x1,y1+H+1,x1+ horPixelNumber,y1+H+2,limColor);
+        GuiComponent.fill(stack,x1,y1+H+1,x1+ horPixelNumber,y1+H+2,limColor);
         //left limit
-        AbstractGui.fill(stack,x1,y1+1,x1+1,y1+H+1,limColor);
+        GuiComponent.fill(stack,x1,y1+1,x1+1,y1+H+1,limColor);
         //right limit
-        AbstractGui.fill(stack,x1+ horPixelNumber-1,y1+1,x1+ horPixelNumber,y1+H+1,limColor);
+        GuiComponent.fill(stack,x1+ horPixelNumber-1,y1+1,x1+ horPixelNumber,y1+H+1,limColor);
     }
 
     public boolean isCellPresent(int i){
@@ -248,9 +249,9 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
     }
 
 
-    private void renderText(MatrixStack stack,int guiLeft,int guiTop,int selTextInd){
+    private void renderText(PoseStack stack,int guiLeft,int guiTop,int selTextInd){
         Vector2i origin = new Vector2i(guiLeft,guiTop); //todo : two bugs found : 2 -> position of text when using style is incorrect : length and height must be managed differently
-        Vector2f pixelDimension = new Vector2f(1.0F,1.0F);
+        Vec2 pixelDimension = new Vec2(1.0F,1.0F);
         for (int i=0;i<5;i++){
             // flag indicates if we have to display the gray empty text rectangle
             boolean flag = isCellPresent(i);
@@ -312,7 +313,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         }
     }
 
-    private void renderGrayRectangle(MatrixStack stack,int guiLeft,int guiTop,int ind,boolean isEnd,boolean isSelected) {
+    private void renderGrayRectangle(PoseStack stack,int guiLeft,int guiTop,int ind,boolean isEnd,boolean isSelected) {
         int x1,length;
         if (isTextCentered()) {
             x1 = guiLeft + sideGapPixelNumber;
@@ -327,7 +328,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         }
         //a gap of 25 and then 26
         int y1 = guiTop+2+(25*ind)+ind-(ind==0?0:1);
-        AbstractGui.fill(stack,x1,y1,x1+length,y1+21, (isSelected ? Color.DARK_GRAY : Color.GRAY).getRGB());
+        GuiComponent.fill(stack,x1,y1,x1+length,y1+21, (isSelected ? Color.DARK_GRAY : Color.GRAY).getRGB());
     }
 
     @Nonnull
@@ -340,22 +341,22 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
     }
 
     @Override
-    public void load(BlockState state,CompoundNBT compound) {
-        CompoundNBT storage_tag = compound.getCompound("direction");
-        getCapability(DirectionCapability.DIRECTION_STORAGE).ifPresent(s -> ((INBTSerializable<CompoundNBT>) s).deserializeNBT(storage_tag));
-        super.load(state,compound);
+    public void load(CompoundTag compound) {
+        CompoundTag storage_tag = compound.getCompound("direction");
+        getCapability(DirectionCapability.DIRECTION_STORAGE).ifPresent(s -> ((INBTSerializable<CompoundTag>) s).deserializeNBT(storage_tag));
+        super.load(compound);
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT tag) {
+    public CompoundTag save(CompoundTag tag) {
         getCapability(DirectionCapability.DIRECTION_STORAGE).ifPresent(storage -> {
-            CompoundNBT compoundNBT = ((INBTSerializable<CompoundNBT>) storage).serializeNBT();
+            CompoundTag compoundNBT = ((INBTSerializable<CompoundTag>) storage).serializeNBT();
             tag.put("direction", compoundNBT);
         });
         return super.save(tag);
     }
 
-    public CompoundNBT getUpdateTag() {
-        return this.save(new CompoundNBT());
+    public CompoundTag getUpdateTag() {
+        return this.save(new CompoundTag());
     }
 }

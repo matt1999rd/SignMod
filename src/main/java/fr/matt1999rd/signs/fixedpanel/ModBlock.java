@@ -5,14 +5,14 @@ import fr.matt1999rd.signs.fixedpanel.panelblock.*;
 import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
 import fr.matt1999rd.signs.fixedpanel.support.SignSupport;
 import fr.matt1999rd.signs.fixedpanel.support.SignSupportTileEntity;
-import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.registries.ObjectHolder;
 
 public class ModBlock {
     @ObjectHolder("sign:sign_support")
     public static SignSupport SIGN_SUPPORT = new SignSupport();
     @ObjectHolder("sign:sign_support")
-    public static TileEntityType<SignSupportTileEntity> SIGN_SUPPORT_TE_TYPE;
+    public static BlockEntityType<SignSupportTileEntity> SIGN_SUPPORT_TE_TYPE;
     @ObjectHolder("sign:grid_support")
     public static GridSupport GRID_SUPPORT = new GridSupport();
     @ObjectHolder("sign:square_panel")

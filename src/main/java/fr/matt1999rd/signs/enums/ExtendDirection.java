@@ -2,56 +2,51 @@ package fr.matt1999rd.signs.enums;
 
 
 import fr.matt1999rd.signs.util.Functions;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.function.Predicate;
 
 public enum ExtendDirection {
-    SOUTH(0,Direction.SOUTH,false, BlockStateProperties.SOUTH),
-    WEST(1,Direction.WEST,false,BlockStateProperties.WEST),
-    NORTH(2,Direction.NORTH,false,BlockStateProperties.NORTH),
-    EAST(3,Direction.EAST,false,BlockStateProperties.EAST),
-    SOUTH_WEST(4,Direction.WEST,true, Functions.SOUTH_WEST),
-    NORTH_WEST(5,Direction.NORTH,true,Functions.NORTH_WEST),
-    NORTH_EAST(6,Direction.EAST,true,Functions.NORTH_EAST),
-    SOUTH_EAST(7,Direction.SOUTH,true,Functions.SOUTH_EAST);
+    SOUTH(0,Direction.SOUTH,false,Direction.AxisDirection.POSITIVE, BlockStateProperties.SOUTH),
+    WEST(1,Direction.WEST,false, Direction.AxisDirection.NEGATIVE, BlockStateProperties.WEST),
+    NORTH(2,Direction.NORTH,false, Direction.AxisDirection.NEGATIVE, BlockStateProperties.NORTH),
+    EAST(3,Direction.EAST,false, Direction.AxisDirection.POSITIVE, BlockStateProperties.EAST),
+    SOUTH_WEST(4,Direction.WEST,true, Direction.AxisDirection.NEGATIVE, Functions.SOUTH_WEST),
+    NORTH_WEST(5,Direction.NORTH,true, Direction.AxisDirection.NEGATIVE, Functions.NORTH_WEST),
+    NORTH_EAST(6,Direction.EAST,true, Direction.AxisDirection.POSITIVE, Functions.NORTH_EAST),
+    SOUTH_EAST(7,Direction.SOUTH,true, Direction.AxisDirection.POSITIVE, Functions.SOUTH_EAST);
 
     private final int meta;
     private final Direction direction;
+    private final Direction.AxisDirection axisDirection;
     private final boolean rotated;
     private final BooleanProperty property;
 
-    ExtendDirection(int meta, Direction direction,boolean rotated,BooleanProperty property){
+    ExtendDirection(int meta, Direction direction, boolean rotated, Direction.AxisDirection axisDirection, BooleanProperty property){
         this.meta = meta;
         this.direction = direction;
+        this.axisDirection = axisDirection;
         this.rotated = rotated;
         this.property = property;
     }
 
     public static ExtendDirection getExtendedDirection(Direction dir,boolean isRotated){
-        switch (dir){
-            case DOWN:
-            case UP:
-            default:
-                return null;
-            case NORTH:
-                return (isRotated)?ExtendDirection.NORTH_WEST:ExtendDirection.NORTH;
-            case SOUTH:
-                return (isRotated)?ExtendDirection.SOUTH_EAST:ExtendDirection.SOUTH;
-            case WEST:
-                return (isRotated)?ExtendDirection.SOUTH_WEST:ExtendDirection.WEST;
-            case EAST:
-                return (isRotated)?ExtendDirection.NORTH_EAST:ExtendDirection.EAST;
-        }
+        return switch (dir) {
+            default -> null;
+            case NORTH -> (isRotated) ? ExtendDirection.NORTH_WEST : ExtendDirection.NORTH;
+            case SOUTH -> (isRotated) ? ExtendDirection.SOUTH_EAST : ExtendDirection.SOUTH;
+            case WEST -> (isRotated) ? ExtendDirection.SOUTH_WEST : ExtendDirection.WEST;
+            case EAST -> (isRotated) ? ExtendDirection.NORTH_EAST : ExtendDirection.EAST;
+        };
     }
 
     //return the direction that leads from the support pos to the pos of the block
@@ -68,7 +63,7 @@ public enum ExtendDirection {
         }
     }
 
-    public static void addAllBooleanProperty(StateContainer.Builder<Block, BlockState> builder) {
+    public static void addAllBooleanProperty(StateDefinition.Builder<Block, BlockState> builder) {
         for (ExtendDirection direction : ExtendDirection.values()){
             builder.add(direction.property);
         }
@@ -153,18 +148,28 @@ public enum ExtendDirection {
         return direction.getAxis();
     }
 
-    public static ExtendDirection getFacingFromPlayer(PlayerEntity player,BlockPos pos){
+    public static ExtendDirection getFacingFromPlayer(Player player,BlockPos pos){
         //for the purpose of getting the state of the panel we divide space around the center of the support in 8 part
         //division are for angle 22.5/67.5/112.5/157.5/202.5/247.5/292.5/337.5 (22.5+45*i for 0<=i<=7)
-        Vector3d support_center = Functions.getVecFromBlockPos(pos,0.5F);
-        Vector3d offsetPlayerPos = player.position().subtract(support_center);
+        Vec3 support_center = Functions.getVecFromBlockPos(pos,0.5F);
+        Vec3 offsetPlayerPos = player.position().subtract(support_center);
         //we compare our player position to the position of the support's center
         //we get angle using arc tan function
-        double angle = MathHelper.atan2(offsetPlayerPos.x,offsetPlayerPos.z);
+        int index = getIndex(offsetPlayerPos);
+        //we get facing using a special index that is for i : 0->7 --> 0 0 3 3 2 2 1 1
+        //we have translated 0 to 8 and 1 to 9 to get a decreasing linear function -->
+        // 2->3 3->3 4->2 5->2 6->1 7->1 8->0 9->0
+        Direction facing = Direction.from2DDataValue((9-index)/2);
+        boolean isRotated = (index%2 == 1);
+        return ExtendDirection.getExtendedDirection(facing,isRotated);
+    }
+
+    private static int getIndex(Vec3 offsetPlayerPos) {
+        double angle = Mth.atan2(offsetPlayerPos.x, offsetPlayerPos.z);
         //we convert to degree and make it positive
         double degreeAngle =Functions.toDegree(angle);
         //then to index from 2 to 9 corresponding to the part of stage where the player is
-        int index = MathHelper.ceil((degreeAngle-22.5D)/45.0D);
+        int index = Mth.ceil((degreeAngle-22.5D)/45.0D);
         //we consider the part split by angle origin which correspond to 0
         // that we move of a complete circle for math simplification
         if (index == 0){
@@ -172,12 +177,7 @@ public enum ExtendDirection {
         }else if (index == 1){
             index =9;
         }
-        //we get facing using a special index that is for i : 0->7 --> 0 0 3 3 2 2 1 1
-        //we have translated 0 to 8 and 1 to 9 to get a decreasing linear function -->
-        // 2->3 3->3 4->2 5->2 6->1 7->1 8->0 9->0
-        Direction facing = Direction.from2DDataValue((9-index)/2);
-        boolean isRotated = (index%2 == 1);
-        return ExtendDirection.getExtendedDirection(facing,isRotated);
+        return index;
     }
 
     //we search first for the horizontal direction 0 : S ; 1 : W ; 2 : N ; 3 : E
@@ -196,5 +196,7 @@ public enum ExtendDirection {
     }
 
 
-
+    public Direction.AxisDirection getAxisDirection() {
+        return axisDirection;
+    }
 }

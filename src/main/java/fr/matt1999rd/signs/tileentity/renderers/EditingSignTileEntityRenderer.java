@@ -1,44 +1,42 @@
 package fr.matt1999rd.signs.tileentity.renderers;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
-import fr.matt1999rd.signs.SignMod;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
-import fr.matt1999rd.signs.tileentity.DrawingSignTileEntity;
 import fr.matt1999rd.signs.tileentity.EditingSignTileEntity;
 import fr.matt1999rd.signs.tileentity.model.SpecialSignModel;
+import fr.matt1999rd.signs.util.DrawUtils;
 import fr.matt1999rd.signs.util.Functions;
 import fr.matt1999rd.signs.util.PictureRenderState;
 import fr.matt1999rd.signs.util.Text;
-import net.minecraft.block.BlockState;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Vector2f;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
+import com.mojang.math.Matrix4f;
+import net.minecraft.world.phys.Vec2;
+import com.mojang.math.Vector3f;
 
 import java.awt.*;
 
-public class EditingSignTileEntityRenderer<T extends EditingSignTileEntity> extends TileEntityRenderer<T> {
+public class EditingSignTileEntityRenderer<T extends EditingSignTileEntity> implements BlockEntityRenderer<T> {
 
     private final SpecialSignModel model ;
     private final Form form;
 
-    public EditingSignTileEntityRenderer(TileEntityRendererDispatcher dispatcher,Form form) {
-        super(dispatcher);
+    public EditingSignTileEntityRenderer(BlockEntityRendererProvider.Context context, Form form) {
         this.form = form;
         if (form.isNotForEditing())throw new IllegalArgumentException("no such form are authorised in editing tile entity");
         model = new SpecialSignModel(form);
     }
 
     @Override
-    public void render(EditingSignTileEntity tileEntityIn, float partialTicks, MatrixStack stack, IRenderTypeBuffer buffer, int combinedLight, int combinedOverlay) {
+    public void render(EditingSignTileEntity tileEntityIn, float partialTicks, PoseStack stack, MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
         BlockState blockstate = tileEntityIn.getBlockState();
         //code for display of background model
         stack.pushPose();
@@ -48,32 +46,32 @@ public class EditingSignTileEntityRenderer<T extends EditingSignTileEntity> exte
         Functions.rotate(stack, Direction.Axis.Y,angle);
 
         stack.pushPose();
-        IVertexBuilder vertexBuilder = buffer.getBuffer(model.renderType(Functions.SIGN_BACKGROUND));
+        VertexConsumer vertexBuilder = buffer.getBuffer(model.renderType(Functions.SIGN_BACKGROUND));
         this.model.renderSign(stack,vertexBuilder,combinedLight,combinedOverlay);
         stack.translate(-5.0F/16F,5.0F/16F,-2.1F/16F);
-        renderPicture(stack,buffer,combinedLight);
+        renderPicture(stack,buffer,combinedLight,combinedOverlay);
         renderText(stack,buffer,tileEntityIn,combinedLight);
         stack.popPose();
         RenderSystem.depthMask(true);
         stack.popPose();
     }
 
-    private void renderPicture(MatrixStack stack, IRenderTypeBuffer buffer, int combinedLight) {
+    private void renderPicture(PoseStack stack, MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
         stack.pushPose();
-        IVertexBuilder pictureBuilder =  buffer.getBuffer(PictureRenderState.pictureRenderType);
+        VertexConsumer pictureBuilder =  buffer.getBuffer(PictureRenderState.pictureRenderType());
         Matrix4f matrix4f = stack.last().pose();
         for (int i=0;i<128;i++){
             for (int j=0;j<128;j++){
                 if (form.isIn(i,j)) {
                     int color = getColor(i,j);
-                    renderPixel(matrix4f,i, j, pictureBuilder, color,combinedLight);
+                    renderPixel(matrix4f,i, j, pictureBuilder, color,combinedLight,combinedOverlay);
                 }
             }
         }
         stack.popPose();
     }
 
-    private void renderPixel(Matrix4f matrix4f,int i, int j, IVertexBuilder builder,int color,int combinedLight) {
+    private void renderPixel(Matrix4f matrix4f, int i, int j, VertexConsumer builder, int color, int combinedLight, int combinedOverlay) {
         float completeLength = 10.0F/16;
         float pixelLength = completeLength/128;
         float x1 = completeLength-pixelLength*i;
@@ -81,25 +79,16 @@ public class EditingSignTileEntityRenderer<T extends EditingSignTileEntity> exte
         float z = 0.006F;
         float x2 = x1-pixelLength;
         float y2 = y1-pixelLength;
-        Color color1 = new Color(color,true);
-        int red,green,blue,alpha;
-        red = color1.getRed();
-        green = color1.getGreen();
-        blue = color1.getBlue();
-        alpha = color1.getAlpha();
-        builder.vertex(matrix4f,x1,y1,z).color(red,green,blue,alpha).uv2(combinedLight).endVertex();
-        builder.vertex(matrix4f,x1,y2,z).color(red,green,blue,alpha).uv2(combinedLight).endVertex();
-        builder.vertex(matrix4f,x2,y2,z).color(red,green,blue,alpha).uv2(combinedLight).endVertex();
-        builder.vertex(matrix4f,x2,y1,z).color(red,green,blue,alpha).uv2(combinedLight).endVertex();
+        DrawUtils.renderQuad(matrix4f,builder,x1,y1,x2,y2,z,color,combinedLight);
     }
 
-    private void renderText(MatrixStack stack, IRenderTypeBuffer buffer, EditingSignTileEntity tileEntity, int combinedLight){
+    private void renderText(PoseStack stack, MultiBufferSource buffer, EditingSignTileEntity tileEntity, int combinedLight){
         Functions.setWorldGLState();
         Text t = tileEntity.getText();
         float completeLength = 10.0F/16;
         float pixelLength = completeLength / 128.0F;
         Vector3f origin = new Vector3f(completeLength,completeLength,0.005F);
-        Vector2f scale = new Vector2f(pixelLength,pixelLength);
+        Vec2 scale = new Vec2(pixelLength,pixelLength);
         t.render(stack,buffer,origin,scale,combinedLight);
         Functions.resetWorldGLState();
     }
@@ -118,12 +107,12 @@ public class EditingSignTileEntityRenderer<T extends EditingSignTileEntity> exte
 
     private int getColor(int i,int j){
         if (form == Form.UPSIDE_TRIANGLE){
-            int i_mod = (int) (63.5F - MathHelper.abs(63.5F-i));
+            int i_mod = (int) (63.5F - Mth.abs(63.5F-i));
             if (j==0 || j==1 || j==2*i_mod-1 || j==2*i_mod)return Color.RED.getRGB();
             else return Color.WHITE.getRGB();
         }else if (form == Form.OCTAGON){
-            int i_mod = (int) (256/3F - MathHelper.abs(i-63.5F));
-            int j_mod = (int) MathHelper.abs(j-63.5F);
+            int i_mod = (int) (256/3F - Mth.abs(i-63.5F));
+            int j_mod = (int) Mth.abs(j-63.5F);
             if (i==0 || i==1 || i==126 || i==127 || j==0 || j==1 || j==126 || j==127 || j_mod == i_mod || j_mod == i_mod + 1) return Color.WHITE.getRGB();
             else return Color.RED.getRGB();
         }else {

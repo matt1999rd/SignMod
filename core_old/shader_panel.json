@@ -1,0 +1,24 @@
+{
+  "vertex" : "sign:shader_panel",
+  "fragment": "sign:shader_panel",
+  "attributes": [
+    "Position",
+    "Color",
+    "UV0",
+    "UV2"
+  ],
+  "samplers": [
+    {
+      "name": "Lightmap",
+      "file": "builtin/generated"
+    }
+  ],
+  "uniforms": [
+    {
+      "name": "Lightmap",
+      "type": "sampler2D",
+      "count": 0,
+      "values": []
+    }
+  ]
+}

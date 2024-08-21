@@ -1,16 +1,16 @@
 package fr.matt1999rd.signs.gui.widget;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.gui.DirectionScreen;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.network.chat.Component;
+
 
 public class DirectionCursorButton extends Button {
 
@@ -22,8 +22,8 @@ public class DirectionCursorButton extends Button {
     DirectionScreen screen;
 
 
-    public DirectionCursorButton(int relX, int relY, IPressable onPress, DirectionScreen screen,int ind,boolean isRightPosition) {
-        super(relX+251, relY+16+52*ind, 40, 20, ITextComponent.nullToEmpty(""), onPress);
+    public DirectionCursorButton(int relX, int relY, OnPress onPress, DirectionScreen screen,int ind,boolean isRightPosition) {
+        super(relX+251, relY+16+52*ind, 40, 20, Component.nullToEmpty(""), onPress);
         this.screen = screen;
         this.ind = ind;
         this.isRightPosition = isRightPosition;
@@ -31,11 +31,10 @@ public class DirectionCursorButton extends Button {
     }
 
     @Override
-    public void renderButton(MatrixStack stack,int mouseX, int mouseY, float partialTicks) {
-        Minecraft minecraft = Minecraft.getInstance();
-        minecraft.getTextureManager().bind(CURSOR_BUTTONS);
+    public void renderButton(PoseStack stack,int mouseX, int mouseY, float partialTicks) {
+        RenderSystem.setShaderTexture(0,CURSOR_BUTTONS);
         if (isMoving){
-            cursorPos = MathHelper.clamp(cursorPos,0,28);
+            cursorPos = Mth.clamp(cursorPos,0,28);
             if (isRightPosition){
                 if (cursorPos == 28){
                     isMoving = false;

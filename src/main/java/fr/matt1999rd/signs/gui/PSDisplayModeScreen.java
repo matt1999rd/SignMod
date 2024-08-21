@@ -1,16 +1,16 @@
 package fr.matt1999rd.signs.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.networking.Networking;
 import fr.matt1999rd.signs.networking.PacketPlacePSPanel;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.ImageButton;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
 
 public class PSDisplayModeScreen extends Screen{
     private static final int LENGTH = 161;
@@ -22,10 +22,11 @@ public class PSDisplayModeScreen extends Screen{
     private final boolean rotated;
     private final byte authorisation; //code byte : 0 -> nothing can be placed, 1-> only 2 by 2, 2-> all panel can be placed
     private final ImageButton[] buttons = new ImageButton[4];
+    private final ResourceLocation GUI = new ResourceLocation(SignMod.MODID,"textures/gui/ps_display_screen.png");
 
 
     public PSDisplayModeScreen(BlockPos futurePanelPos, Direction futureFacing, boolean rotated, byte authorisation) {
-        super(new StringTextComponent("Choose display for plain square sign"));
+        super(new TextComponent("Choose display for plain square sign"));
         this.futurePanelPos = futurePanelPos;
         this.futureFacing = futureFacing;
         this.rotated = rotated;
@@ -39,7 +40,7 @@ public class PSDisplayModeScreen extends Screen{
         for (int i=0;i<2;i++){
             for (int j=0;j<2;j++){
                 int k = 2*i+j;
-                /*
+                //TODO : why this part of the function was commented ? -> code was added (GUI variable)
                 buttons[k] = new ImageButton(relX + 4 + BUTTON_LENGTH * i, //PosX on gui
                         relY + 4 + BUTTON_LENGTH * j, //PosY on gui
                         BUTTON_LENGTH, //width
@@ -52,8 +53,8 @@ public class PSDisplayModeScreen extends Screen{
                         TEX_HEIGHT,
                         button -> place(k));
 
-                 */
-                addButton(buttons[k]);
+
+                addRenderableWidget(buttons[k]);
             }
         }
         int k = 0;
@@ -75,9 +76,8 @@ public class PSDisplayModeScreen extends Screen{
     }
 
     @Override
-    public void render(MatrixStack stack,int mouseX, int mouseY, float partialTicks) {
-        assert this.minecraft != null;
-        // this.minecraft.getTextureManager().bind(GUI);
+    public void render(PoseStack stack,int mouseX, int mouseY, float partialTicks) {
+        RenderSystem.setShaderTexture(0,GUI);
         int relX = (this.width-LENGTH) / 2;
         int relY = (this.height-LENGTH) / 2;
         blit(stack,relX,relY,0,0,LENGTH, LENGTH,TEX_WIDTH,TEX_HEIGHT);

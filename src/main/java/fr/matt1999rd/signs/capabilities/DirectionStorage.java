@@ -2,14 +2,14 @@ package fr.matt1999rd.signs.capabilities;
 
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.util.Text;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.awt.*;
 
 
-public class DirectionStorage implements IDirectionStorage, INBTSerializable<CompoundNBT> {
+public class DirectionStorage implements IDirectionStorage, INBTSerializable<CompoundTag> {
 
     // panelPlacement boolean table includes five value for the existence of panel
     // 0 -> first panel exists
@@ -237,34 +237,34 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT nbt = new CompoundNBT();
-        ListNBT textNBT = new ListNBT();
-        ListNBT boolNBT = new ListNBT();
-        ListNBT colorNBT = new ListNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag nbt = new CompoundTag();
+        ListTag textNBT = new ListTag();
+        ListTag boolNBT = new ListTag();
+        ListTag colorNBT = new ListTag();
         for (int i=0;i<5;i++){
             Text t = texts[i];
-            CompoundNBT nbt1 = new CompoundNBT();
-            CompoundNBT nbt2 = t.serializeNBT();
+            CompoundTag nbt1 = new CompoundTag();
+            CompoundTag nbt2 = t.serializeNBT();
             nbt1.put("beg",nbt2);
             Text end = endTexts[i];
-            CompoundNBT nbt3 = end.serializeNBT();
+            CompoundTag nbt3 = end.serializeNBT();
             nbt1.put("end",nbt3);
             textNBT.add(nbt1);
         }
         for (int i=0;i<8;i++) {
             boolean b = panelPlacement[i];
-            CompoundNBT nbt4 = new CompoundNBT();
+            CompoundTag nbt4 = new CompoundTag();
             nbt4.putBoolean("bool", b);
             boolNBT.add(nbt4);
         }
         for (int i=0;i<3;i++){
-            CompoundNBT nbt1 = new CompoundNBT();
+            CompoundTag nbt1 = new CompoundTag();
             nbt1.putInt("bg_color",bg_color[i].getRGB());
             nbt1.putInt("lim_color",limit_color[i].getRGB());
             colorNBT.add(nbt1);
         }
-        nbt.put("txts",textNBT);
+        nbt.put("texts",textNBT);
         nbt.put("bool",boolNBT);
         nbt.put("color",colorNBT);
         nbt.putBoolean("center",center_text);
@@ -272,26 +272,26 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
-        ListNBT textNBT = (ListNBT) nbt.get("txts");
-        ListNBT boolNBT = (ListNBT) nbt.get("bool");
-        ListNBT colorNBT = (ListNBT) nbt.get("color");
+    public void deserializeNBT(CompoundTag nbt) {
+        ListTag textNBT = (ListTag) nbt.get("texts");
+        ListTag boolNBT = (ListTag) nbt.get("bool");
+        ListTag colorNBT = (ListTag) nbt.get("color");
         for (int i=0;i<5;i++){
             assert textNBT != null;
-            CompoundNBT nbt1= (CompoundNBT) textNBT.get(i);
-            CompoundNBT nbt2 = nbt1.getCompound("beg");
-            CompoundNBT nbt3 = nbt1.getCompound("end");
+            CompoundTag nbt1= (CompoundTag) textNBT.get(i);
+            CompoundTag nbt2 = nbt1.getCompound("beg");
+            CompoundTag nbt3 = nbt1.getCompound("end");
             texts[i] = Text.getTextFromNBT(nbt2);
             endTexts[i] = Text.getTextFromNBT(nbt3);
         }
         for (int i=0;i<8;i++){
             assert boolNBT != null;
-            CompoundNBT nbt4 = (CompoundNBT) boolNBT.get(i);
+            CompoundTag nbt4 = (CompoundTag) boolNBT.get(i);
             panelPlacement[i]=nbt4.getBoolean("bool");
         }
         for (int i=0;i<2;i++){
             assert colorNBT != null;
-            CompoundNBT nbt5 = (CompoundNBT) colorNBT.get(i);
+            CompoundTag nbt5 = (CompoundTag) colorNBT.get(i);
             bg_color[i] = new Color(nbt5.getInt("bg_color"),true);
             limit_color[i] = new Color(nbt5.getInt("lim_color"),true);
         }
@@ -302,7 +302,7 @@ public class DirectionStorage implements IDirectionStorage, INBTSerializable<Com
     //warning !!
 
     private void warn(String function, int ind){
-        SignMod.LOGGER.warn("Bad usage of method "+function+" in Direction Storage. bad indices was given : "+ind);
+        SignMod.LOGGER.warn("Bad usage of method {} in Direction Storage. bad indices was given : {}", function, ind);
     }
 
 

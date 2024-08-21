@@ -5,44 +5,43 @@ import fr.matt1999rd.signs.fixedpanel.ModBlock;
 import fr.matt1999rd.signs.fixedpanel.PanelItem;
 import fr.matt1999rd.signs.fixedpanel.PanelRegister;
 import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
-import fr.matt1999rd.signs.fixedpanel.support.GridSupportItem;
-import fr.matt1999rd.signs.fixedpanel.support.SignSupportItem;
 import fr.matt1999rd.signs.util.Functions;
 import fr.matt1999rd.signs.networking.Networking;
 import fr.matt1999rd.signs.networking.PacketOpenScreen;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.material.Material;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.EnumProperty;
-import net.minecraft.state.IntegerProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.fmllegacy.network.NetworkDirection;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-public abstract class AbstractPanelBlock extends Block {
+
+public abstract class AbstractPanelBlock extends Block implements EntityBlock {
 
     public AbstractPanelBlock(String name) {
         //why I cannot delete "no occlusion" ? if I do this +6min in loading of main screen why ?
@@ -63,29 +62,24 @@ public abstract class AbstractPanelBlock extends Block {
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
         if (state.getValue(GRID)){
             Direction dir = state.getValue(BlockStateProperties.HORIZONTAL_FACING).getClockWise();
             boolean isRotated = state.getValue(GridSupport.ROTATED);
             VoxelShape vs1 = Functions.getGridShape(isRotated,Direction.get(Direction.AxisDirection.POSITIVE,dir.getAxis()));
             VoxelShape vs2 = Functions.getGridShape(isRotated,Direction.get(Direction.AxisDirection.NEGATIVE,dir.getAxis()));
-            return VoxelShapes.or(vs1,vs2);
+            return Shapes.or(vs1,vs2);
         }else {
             VoxelShape vs = Functions.getSupportShape();
             int flags = Functions.getFlagsFromState(state);
             for (ExtendDirection direction : ExtendDirection.values()) {
                 if ((flags | 1) == 1) {
-                    VoxelShapes.or(vs, Functions.getGridShape(direction.isRotated(), direction.getDirection()));
+                    Shapes.or(vs, Functions.getGridShape(direction.isRotated(), direction.getDirection()));
                 }
                 flags = flags >> 1;
             }
             return vs;
         }
-    }
-
-    @Override
-    public boolean hasTileEntity(BlockState state) {
-        return true;
     }
 
 
@@ -97,29 +91,27 @@ public abstract class AbstractPanelBlock extends Block {
     public abstract Form getForm();
 
     @Override
-    public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
+    public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn, BlockHitResult hit) {
         ScreenType type = this.getScreenType();
         Form form = this.getForm();
         Direction facing = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
         if (!worldIn.isClientSide() &&
                 (player.getDirection() == facing.getOpposite())) {
-            Networking.INSTANCE.sendTo(new PacketOpenScreen(pos,form,type),((ServerPlayerEntity) player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
-            return ActionResultType.SUCCESS;
+            Networking.INSTANCE.sendTo(new PacketOpenScreen(pos,form,type),((ServerPlayer) player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+            return InteractionResult.SUCCESS;
         }
-        return ActionResultType.PASS;
+        return InteractionResult.PASS;
     }
 
     @Override
-    public void setPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity entity, ItemStack stack) {
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity entity, ItemStack stack) {
         if (entity != null){
             world.setBlockAndUpdate(pos,state.setValue(BlockStateProperties.HORIZONTAL_FACING, Functions.getDirectionFromEntity(entity,pos)));
         }
     }
 
-    public static BlockState getBlockStateFromSupport(int form,BlockState supportState,int facing,boolean rotated){
-        Form f = Form.byIndex(form);
-        assert f != null;
-        AbstractPanelBlock panelBlock = PanelRegister.asPanel(f);
+    public static BlockState getBlockStateFromSupport(Form form,BlockState supportState,int facing,boolean rotated){
+        AbstractPanelBlock panelBlock = PanelRegister.asPanel(form);
         assert panelBlock != null;
         BlockState panelState = panelBlock.defaultBlockState();
         boolean grid = (supportState.getBlock() instanceof GridSupport);
@@ -135,7 +127,7 @@ public abstract class AbstractPanelBlock extends Block {
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         //add enum property cause stupid long time running without issuing a result -> bad minecraft implementation
         builder.add(
                 BlockStateProperties.HORIZONTAL_FACING,
@@ -147,12 +139,12 @@ public abstract class AbstractPanelBlock extends Block {
 
     @Override
     @ParametersAreNonnullByDefault
-    public void playerDestroy(World world, PlayerEntity entity, BlockPos pos, BlockState state, @Nullable TileEntity tileEntity, ItemStack stack) {
+    public void playerDestroy(Level world, Player entity, BlockPos pos, BlockState state, @Nullable BlockEntity tileEntity, ItemStack stack) {
         super.playerDestroy(world, entity, pos, Blocks.AIR.defaultBlockState(), tileEntity, stack);
     }
 
     @Override
-    public void destroy(IWorld world, BlockPos pos, BlockState state) {
+    public void destroy(LevelAccessor world, BlockPos pos, BlockState state) {
         // here destroy will replace panel with grid by grid block and panel with support by support
         boolean grid = state.getValue(GRID);
         Direction facing = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
@@ -169,7 +161,7 @@ public abstract class AbstractPanelBlock extends Block {
     }
 
     @Override
-    public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader world, BlockPos pos, PlayerEntity player) {
+    public ItemStack getPickBlock(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
         return new ItemStack(PanelItem.INSTANCE);
     }
 }

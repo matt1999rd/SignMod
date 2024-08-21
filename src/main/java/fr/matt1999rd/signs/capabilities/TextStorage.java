@@ -1,15 +1,15 @@
 package fr.matt1999rd.signs.capabilities;
 
 import fr.matt1999rd.signs.util.Text;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class TextStorage implements ITextStorage, INBTSerializable<CompoundNBT> {
+public class TextStorage implements ITextStorage, INBTSerializable<CompoundTag> {
 
     List<Text> texts;
     int maxLength;
@@ -68,11 +68,11 @@ public class TextStorage implements ITextStorage, INBTSerializable<CompoundNBT> 
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT nbt = new CompoundNBT();
-        ListNBT listNBT = new ListNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag nbt = new CompoundTag();
+        ListTag listNBT = new ListTag();
         texts.forEach(text -> {
-            CompoundNBT nbt1 = text.serializeNBT();
+            CompoundTag nbt1 = text.serializeNBT();
             listNBT.add(nbt1);
         });
         nbt.put("txts",listNBT);
@@ -81,15 +81,15 @@ public class TextStorage implements ITextStorage, INBTSerializable<CompoundNBT> 
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
-        ListNBT nbt1 = (ListNBT) nbt.get("txts");
+    public void deserializeNBT(CompoundTag nbt) {
+        ListTag nbt1 = (ListTag) nbt.get("txts");
         maxLength = nbt.getInt("maxLength");
         assert nbt1 != null;
         if (nbt1.size()>maxLength){
             return;
         }
         nbt1.forEach(iNbt->{
-            CompoundNBT nbt2 = (CompoundNBT)iNbt;
+            CompoundTag nbt2 = (CompoundTag)iNbt;
             setText(Text.getTextFromNBT(nbt2),0);
         });
     }

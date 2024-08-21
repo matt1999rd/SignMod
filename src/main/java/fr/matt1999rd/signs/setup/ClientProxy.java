@@ -6,10 +6,12 @@ import fr.matt1999rd.signs.tileentity.renderers.DrawingSignTileEntityRenderer;
 import fr.matt1999rd.signs.tileentity.renderers.EditingSignTileEntityRenderer;
 import fr.matt1999rd.signs.tileentity.renderers.PlainSquareSignTileEntityRenderer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import net.minecraft.world.entity.player.Player;
 import static fr.matt1999rd.signs.tileentity.TEType.*;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.fmlclient.registry.ClientRegistry;
+//import net.minecraftforge.fmllegacy.client.registry.ClientRegistry;
 
 public class ClientProxy implements IProxy {
 
@@ -17,24 +19,24 @@ public class ClientProxy implements IProxy {
     public void init() {
         // screen : ajout de screen
         //ScreenManager.registerFactory(ModBlock.TOLLGATE_USER_CONTAINER, TGUserScreen::new);
-        ClientRegistry.bindTileEntityRenderer(UPSIDE_TRIANGLE_SIGN,dispatcher -> new EditingSignTileEntityRenderer<>(dispatcher,Form.UPSIDE_TRIANGLE));
-        ClientRegistry.bindTileEntityRenderer(TRIANGLE_SIGN       ,dispatcher -> new DrawingSignTileEntityRenderer<>(dispatcher,Form.TRIANGLE));
-        ClientRegistry.bindTileEntityRenderer(OCTOGONE_SIGN       ,dispatcher -> new EditingSignTileEntityRenderer<>(dispatcher,Form.OCTAGON));
-        ClientRegistry.bindTileEntityRenderer(CIRCLE_SIGN         ,dispatcher -> new DrawingSignTileEntityRenderer<>(dispatcher,Form.CIRCLE));
-        ClientRegistry.bindTileEntityRenderer(SQUARE_SIGN         ,dispatcher -> new DrawingSignTileEntityRenderer<>(dispatcher,Form.SQUARE));
-        ClientRegistry.bindTileEntityRenderer(RECTANGLE_SIGN      ,dispatcher -> new DirectionSignTileEntityRenderer<>(dispatcher,Form.RECTANGLE));
-        ClientRegistry.bindTileEntityRenderer(ARROW_SIGN          ,dispatcher -> new DirectionSignTileEntityRenderer<>(dispatcher,Form.ARROW));
-        ClientRegistry.bindTileEntityRenderer(PLAIN_SQUARE_SIGN   , PlainSquareSignTileEntityRenderer::new);
-        ClientRegistry.bindTileEntityRenderer(DIAMOND_SIGN        ,dispatcher -> new DrawingSignTileEntityRenderer<>(dispatcher,Form.DIAMOND));
+        BlockEntityRenderers.register(UPSIDE_TRIANGLE_SIGN,context -> new EditingSignTileEntityRenderer<>(context,Form.UPSIDE_TRIANGLE));
+        BlockEntityRenderers.register(TRIANGLE_SIGN,       context -> new DrawingSignTileEntityRenderer<>(context,Form.TRIANGLE));
+        BlockEntityRenderers.register(OCTAGON_SIGN,        context -> new EditingSignTileEntityRenderer<>(context,Form.OCTAGON));
+        BlockEntityRenderers.register(CIRCLE_SIGN,         context -> new DrawingSignTileEntityRenderer<>(context,Form.CIRCLE));
+        BlockEntityRenderers.register(SQUARE_SIGN,         context -> new DrawingSignTileEntityRenderer<>(context,Form.SQUARE));
+        BlockEntityRenderers.register(RECTANGLE_SIGN,      context -> new DirectionSignTileEntityRenderer<>(context,Form.RECTANGLE));
+        BlockEntityRenderers.register(ARROW_SIGN,          context -> new DirectionSignTileEntityRenderer<>(context,Form.ARROW));
+        BlockEntityRenderers.register(PLAIN_SQUARE_SIGN,PlainSquareSignTileEntityRenderer::new);
+        BlockEntityRenderers.register(DIAMOND_SIGN,        context -> new DrawingSignTileEntityRenderer<>(context,Form.DIAMOND));
     }
 
     @Override
-    public World getClientWorld() {
+    public Level getClientWorld() {
         return Minecraft.getInstance().level;
     }
 
     @Override
-    public PlayerEntity getClientPlayer() {
+    public Player getClientPlayer() {
         return Minecraft.getInstance().player;
     }
 }

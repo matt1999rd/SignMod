@@ -7,20 +7,21 @@ import fr.matt1999rd.signs.fixedpanel.support.SignSupport;
 import fr.matt1999rd.signs.networking.Networking;
 import fr.matt1999rd.signs.networking.PacketChoicePanel;
 import fr.matt1999rd.signs.setup.ModSetup;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.fmllegacy.network.NetworkDirection;
+
 
 public class PanelItem extends Item {
     public static final PanelItem INSTANCE = new PanelItem( new Item.Properties().tab(ModSetup.itemGroup));
@@ -31,10 +32,10 @@ public class PanelItem extends Item {
     }
 
     @Override
-    public ActionResultType useOn(ItemUseContext context) {
-        PlayerEntity player = context.getPlayer();
+    public InteractionResult useOn(UseOnContext context) {
+        Player player = context.getPlayer();
         BlockPos pos = context.getClickedPos();
-        World world = context.getLevel();
+        Level world = context.getLevel();
         BlockState state = world.getBlockState(pos);
         Block block = state.getBlock();
         Direction facing =null;
@@ -45,20 +46,20 @@ public class PanelItem extends Item {
             facing = getGridFacingDirection(axis,player,pos,rotated);
         }else if (block instanceof SignSupport){
             ExtendDirection extendDirection = getSupportFacingDirection(state,player,pos);
-            if (extendDirection == null)return ActionResultType.FAIL;
+            if (extendDirection == null)return InteractionResult.FAIL;
             facing = extendDirection.getDirection();
             rotated = extendDirection.isRotated();
         }
 
-        if (player instanceof ServerPlayerEntity && (block instanceof SignSupport || block instanceof GridSupport)&& facing != null){
+        if (player instanceof ServerPlayer && (block instanceof SignSupport || block instanceof GridSupport)&& facing != null){
             boolean isGrid = (block instanceof GridSupport);
             boolean has4Grid = Functions.has4Grid(context);
-            Networking.INSTANCE.sendTo(new PacketChoicePanel(pos,facing,rotated,isGrid,has4Grid),((ServerPlayerEntity) player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+            Networking.INSTANCE.sendTo(new PacketChoicePanel(pos,facing,rotated,isGrid,has4Grid),((ServerPlayer) player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
         }
         return super.useOn(context);
     }
 
-    public ExtendDirection getSupportFacingDirection(BlockState state, PlayerEntity player, BlockPos pos) {
+    public ExtendDirection getSupportFacingDirection(BlockState state, Player player, BlockPos pos) {
         ExtendDirection direction = ExtendDirection.getFacingFromPlayer(player,pos);
         BooleanProperty centerDirectionProperty = direction.getSupportProperty();
         ExtendDirection leftDirection = direction.getClockWise();
@@ -83,7 +84,7 @@ public class PanelItem extends Item {
     }
 
 
-    private Direction getGridFacingDirection(Direction.Axis axis, PlayerEntity player, BlockPos pos,boolean rotated) {
+    private Direction getGridFacingDirection(Direction.Axis axis, Player player, BlockPos pos,boolean rotated) {
         Direction.AxisDirection axisDirection;
         Direction.Axis oppositeAxis = (axis == Direction.Axis.X) ? Direction.Axis.Z : Direction.Axis.X;
         switch (oppositeAxis) {
@@ -91,8 +92,8 @@ public class PanelItem extends Item {
                 if (rotated){
                     //we are comparing point that are up of the line z = x+ Z_offset
                     //to make it we reduce to the blockPos as new origin and then compare to z= x line
-                    Vector3d player_pos = player.position();
-                    Vector3d panel_origin_pos = Functions.getVecFromBlockPos(pos,0.0F);
+                    Vec3 player_pos = player.position();
+                    Vec3 panel_origin_pos = Functions.getVecFromBlockPos(pos,0.0F);
                     player_pos =player_pos.subtract(panel_origin_pos);
                     axisDirection = (player_pos.x>player_pos.z) ?
                             Direction.AxisDirection.POSITIVE :
@@ -108,8 +109,8 @@ public class PanelItem extends Item {
                     if (rotated){
                         //when rotated this way we translate position to the center of the grid
                         //then the position of the panel depends on the sum of x and z following the comparison to the line z = -x
-                        Vector3d player_pos = player.position();
-                        Vector3d panel_origin_pos = Functions.getVecFromBlockPos(pos,0.5F);
+                        Vec3 player_pos = player.position();
+                        Vec3 panel_origin_pos = Functions.getVecFromBlockPos(pos,0.5F);
                         player_pos=player_pos.subtract(panel_origin_pos);
                         axisDirection = (player_pos.x+player_pos.z>0) ?
                                 Direction.AxisDirection.POSITIVE :
@@ -121,8 +122,7 @@ public class PanelItem extends Item {
                                 Direction.AxisDirection.POSITIVE;
                     }
                     break;
-                case Y:
-                default:
+            default:
                     return null;
             }
 

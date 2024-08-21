@@ -1,6 +1,7 @@
 package fr.matt1999rd.signs.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.gui.screenutils.ColorOption;
@@ -14,24 +15,23 @@ import fr.matt1999rd.signs.tileentity.DirectionSignTileEntity;
 import fr.matt1999rd.signs.util.Text;
 import fr.matt1999rd.signs.util.Vector2i;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.SimpleSound;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.gui.widget.button.CheckboxButton;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Checkbox;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.Level;
 
 import java.awt.Color;
 
-import static net.minecraft.util.text.ITextComponent.nullToEmpty;
-
 import static fr.matt1999rd.signs.util.DirectionSignConstants.*;
+import static net.minecraft.network.chat.Component.nullToEmpty;
 
-public class DirectionScreen extends withColorSliderScreen implements IWithEditTextScreen {
+public class DirectionScreen extends WithColorSliderScreen implements IWithEditTextScreen {
     private int selTextInd = 4;
     private boolean isBgColorDisplayed = true;
     private boolean isTextCenter = false;
@@ -44,12 +44,12 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
     ColorSlider[] sliders = new ColorSlider[6];
     DirectionCursorButton[] arrowDirection = new DirectionCursorButton[3];
     Button applyColorButton,addOrSetTextButton;
-    CheckboxButton centerText;
+    Checkbox centerText;
 
     ResourceLocation BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/gui/direction_gui.png");
 
     protected DirectionScreen(Form form,BlockPos panelPos) {
-        super(new StringTextComponent("Direction Screen"));
+        super(new TextComponent("Direction Screen"));
         this.form = form;
         this.panelPos = panelPos;
         this.DIMENSION = new Vector2i(424,172);
@@ -87,7 +87,7 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
         for (int i=0;i<6;i++){
             ColorOption opt = (i<3)? backgroundColorOption : edgingColorOption;
             sliders[i] = new ColorSlider(relX+323,relY+7+i%3*25,opt, ColorType.byIndex(i%3),93);
-            addButton(sliders[i]);
+            addRenderableWidget(sliders[i]);
         }
         updateSliderDisplay();
     }
@@ -111,7 +111,7 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
         for (int i=0;i<5;i++){
             boolean b = getPlacement(i);
             changeBool[i] = new DirectionPartBox(i,this,relX,relY,b);
-            addButton(changeBool[i]);
+            addRenderableWidget(changeBool[i]);
         }
         DirectionSignTileEntity dste = getTileEntity();
         if (form == Form.ARROW) {
@@ -120,17 +120,17 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
                 arrowDirection[i] = new DirectionCursorButton(relX, relY, b -> {
                 }, this, i, bool);
                 arrowDirection[i].active = dste.isCellPresent(2*i);
-                addButton(arrowDirection[i]);
+                addRenderableWidget(arrowDirection[i]);
             }
         }
         applyColorButton = new Button(relX+330,relY+145,75,20,nullToEmpty("apply Color"),b->applyColor());
-        addButton(applyColorButton);
+        addRenderableWidget(applyColorButton);
         addOrSetTextButton = new Button(relX+70,relY+145,75,20,nullToEmpty("Set Text"),b->openTextGui());
-        addButton(addOrSetTextButton);
+        addRenderableWidget(addOrSetTextButton);
         isTextCenter = dste.isTextCentered();
-        centerText = new CheckboxButton(relX+196,relY+146,20,20,nullToEmpty("center_text"),isTextCenter);
+        centerText = new Checkbox(relX+196,relY+146,20,20,nullToEmpty("center_text"),isTextCenter);
         if (form == Form.RECTANGLE){
-            addButton(centerText);
+            addRenderableWidget(centerText);
         }
         super.init();
     }
@@ -165,11 +165,10 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
     }
 
     @Override
-    public void render(MatrixStack stack,int mouseX, int mouseY, float partialTicks) {
+    public void render(PoseStack stack,int mouseX, int mouseY, float partialTicks) {
         int relX = getGuiStartXPosition();
         int relY = getGuiStartYPosition();
-        assert this.minecraft != null;
-        this.minecraft.getTextureManager().bind(BACKGROUND);
+        RenderSystem.setShaderTexture(0,BACKGROUND);
         //display of background gui
         blit(stack,relX, relY ,this.getBlitOffset(),0.0F, 0.0F, DIMENSION.getX(), DIMENSION.getY(),256,512);
         int offset = (isBgColorDisplayed)? 25:0;
@@ -254,9 +253,9 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
 
     private DirectionSignTileEntity getTileEntity(){
         assert this.minecraft != null;
-        World world = this.minecraft.level;
+        Level world = this.minecraft.level;
         assert world != null;
-        TileEntity te = world.getBlockEntity(panelPos);
+        BlockEntity te = world.getBlockEntity(panelPos);
         if (te instanceof DirectionSignTileEntity){
             return (DirectionSignTileEntity) te;
         }
@@ -283,7 +282,7 @@ public class DirectionScreen extends withColorSliderScreen implements IWithEditT
             onChangeIndices();
         } else if (mouseX>guiLeft+338 && mouseX<guiLeft+362 && mouseY>guiTop+85 && mouseY<guiTop+109){
             isBgColorDisplayed = !isBgColorDisplayed;
-            Minecraft.getInstance().getSoundManager().play(SimpleSound.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             updateSliderDisplay();
         }
         return super.mouseClicked(mouseX,mouseY,button);

@@ -3,22 +3,14 @@ package fr.matt1999rd.signs.tileentity.primary;
 import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.tileentity.DrawingSignTileEntity;
 import fr.matt1999rd.signs.tileentity.TEType;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraftforge.common.util.LazyOptional;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
 
 
 public class SquareSignTileEntity extends DrawingSignTileEntity {
 
-    public SquareSignTileEntity() {
-        super(TEType.SQUARE_SIGN);
+    public SquareSignTileEntity(BlockPos pos, BlockState state) {
+        super(TEType.SQUARE_SIGN,pos,state);
     }
 
     @Override

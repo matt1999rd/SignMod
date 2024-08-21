@@ -1,7 +1,6 @@
 package fr.matt1999rd.signs.tileentity.primary;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.PSDisplayMode;
@@ -17,22 +16,22 @@ import fr.matt1999rd.signs.util.Text;
 import fr.matt1999rd.signs.capabilities.PSCapability;
 import fr.matt1999rd.signs.capabilities.PSStorage;
 import fr.matt1999rd.signs.util.Vector2i;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SUpdateTileEntityPacket;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Vector2f;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import com.mojang.math.Matrix4f;
+import net.minecraft.world.phys.Vec2;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
@@ -64,21 +63,15 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
     public static final int CHANGE_BG_COLOR = 3;
     public static final int CHANGE_EDGING_COLOR = 4;
 
-    public PlainSquareSignTileEntity() {
-        super(TEType.PLAIN_SQUARE_SIGN);
+    public PlainSquareSignTileEntity(BlockPos pos,BlockState state) {
+        super(TEType.PLAIN_SQUARE_SIGN,pos,state);
     }
 
     @Override
-    public double getViewDistance() {
-        return 256.0D;
-    }
-
-    @Override
-    public void tick() {
-        BlockState state = getBlockState();
-        if (!state.getValue(AbstractPanelBlock.GRID)){
+    public void tick(Level level, BlockState blockState, BlockPos blockPos, PanelTileEntity t) {
+        if (!blockState.getValue(AbstractPanelBlock.GRID)){
             //if it is a support with grid
-            super.tick();
+            super.tick(level,blockState,blockPos,t);
         }
     }
 
@@ -86,34 +79,34 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         return new PSStorage();
     }
 
-    public void renderOnScreen(MatrixStack stack,int guiLeft, int guiTop, int selTextIndex) {
+    public void renderOnScreen(PoseStack stack,int guiLeft, int guiTop, int selTextIndex) {
         //display background
-        AbstractGui.fill(stack,guiLeft,guiTop,guiLeft+SCREEN_LENGTH,guiTop+SCREEN_LENGTH,getBackgroundColor().getRGB());
+        GuiComponent.fill(stack,guiLeft,guiTop,guiLeft+SCREEN_LENGTH,guiTop+SCREEN_LENGTH,getBackgroundColor().getRGB());
         renderLimit(stack,guiLeft,guiTop);
         renderText(stack,guiLeft,guiTop,selTextIndex);
         renderScheme(guiLeft,guiTop);
     }
 
-    private void renderLimit(MatrixStack stack,int guiLeft, int guiTop){
+    private void renderLimit(PoseStack stack,int guiLeft, int guiTop){
         int fg_color = getForegroundColor().getRGB();
         int limitLength = 2;
         //optimised so that no bar are recovered (bar of size sl-2 and 2)
         //top
-        AbstractGui.fill(stack,guiLeft,guiTop,guiLeft+SCREEN_LENGTH-limitLength,guiTop+limitLength,fg_color);
+        GuiComponent.fill(stack,guiLeft,guiTop,guiLeft+SCREEN_LENGTH-limitLength,guiTop+limitLength,fg_color);
         //right
-        AbstractGui.fill(stack,guiLeft+SCREEN_LENGTH-limitLength,guiTop,guiLeft+SCREEN_LENGTH,guiTop+SCREEN_LENGTH-limitLength,fg_color);
+        GuiComponent.fill(stack,guiLeft+SCREEN_LENGTH-limitLength,guiTop,guiLeft+SCREEN_LENGTH,guiTop+SCREEN_LENGTH-limitLength,fg_color);
         //bottom
-        AbstractGui.fill(stack,guiLeft+limitLength,guiTop+SCREEN_LENGTH-limitLength,guiLeft+SCREEN_LENGTH,guiTop+SCREEN_LENGTH,fg_color);
+        GuiComponent.fill(stack,guiLeft+limitLength,guiTop+SCREEN_LENGTH-limitLength,guiLeft+SCREEN_LENGTH,guiTop+SCREEN_LENGTH,fg_color);
         //left
-        AbstractGui.fill(stack,guiLeft,guiTop+limitLength,guiLeft+limitLength,guiTop+SCREEN_LENGTH,fg_color);
+        GuiComponent.fill(stack,guiLeft,guiTop+limitLength,guiLeft+limitLength,guiTop+SCREEN_LENGTH,fg_color);
     }
 
-    private void renderText(MatrixStack stack,int guiLeft, int guiTop,int selTextIndex){
+    private void renderText(PoseStack stack,int guiLeft, int guiTop,int selTextIndex){
         PSDisplayMode mode = getMode();
         float scaleX = SCREEN_LENGTH/(mode.is2by2()?64.0F:96.0F);
         float scaleY = SCREEN_LENGTH/64.0F;
         Vector2i origin = new Vector2i(guiLeft,guiTop);
-        Vector2f scale = new Vector2f(scaleX,scaleY);
+        Vec2 scale = new Vec2(scaleX,scaleY);
         for (int i=0;i<mode.getTotalText();i++){
             Text t = getText(i);
             if (t.isEmpty()){
@@ -134,8 +127,8 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         float yBase = guiTop+ mode.getTextureYOrigin()*scaleY;
         float length = mode.getTexLength()*scaleX;
         float height = mode.getTexHeight()*scaleY;
-        Vector2f uvOrigin = mode.getUVOrigin(getArrowId());
-        Vector2f uvDimension = mode.getUVDimension();
+        Vec2 uvOrigin = mode.getUVOrigin(getArrowId());
+        Vec2 uvDimension = mode.getUVDimension();
         renderTexture(
                 xBase,yBase,xBase+length,yBase+height,
                 uvOrigin.x,uvOrigin.y,uvOrigin.x+uvDimension.x,uvOrigin.y+uvDimension.y);
@@ -161,8 +154,8 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         float texLength = 84.0F;
         float texHeight = 61.0F;
         Color color = getForegroundColor();
-        Minecraft.getInstance().getTextureManager().bind(location);
-        RenderSystem.color4f(1.0F,1.0F,1.0F,1.0F);
+        RenderSystem.setShaderTexture(0,location);
+        //RenderSystem.color4f(1.0F,1.0F,1.0F,1.0F);
         int red,green,blue,alpha;
 
         red = color.getRed();
@@ -170,26 +163,28 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         blue = color.getBlue();
         alpha = color.getAlpha();
 
-        Tessellator tessellator = Tessellator.getInstance();
+        RenderSystem.setShader(GameRenderer::getPositionColorTexLightmapShader);
+        Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder builder = tessellator.getBuilder();
-        builder.begin(7, DefaultVertexFormats.POSITION_COLOR_TEX);
+        builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP);
+        int combinedLight = 15728880;
 
-        builder.vertex(x1, y1, 0.0F).color(red, green, blue, alpha).uv(u1/texLength, v1/texHeight).endVertex();
-        builder.vertex(x1, y2, 0.0F).color(red, green, blue, alpha).uv(u1/texLength, v2/texHeight).endVertex();
-        builder.vertex(x2, y2, 0.0F).color(red, green, blue, alpha).uv(u2/texLength, v2/texHeight).endVertex();
-        builder.vertex(x2, y1, 0.0F).color(red, green, blue, alpha).uv(u2/texLength, v1/texHeight).endVertex();
+        builder.vertex(x1, y1, 0.0F).color(red, green, blue, alpha).uv(u1/texLength, v1/texHeight).uv2(combinedLight).endVertex();
+        builder.vertex(x1, y2, 0.0F).color(red, green, blue, alpha).uv(u1/texLength, v2/texHeight).uv2(combinedLight).endVertex();
+        builder.vertex(x2, y2, 0.0F).color(red, green, blue, alpha).uv(u2/texLength, v2/texHeight).uv2(combinedLight).endVertex();
+        builder.vertex(x2, y1, 0.0F).color(red, green, blue, alpha).uv(u2/texLength, v1/texHeight).uv2(combinedLight).endVertex();
 
         tessellator.end();
     }
 
-    private void renderRectangle(MatrixStack stack,Rectangle2D rectangle2D,Color color){
-        Tessellator tessellator = Tessellator.getInstance();
+    private void renderRectangle(PoseStack stack,Rectangle2D rectangle2D,Color color){
+        Tesselator tessellator = Tesselator.getInstance();
         RenderSystem.enableBlend();
         RenderSystem.disableTexture();
         RenderSystem.defaultBlendFunc();
         Matrix4f matrix4f = stack.last().pose();
         BufferBuilder builder = tessellator.getBuilder();
-        builder.begin(7, DefaultVertexFormats.POSITION_COLOR);
+        builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         int red = color.getRed();
         int green = color.getGreen();
         int blue = color.getBlue();
@@ -203,7 +198,7 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         RenderSystem.disableBlend();
     }
 
-    private void renderEmptyTextRectangle(MatrixStack stack, int guiLeft, int guiTop, int ind, float scaleX, float scaleY, boolean isSelected) {
+    private void renderEmptyTextRectangle(PoseStack stack, int guiLeft, int guiTop, int ind, float scaleX, float scaleY, boolean isSelected) {
         Rectangle2D.Float rectangle = getTextArea(guiLeft, guiTop, ind,scaleX,scaleY);
         Color bgColor = getBackgroundColor();
         Color emptyRectangleColor;
@@ -227,14 +222,14 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
 
     @Nullable
     @Override
-    public SUpdateTileEntityPacket getUpdatePacket() {
-        return new SUpdateTileEntityPacket(this.worldPosition, 9, this.getUpdateTag());
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return new ClientboundBlockEntityDataPacket(this.worldPosition, 9, this.getUpdateTag());
     }
 
     @Override
-    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
-        CompoundNBT nbt = pkt.getTag();
-        this.load(this.getBlockState(),nbt);
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+        CompoundTag nbt = pkt.getTag();
+        this.load(nbt);
     }
 
     public void registerData(PSPosition position, PSDisplayMode mode){
@@ -308,14 +303,19 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         level.setBlock(newPos,oldState,3);
         //tile entity definition
         BlockState newState = level.getBlockState(newPos);
-        TileEntity newTile = newState.getBlock().createTileEntity(newState,level);
-        assert newTile != null;
-        ((PlainSquareSignTileEntity) newTile).copyData(this,positionToMove);
-        level.setBlockEntity(newPos,newTile);
+        Block newBlock = newState.getBlock();
+        BlockEntity newBE;
+        if (newBlock instanceof EntityBlock entityBlock){
+            newBE = entityBlock.newBlockEntity(newPos,newState);
+        }else {
+            throw new IllegalStateException("Illegal block for panel : "+ newBlock);
+        }
+        assert newBE != null;
+        ((PlainSquareSignTileEntity) newBE).copyData(this,positionToMove);
+        level.setBlockEntity(newBE);
         //redefine position of the middle tile
-        TileEntity oldTile = level.getBlockEntity(oldPos);
-        if (oldTile instanceof PlainSquareSignTileEntity) {
-            PlainSquareSignTileEntity oldPsste = (PlainSquareSignTileEntity) oldTile;
+        BlockEntity oldTile = level.getBlockEntity(oldPos);
+        if (oldTile instanceof PlainSquareSignTileEntity oldPsste) {
             oldPsste.setPosition(positionToMove.centerPosition());
         }else {
             throw new IllegalStateException("Impossible state : the tile entity is not of the correct type !");
@@ -338,9 +338,8 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         //tile entity deletion
         level.removeBlockEntity(oldPos);
         //redefine position for old middle tile
-        TileEntity newTile = level.getBlockEntity(newPos);
-        if (newTile instanceof PlainSquareSignTileEntity){
-            PlainSquareSignTileEntity newPsste = (PlainSquareSignTileEntity) newTile;
+        BlockEntity newTile = level.getBlockEntity(newPos);
+        if (newTile instanceof PlainSquareSignTileEntity newPsste){
             if (positionToMove == PanelBlock.DEFAULT_RIGHT_POSITION)newPsste.copyData(this,positionToMove);
             else newPsste.setPosition(positionToMove);
         }else {
@@ -386,9 +385,8 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
         positions.remove(this.getPosition());
         for (PSPosition position : positions.keySet()){
             assert this.level != null;
-            TileEntity tileEntity = this.level.getBlockEntity(positions.get(position));
-            if (tileEntity instanceof PlainSquareSignTileEntity) {
-                PlainSquareSignTileEntity psste = (PlainSquareSignTileEntity) tileEntity ;
+            BlockEntity tileEntity = this.level.getBlockEntity(positions.get(position));
+            if (tileEntity instanceof PlainSquareSignTileEntity psste) {
                 tiles.add(psste);
             }else {
                 throw new IllegalStateException("Neighbor TE is not a plain square one : the world may be corrupted !");
@@ -407,23 +405,23 @@ public class PlainSquareSignTileEntity extends PanelTileEntity {
     }
 
     @Override
-    public void load(BlockState state,CompoundNBT compound) {
-        CompoundNBT storage_tag = compound.getCompound("plain_square");
-        getCapability(PSCapability.PS_STORAGE).ifPresent(s -> ((INBTSerializable<CompoundNBT>) s).deserializeNBT(storage_tag));
-        super.load(state,compound);
+    public void load(CompoundTag compound) {
+        CompoundTag storage_tag = compound.getCompound("plain_square");
+        getCapability(PSCapability.PS_STORAGE).ifPresent(s -> ((INBTSerializable<CompoundTag>) s).deserializeNBT(storage_tag));
+        super.load(compound);
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT tag) {
+    public CompoundTag save(CompoundTag tag) {
         getCapability(PSCapability.PS_STORAGE).ifPresent(storage -> {
-                CompoundNBT compoundNBT = ((INBTSerializable<CompoundNBT>) storage).serializeNBT();
+                CompoundTag compoundNBT = ((INBTSerializable<CompoundTag>) storage).serializeNBT();
                 tag.put("plain_square", compoundNBT);
         });
         return super.save(tag);
     }
 
-    public CompoundNBT getUpdateTag() {
-        return save(new CompoundNBT());
+    public CompoundTag getUpdateTag() {
+        return save(new CompoundTag());
     }
 
 }

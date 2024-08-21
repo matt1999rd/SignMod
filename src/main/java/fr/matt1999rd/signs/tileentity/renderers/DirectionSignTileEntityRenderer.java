@@ -1,43 +1,45 @@
 package fr.matt1999rd.signs.tileentity.renderers;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
 import fr.matt1999rd.signs.tileentity.DirectionSignTileEntity;
 import fr.matt1999rd.signs.tileentity.model.DirectionSignModel;
+import fr.matt1999rd.signs.util.DrawUtils;
 import fr.matt1999rd.signs.util.Functions;
 import fr.matt1999rd.signs.util.PictureRenderState;
 import fr.matt1999rd.signs.util.Text;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.Direction;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.core.Direction;
 
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Vector2f;
-import net.minecraft.util.math.vector.Vector3f;
+import com.mojang.math.Matrix4f;
+import net.minecraft.world.phys.Vec2;
+import com.mojang.math.Vector3f;
 import static fr.matt1999rd.signs.util.DirectionSignConstants.*;
+import static fr.matt1999rd.signs.util.DrawUtils.renderRectangle;
+import static fr.matt1999rd.signs.util.DrawUtils.renderTriangle;
 
-public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> extends TileEntityRenderer<T> {
+public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> implements BlockEntityRenderer<T> {
 
     private final DirectionSignModel model ;
     private final Form form;
     private static final float blockLength = 16F;
 
-    public DirectionSignTileEntityRenderer(TileEntityRendererDispatcher dispatcher, Form form) {
-        super(dispatcher);
+    public DirectionSignTileEntityRenderer(BlockEntityRendererProvider.Context context, Form form) {
         if (!form.isForDirection())throw new IllegalArgumentException("no such form are authorised in direction tileentity");
         model = new DirectionSignModel(form);
         this.form = form;
     }
 
     @Override
-    public void render(DirectionSignTileEntity tileEntityIn, float partialTicks, MatrixStack stack, IRenderTypeBuffer buffer, int combinedLight, int combinedOverlay) {
+    public void render(DirectionSignTileEntity tileEntityIn, float partialTicks, PoseStack stack, MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
         BlockState blockstate = tileEntityIn.getBlockState();
         //code for display of background model
         stack.pushPose();
@@ -48,7 +50,7 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
         //code for changing background display
         stack.pushPose();
 
-        IVertexBuilder vertexBuilder = buffer.getBuffer(model.renderType(Functions.SIGN_BACKGROUND));
+        VertexConsumer vertexBuilder = buffer.getBuffer(model.renderType(Functions.SIGN_BACKGROUND));
         this.model.renderSign(stack,tileEntityIn,vertexBuilder,combinedLight,combinedOverlay);
         stack.translate(-totalLength /(2*blockLength),totalHeight/(2*blockLength),-2.001F/blockLength);
 
@@ -61,9 +63,9 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
         stack.popPose();
     }
 
-    private void renderBackground(MatrixStack stack,DirectionSignTileEntity tileEntityIn,IRenderTypeBuffer buffer,int combinedLight) {
+    private void renderBackground(PoseStack stack, DirectionSignTileEntity tileEntityIn, MultiBufferSource buffer, int combinedLight) {
         stack.pushPose();
-        IVertexBuilder pictureBuilder =  buffer.getBuffer(PictureRenderState.pictureRenderType);
+        VertexConsumer pictureBuilder =  buffer.getBuffer(PictureRenderState.pictureRenderType());
 
         int flag = tileEntityIn.getLFlag();
         int pow2=1;
@@ -77,7 +79,7 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
         stack.popPose();
     }
 
-    private void renderPanel(Matrix4f matrix4f,IVertexBuilder builder,int ind,DirectionSignTileEntity tileEntity,int combinedLight){
+    private void renderPanel(Matrix4f matrix4f, VertexConsumer builder, int ind, DirectionSignTileEntity tileEntity, int combinedLight){
         float limLength = 0.1F/blockLength;
         float x1 = 0;
         float x2 = totalLength/blockLength;
@@ -141,67 +143,8 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
     }
 
 
-    private void renderRectangle(Matrix4f matrix4f,IVertexBuilder builder,float x1,float y1,float x2,float y2,int color,int combinedLight){
-        float z= -0.001F/16F;
-        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-        int rColor = Functions.getRedValue(color);
-        int gColor = Functions.getGreenValue(color);
-        int bColor = Functions.getBlueValue(color);
-        int aColor = Functions.getAlphaValue(color);
-        builder.vertex(matrix4f,x1,y1,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex();
-        builder.vertex(matrix4f,x1,y2,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex();
-        builder.vertex(matrix4f,x2,y2,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex();
-        builder.vertex(matrix4f,x2,y1,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex();
-    }
 
-    //function to render triangle with a y axes direction as one of its three sides
-    // the three point are A(xCommon,yDown) , B(xSolo,ySolo) and C(xCommon,yUp)
-    // the point H(xCommon,ySolo) is the intersection of the altitude from B and the opposite side of the triangle
-    private void renderTriangle(Matrix4f matrix4f,IVertexBuilder builder,float xCommon,float xSolo,float yDown,float ySolo,float yUp,int color,int combinedLight,boolean isBgColor){
-        float z = (isBgColor)? -0.002F/16F :-0.001F/16F;
-        RenderSystem.color4f(1.0F,1.0F,1.0F,1.0F);
-        int rColor = Functions.getRedValue(color);
-        int gColor = Functions.getGreenValue(color);
-        int bColor = Functions.getBlueValue(color);
-        int aColor = Functions.getAlphaValue(color);
-
-        //startYUp boolean indicates the first vertex to draw in order to see the triangle (always render clockwise)
-        // we always draw A first
-        // startYUp = false
-        /*
-              C
-           🡽 🡻
-         🡽   🡻
-        B     H
-         🡼   🡻
-           🡼 🡻
-              A
-         */
-        // startYUp = true
-        /*
-         C
-         🡹 🡾
-         🡹   🡾
-         H     B
-         🡹   🡿
-         🡹 🡿
-         A
-         */
-        boolean startYUp = (xCommon<xSolo);
-        builder.vertex(matrix4f,xCommon,yDown,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw A
-        if (startYUp){
-            builder.vertex(matrix4f,xCommon,ySolo,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw H
-            builder.vertex(matrix4f,xCommon,yUp,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw C
-            builder.vertex(matrix4f,xSolo,ySolo,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw B
-        }else {
-            builder.vertex(matrix4f,xSolo,ySolo,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw B
-            builder.vertex(matrix4f,xCommon,yUp,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw C
-            builder.vertex(matrix4f,xCommon,ySolo,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw H
-        }
-
-    }
-
-    private void renderText(MatrixStack stack,IRenderTypeBuffer buffer,DirectionSignTileEntity tileEntity,int combinedLight){
+    private void renderText(PoseStack stack,MultiBufferSource buffer,DirectionSignTileEntity tileEntity,int combinedLight){
         boolean isTextCentered = tileEntity.isTextCentered();
         for (int i=0;i<5;i++) {
             if (tileEntity.isCellPresent(i)) {
@@ -211,13 +154,13 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
         }
     }
 
-    private void renderSpecificText(MatrixStack stack,IRenderTypeBuffer buffer,int ind,boolean isEnd,DirectionSignTileEntity tileEntity,int combinedLight){
+    private void renderSpecificText(PoseStack stack,MultiBufferSource buffer,int ind,boolean isEnd,DirectionSignTileEntity tileEntity,int combinedLight){
         stack.pushPose();
         Functions.setWorldGLState();
         Text t = tileEntity.getText(ind,isEnd);
         Vector3f origin = new Vector3f(totalLength/blockLength,totalHeight/blockLength,0.005F);
         float pixelLength = totalHeight/blockLength / verPixelNumber;
-        Vector2f scale = new Vector2f(pixelLength,pixelLength);
+        Vec2 scale = new Vec2(pixelLength,pixelLength);
         t.render(stack,buffer,origin,scale,combinedLight);
         Functions.resetWorldGLState();
         stack.popPose();

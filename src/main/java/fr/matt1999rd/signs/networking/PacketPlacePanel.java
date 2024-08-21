@@ -2,17 +2,12 @@ package fr.matt1999rd.signs.networking;
 
 import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.fixedpanel.panelblock.AbstractPanelBlock;
-import fr.matt1999rd.signs.gui.PSDisplayModeScreen;
-import fr.matt1999rd.signs.util.Functions;
-import net.java.games.input.Controller;
-import net.java.games.input.Mouse;
-import net.minecraft.block.BlockState;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.fml.network.NetworkEvent;
-import org.lwjgl.glfw.GLFW;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -23,7 +18,7 @@ public class PacketPlacePanel {
     private final byte facing;
     private final boolean rotated;
 
-    public PacketPlacePanel(PacketBuffer buf){
+    public PacketPlacePanel(FriendlyByteBuf buf){
         panelFuturePos = buf.readBlockPos();
         byte[] array = buf.readByteArray();
         form = array[0];
@@ -31,7 +26,7 @@ public class PacketPlacePanel {
         rotated = buf.readBoolean();
     }
 
-    public void toBytes(PacketBuffer buf){
+    public void toBytes(FriendlyByteBuf buf){
         buf.writeBlockPos(panelFuturePos);
         byte[] array = new byte[2];
         array[0] = (byte)form;
@@ -49,9 +44,9 @@ public class PacketPlacePanel {
 
     public void handle(Supplier<NetworkEvent.Context> ctx){
         ctx.get().enqueueWork(()->{
-                ServerWorld world = Objects.requireNonNull(ctx.get().getSender()).getLevel();
+                ServerLevel world = Objects.requireNonNull(ctx.get().getSender()).getLevel();
                 BlockState supportState = world.getBlockState(panelFuturePos);
-                BlockState panelState = AbstractPanelBlock.getBlockStateFromSupport(form, supportState, facing, rotated);
+                BlockState panelState = AbstractPanelBlock.getBlockStateFromSupport(Form.byIndex(form), supportState, facing, rotated);
                 world.setBlock(panelFuturePos, panelState, 11);
         });
         ctx.get().setPacketHandled(true);

@@ -1,17 +1,17 @@
 package fr.matt1999rd.signs.fixedpanel.support;
 
 import fr.matt1999rd.signs.fixedpanel.ModBlock;
-import net.minecraft.block.AirBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.material.Material;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.AirBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 
 public class SignSupportItem extends BlockItem {
@@ -22,15 +22,15 @@ public class SignSupportItem extends BlockItem {
     }
 
     @Override
-    public ActionResultType useOn(ItemUseContext context) {
-        BlockItemUseContext blockItemUseContext = new BlockItemUseContext(context);
+    public InteractionResult useOn(UseOnContext context) {
+        BlockPlaceContext blockItemUseContext = new BlockPlaceContext(context);
         BlockPos pos = blockItemUseContext.getClickedPos();
-        World world = blockItemUseContext.getLevel();
+        Level world = blockItemUseContext.getLevel();
         BlockState state=world.getBlockState(pos.below());
         if (isSupportOrSolidBlock(state)){
             return super.useOn(context);
         }
-        return ActionResultType.FAIL;
+        return InteractionResult.FAIL;
     }
 
     private boolean isSupportOrSolidBlock(BlockState state) {

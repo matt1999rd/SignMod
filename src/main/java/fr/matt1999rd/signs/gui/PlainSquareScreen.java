@@ -1,6 +1,7 @@
 package fr.matt1999rd.signs.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.enums.PSDisplayMode;
@@ -11,33 +12,33 @@ import fr.matt1999rd.signs.gui.screenutils.ColorType;
 import fr.matt1999rd.signs.gui.screenutils.Option;
 import fr.matt1999rd.signs.gui.widget.ColorSlider;
 import fr.matt1999rd.signs.gui.widget.LimitSizeTextField;
-import fr.matt1999rd.signs.gui.widget.enableImageButton;
+import fr.matt1999rd.signs.gui.widget.EnableImageButton;
 import fr.matt1999rd.signs.networking.Networking;
 import fr.matt1999rd.signs.networking.PacketAddOrEditText;
 import fr.matt1999rd.signs.networking.PacketPSScreenOperation;
 import fr.matt1999rd.signs.tileentity.primary.PlainSquareSignTileEntity;
 import fr.matt1999rd.signs.util.*;
-import net.minecraft.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.SimpleSound;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.gui.widget.button.ImageButton;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.Level;
 import static fr.matt1999rd.signs.tileentity.primary.PlainSquareSignTileEntity.*;
-import static net.minecraft.util.text.ITextComponent.nullToEmpty;
-
-import java.awt.*;
-import java.awt.geom.Rectangle2D;
+import static net.minecraft.network.chat.Component.nullToEmpty;
 import java.util.Objects;
 
-public class PlainSquareScreen extends withColorSliderScreen {
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
+
+public class PlainSquareScreen extends WithColorSliderScreen {
     private static final Rectangle displayModeBtnRectangle = new Rectangle(241,113,24,24);
     private static final Vector2i startDisplayModeBtnTexture = new Vector2i(315,64);
 
@@ -53,15 +54,15 @@ public class PlainSquareScreen extends withColorSliderScreen {
 
     ColorSlider[] sliders = new ColorSlider[6];
     ResourceLocation PLAIN_SQUARE = new ResourceLocation(SignMod.MODID,"textures/gui/ps_gui.png");
-    ImageButton[] psDisplayModeButton = new enableImageButton[4];
-    ImageButton[] arrowDirectionButton = new enableImageButton[3];
-    enableImageButton leftReduceButton, rightReduceButton;
+    ImageButton[] psDisplayModeButton = new EnableImageButton[4];
+    ImageButton[] arrowDirectionButton = new EnableImageButton[3];
+    EnableImageButton leftReduceButton, rightReduceButton;
     Button applyColorButton;
     LimitSizeTextField textField;
 
 
     protected PlainSquareScreen(BlockPos panelPos) {
-        super(new StringTextComponent("Plain Square screen"));
+        super(new TextComponent("Plain Square screen"));
         this.panelPos = panelPos;
         this.DIMENSION = new Vector2i(315,199);
     }
@@ -78,13 +79,12 @@ public class PlainSquareScreen extends withColorSliderScreen {
 
     private PlainSquareSignTileEntity getTileEntity(){
         assert this.minecraft != null;
-        World world = this.minecraft.level;
+        Level world = this.minecraft.level;
         assert world != null;
-        TileEntity te = world.getBlockEntity(panelPos);
+        BlockEntity te = world.getBlockEntity(panelPos);
         BlockState state = world.getBlockState(panelPos);
         Direction facing = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-        if (te instanceof PlainSquareSignTileEntity){
-            PlainSquareSignTileEntity clickedPsste = (PlainSquareSignTileEntity) te;
+        if (te instanceof PlainSquareSignTileEntity clickedPsste){
             PSPosition clickedPsstePosition = clickedPsste.getPosition();
             BlockPos realPanelPos = clickedPsstePosition.offsetPos(PanelBlock.DEFAULT_RIGHT_POSITION,panelPos,facing,clickedPsste.getMode().is2by2());
             te = world.getBlockEntity(realPanelPos);
@@ -117,7 +117,7 @@ public class PlainSquareScreen extends withColorSliderScreen {
         for (int i=0;i<6;i++){
             ColorOption opt = (i<3)? backgroundColorOption : edgingColorOption;
             sliders[i] = new ColorSlider(guiLeft+211,guiTop+35+i%3*25,opt, ColorType.byIndex(i%3),93);
-            addButton(sliders[i]);
+            addRenderableWidget(sliders[i]);
         }
 
         updateSliderDisplay();
@@ -148,14 +148,14 @@ public class PlainSquareScreen extends withColorSliderScreen {
         boolean isDisplayModeEnabled = !psste.getMode().is2by2() || authoring >= Functions.ONLY_3BY2_PANEL_IN_LEFT;
         for (PSDisplayMode mode : PSDisplayMode.values()){
             int i=mode.getMeta();
-            psDisplayModeButton[i] =  new enableImageButton(
+            psDisplayModeButton[i] =  new EnableImageButton(
                     guiLeft+149, guiTop+6+BUTTON_LENGTH*i, //position on gui
                     BUTTON_LENGTH, BUTTON_LENGTH, //dimension of the button
                     startDisplayModeBtnTexture.getX()+i*BUTTON_LENGTH,startDisplayModeBtnTexture.getY(),
                     startDisplayModeBtnTexture.getX()+i*BUTTON_LENGTH,startDisplayModeBtnTexture.getY()+2*BUTTON_LENGTH,BUTTON_LENGTH,//mapping on button texture (uv and v for hovered mode)
                     PLAIN_SQUARE, // texture resource
                     button -> changeDisplayMode(mode) ) ; //the action to do when clicking on the button
-            this.addButton(psDisplayModeButton[i]);
+            this.addRenderableWidget(psDisplayModeButton[i]);
             psDisplayModeButton[i].active = isDisplayModeEnabled;
             if (isDisplayModeEnabled){
                 psDisplayModeButton[i].visible = (psste.getMode() != mode);
@@ -165,14 +165,14 @@ public class PlainSquareScreen extends withColorSliderScreen {
         boolean isArrowDirectionEnabled = (psste.getMode() == PSDisplayMode.DIRECTION);
         for (int i=0;i<3;i++){
             int finalI = i;
-            arrowDirectionButton[i] = new enableImageButton(
+            arrowDirectionButton[i] = new EnableImageButton(
                     guiLeft+211+i*(BUTTON_LENGTH+8),guiTop+6,
                     BUTTON_LENGTH, ARROW_BUTTON_LENGTH,
                     startDisplayModeBtnTexture.getX() +100+i*BUTTON_LENGTH,startDisplayModeBtnTexture.getY(),
                     startDisplayModeBtnTexture.getX() +100+i*BUTTON_LENGTH,startDisplayModeBtnTexture.getY()+2*ARROW_BUTTON_LENGTH,ARROW_BUTTON_LENGTH,
                     PLAIN_SQUARE,
                     button -> changeArrowDirection(finalI) );
-            this.addButton(arrowDirectionButton[i]);
+            this.addRenderableWidget(arrowDirectionButton[i]);
             arrowDirectionButton[i].active = isArrowDirectionEnabled;
             if (isArrowDirectionEnabled){
                 arrowDirectionButton[i].visible = (psste.getArrowId() != i);
@@ -180,24 +180,24 @@ public class PlainSquareScreen extends withColorSliderScreen {
         }
 
         applyColorButton = new Button(guiLeft+148,guiTop+116,74,20,nullToEmpty("Apply Color"), button->applyColor());
-        this.addButton(applyColorButton);
+        this.addRenderableWidget(applyColorButton);
         textField = new LimitSizeTextField(this.minecraft,guiLeft+10,guiTop+176,Form.PLAIN_SQUARE,Text.getDefaultText());
         textField.setFilter(Letter.VALIDATOR_FOR_TEXT_DISPLAY);
         textField.setResponder(this::onTextWritten);
         this.selectText(0);
-        this.addButton(textField);
+        this.addRenderableWidget(textField);
         int SMALL_BUTTON_LENGTH = 9;
         int SMALL_BUTTON_HEIGHT = 13;
-        leftReduceButton = new enableImageButton(guiLeft+174,guiTop+6,
+        leftReduceButton = new EnableImageButton(guiLeft+174,guiTop+6,
                 SMALL_BUTTON_LENGTH,SMALL_BUTTON_HEIGHT,
                 DIMENSION.getX(),BUTTON_LENGTH, DIMENSION.getX(), BUTTON_LENGTH+2*SMALL_BUTTON_HEIGHT,SMALL_BUTTON_HEIGHT,
                 PLAIN_SQUARE, b->selectReducePosition(false));
-        rightReduceButton = new enableImageButton(guiLeft+174+SMALL_BUTTON_LENGTH, guiTop+6,
+        rightReduceButton = new EnableImageButton(guiLeft+174+SMALL_BUTTON_LENGTH, guiTop+6,
                 SMALL_BUTTON_LENGTH,SMALL_BUTTON_HEIGHT,
                 DIMENSION.getX()+SMALL_BUTTON_LENGTH, BUTTON_LENGTH, DIMENSION.getX()+SMALL_BUTTON_LENGTH,BUTTON_LENGTH+2*SMALL_BUTTON_HEIGHT,SMALL_BUTTON_HEIGHT,
                 PLAIN_SQUARE, b->selectReducePosition(true));
-        this.addButton(leftReduceButton);
-        this.addButton(rightReduceButton);
+        this.addRenderableWidget(leftReduceButton);
+        this.addRenderableWidget(rightReduceButton);
         boolean isReduceButtonEnabled = !psste.getMode().is2by2() || authoring == Functions.ALL_PANEL;
         leftReduceButton.visible =  isReduceButtonEnabled;
         rightReduceButton.visible = isReduceButtonEnabled;
@@ -232,8 +232,8 @@ public class PlainSquareScreen extends withColorSliderScreen {
     }
 
     private void selectReducePosition(boolean isRight){
-        enableImageButton buttonClicked = (isRight)? rightReduceButton : leftReduceButton;
-        enableImageButton buttonClickable = (isRight) ? leftReduceButton : rightReduceButton;
+        EnableImageButton buttonClicked = (isRight)? rightReduceButton : leftReduceButton;
+        EnableImageButton buttonClickable = (isRight) ? leftReduceButton : rightReduceButton;
         isRightReduceSelected = isRight;
         buttonClicked.active = false;
         buttonClickable.active = true;
@@ -321,11 +321,10 @@ public class PlainSquareScreen extends withColorSliderScreen {
     }
 
     @Override
-    public void render(MatrixStack stack,int mouseX, int mouseY, float partialTicks) {
+    public void render(PoseStack stack,int mouseX, int mouseY, float partialTicks) {
         int relX = getGuiStartXPosition();
         int relY = getGuiStartYPosition();
-        assert this.minecraft != null;
-        this.minecraft.getTextureManager().bind(PLAIN_SQUARE);
+        RenderSystem.setShaderTexture(0,PLAIN_SQUARE);
         blit(stack,relX, relY,this.getBlitOffset() , 0.0F, 0.0F, DIMENSION.getX(), DIMENSION.getY(), 256, 512);
         int offset = (isBgColorDisplayed)? 25:0;
         //display of button for the color to define (using color slider) choice between background and foreground color
@@ -343,7 +342,7 @@ public class PlainSquareScreen extends withColorSliderScreen {
         specificRectangle.translate(guiLeft,guiTop);
         if (specificRectangle.contains(mouseX,mouseY)){
             isBgColorDisplayed = !isBgColorDisplayed;
-            Minecraft.getInstance().getSoundManager().play(SimpleSound.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             updateSliderDisplay();
         }
         int newSelTextIndex = getTextSelected(mouseX,mouseY);
@@ -392,9 +391,8 @@ public class PlainSquareScreen extends withColorSliderScreen {
     public static void open(BlockPos panelPos){
         Minecraft minecraft = Minecraft.getInstance();
         assert minecraft.level != null;
-        TileEntity tile = minecraft.level.getBlockEntity(panelPos);
-        if (tile instanceof PlainSquareSignTileEntity){
-            PlainSquareSignTileEntity psste = (PlainSquareSignTileEntity) tile;
+        BlockEntity tile = minecraft.level.getBlockEntity(panelPos);
+        if (tile instanceof PlainSquareSignTileEntity psste){
             Direction facing = psste.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
             BlockPos defaultPSPosBlockPos = psste.getPosition().offsetPos(PanelBlock.DEFAULT_RIGHT_POSITION,panelPos,facing,psste.getMode().is2by2());
             minecraft.setScreen(new PlainSquareScreen(defaultPSPosBlockPos));

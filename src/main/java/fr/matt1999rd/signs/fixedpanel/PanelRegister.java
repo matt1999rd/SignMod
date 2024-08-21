@@ -2,7 +2,7 @@ package fr.matt1999rd.signs.fixedpanel;
 
 import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.fixedpanel.panelblock.AbstractPanelBlock;
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.event.RegistryEvent;
 
 import java.util.ArrayList;
@@ -39,28 +39,17 @@ public class PanelRegister {
     }
 
     public static AbstractPanelBlock asPanel(Form form){
-        switch (form){
-            case UPSIDE_TRIANGLE:
-                return ModBlock.LET_WAY_PANEL;
-            case TRIANGLE:
-                return ModBlock.TRIANGLE_PANEL;
-            case OCTAGON:
-                return ModBlock.STOP_PANEL;
-            case CIRCLE:
-                return ModBlock.CIRCLE_PANEL;
-            case SQUARE:
-                return ModBlock.SQUARE_PANEL;
-            case RECTANGLE:
-                return ModBlock.RECTANGLE_PANEL;
-            case ARROW:
-                return ModBlock.DIRECTION_PANEL;
-            case PLAIN_SQUARE:
-                return ModBlock.HUGE_DIRECTION_PANEL;
-            case DIAMOND:
-                return ModBlock.DIAMOND_PANEL;
-            default:
-                return null;
-        }
+        return switch (form) {
+            case UPSIDE_TRIANGLE -> ModBlock.LET_WAY_PANEL;
+            case TRIANGLE -> ModBlock.TRIANGLE_PANEL;
+            case OCTAGON -> ModBlock.STOP_PANEL;
+            case CIRCLE -> ModBlock.CIRCLE_PANEL;
+            case SQUARE -> ModBlock.SQUARE_PANEL;
+            case RECTANGLE -> ModBlock.RECTANGLE_PANEL;
+            case ARROW -> ModBlock.DIRECTION_PANEL;
+            case PLAIN_SQUARE -> ModBlock.HUGE_DIRECTION_PANEL;
+            case DIAMOND -> ModBlock.DIAMOND_PANEL;
+        };
     }
 
 }

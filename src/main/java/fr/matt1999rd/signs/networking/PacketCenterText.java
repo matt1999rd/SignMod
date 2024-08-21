@@ -2,11 +2,12 @@ package fr.matt1999rd.signs.networking;
 
 import fr.matt1999rd.signs.SignMod;
 import fr.matt1999rd.signs.tileentity.primary.RectangleSignTileEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public class PacketCenterText {
@@ -19,21 +20,20 @@ public class PacketCenterText {
         this.isTextCenter = isTextCenter;
     }
 
-    public PacketCenterText(PacketBuffer buf){
+    public PacketCenterText(FriendlyByteBuf buf){
         panelPos = buf.readBlockPos();
         isTextCenter = buf.readBoolean();
     }
 
-    public void toBytes(PacketBuffer buf){
+    public void toBytes(FriendlyByteBuf buf){
         buf.writeBlockPos(panelPos);
         buf.writeBoolean(isTextCenter);
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctx){
         ctx.get().enqueueWork(()-> {
-            TileEntity te = ctx.get().getSender().getLevel().getBlockEntity(panelPos);
-            if (te instanceof RectangleSignTileEntity){
-                RectangleSignTileEntity dste = (RectangleSignTileEntity) te;
+            BlockEntity te = Objects.requireNonNull(ctx.get().getSender()).getLevel().getBlockEntity(panelPos);
+            if (te instanceof RectangleSignTileEntity dste){
                 dste.setCenterText(isTextCenter);
                 dste.centerText(isTextCenter);
             }else {
