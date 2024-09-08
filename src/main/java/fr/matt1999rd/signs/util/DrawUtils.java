@@ -38,6 +38,11 @@ public class DrawUtils {
         int gColor = Functions.getGreenValue(color);
         int bColor = Functions.getBlueValue(color);
         int aColor = Functions.getAlphaValue(color);
+
+        // UV coordinate used for UV2 rendering UV2 is not given by minecraft code
+        float uLighting = (float)(combinedLight & '\uffff');
+        float vLighting = (float)(combinedLight >> 16 & '\uffff');
+
         //startYUp boolean indicates the first vertex to draw in order to see the triangle (always render clockwise)
         // we always draw A first
         // startYUp = false
@@ -61,15 +66,15 @@ public class DrawUtils {
          A
          */
         boolean startYUp = (xCommon<xSolo);
-        builder.vertex(matrix4f,xCommon,yDown,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw A
+        builder.vertex(matrix4f,xCommon,yDown,z).color(rColor,gColor,bColor,aColor).uv(uLighting,vLighting).endVertex(); //draw A
         if (startYUp){
-            builder.vertex(matrix4f,xCommon,ySolo,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw H
-            builder.vertex(matrix4f,xCommon,yUp,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw C
-            builder.vertex(matrix4f,xSolo,ySolo,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw B
+            builder.vertex(matrix4f,xCommon,ySolo,z).color(rColor,gColor,bColor,aColor).uv(uLighting,vLighting).endVertex(); //draw H
+            builder.vertex(matrix4f,xCommon,yUp,z).color(rColor,gColor,bColor,aColor).uv(uLighting,vLighting).endVertex(); //draw C
+            builder.vertex(matrix4f,xSolo,ySolo,z).color(rColor,gColor,bColor,aColor).uv(uLighting,vLighting).endVertex(); //draw B
         }else {
-            builder.vertex(matrix4f,xSolo,ySolo,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw B
-            builder.vertex(matrix4f,xCommon,yUp,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw C
-            builder.vertex(matrix4f,xCommon,ySolo,z).color(rColor,gColor,bColor,aColor).uv2(combinedLight).endVertex(); //draw H
+            builder.vertex(matrix4f,xSolo,ySolo,z).color(rColor,gColor,bColor,aColor).uv(uLighting,vLighting).endVertex(); //draw B
+            builder.vertex(matrix4f,xCommon,yUp,z).color(rColor,gColor,bColor,aColor).uv(uLighting,vLighting).endVertex(); //draw C
+            builder.vertex(matrix4f,xCommon,ySolo,z).color(rColor,gColor,bColor,aColor).uv(uLighting,vLighting).endVertex(); //draw H
         }
 
     }

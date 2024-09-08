@@ -14,7 +14,7 @@ public class DiamondSignTileEntity extends DrawingSignTileEntity {
     }
 
     @Override
-    protected Form getForm() {
+    public Form getForm() {
         return Form.DIAMOND;
     }
 }

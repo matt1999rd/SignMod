@@ -14,7 +14,7 @@ public class CircleSignTileEntity extends DrawingSignTileEntity {
     }
 
     @Override
-    protected Form getForm() {
+    public Form getForm() {
         return Form.CIRCLE;
     }
 }

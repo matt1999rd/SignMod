@@ -8,12 +8,22 @@ import java.util.List;
 public interface ISignStorage {
     int getRGBPixel(int x, int y);
     void setPixel(int x,int y,int color);
+    //client action function
+    // SET_PIXEL and ERASE_PIXEL
     void setPixel(int x,int y,int color,int length);
+    // FILL_PIXEL
+    void fill(int x,int y,int color);
+    // SET_BG
+    void setBackGround(int color);
+    // MOVE_TEXT
+    void setTextPosition(int ind, int newX, int newY, Form form);
+    // MAKE_LINE
+    void makeLine(int x1,int y1,int x2,int y2,int length,int color);
+    // function for text
     void addText(Text t);
     List<Text> getTexts();
-    int[] getAllPixel();
-    void setAllPixel(int[] pixels);
+
     void setText(Text t, int ind);
-    void setTextPosition(int ind, int newX, int newY, Form form);
+
     void delText(int ind);
 }

@@ -26,6 +26,8 @@ import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -42,7 +44,7 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
     public DrawingSignTileEntity(BlockEntityType<?> tileEntityTypeIn,BlockPos pos,BlockState state) {
         super(tileEntityTypeIn, pos, state);
     }
-    protected abstract Form getForm();
+    public abstract Form getForm();
 
     @OnlyIn(Dist.CLIENT)
     public int getPixelColor(int i,int j){
@@ -102,29 +104,84 @@ public abstract class DrawingSignTileEntity extends PanelTileEntity {
         texts.forEach(text -> text.renderOnScreen(stack,origin,pixelDimension,ind.getAndIncrement() == selTextInd,false));
     }
 
-    public void makeOperationFromScreen(ClientAction action, int x, int y, int color, int length){
-        SignMod.LOGGER.info("doing operation in te with parameter : action : {} x : {} y : {} color : {} length : {}", action, x, y, color, length);
-        switch (action){
-            case SET_BG:
-                storage.ifPresent(signStorage -> signStorage.setBackGround(color));
-                break;
-            case SET_PIXEL:
-                storage.ifPresent(signStorage -> signStorage.setPixel(x,y,color,length));
-                break;
-            case ERASE_PIXEL:
-                storage.ifPresent(signStorage -> signStorage.setPixel(x,y,0,length));
-                break;
-            case MOVE_TEXT:
-                //information !! : color is not a color but indices of text
-                if (color != -1) {
-                    storage.ifPresent(signStorage -> signStorage.setTextPosition(color,x,y,getForm()));
-                }
-                break;
-            case FILL_PIXEL:
-                storage.ifPresent(signStorage -> signStorage.fill(x, y, color));
-                break;
-        }
+    public ByteBuffer encodeSetBackGround(int color){
+        ByteBuffer buf = ByteBuffer.allocate(8);
+        buf.putInt(color);
+        return buf;
+    }
 
+    public void setBackGround(ByteBuffer buf){
+        int color = buf.getInt();
+        storage.ifPresent(signStorage -> signStorage.setBackGround(color));
+    }
+
+    public ByteBuffer encodeSetPixel(int x,int y,int color,int length){
+        ByteBuffer buf = ByteBuffer.allocate(32);
+        buf.putInt(x);
+        buf.putInt(y);
+        buf.putInt(color);
+        buf.putInt(length);
+        return buf;
+    }
+
+    public void setPixel(ByteBuffer buf){
+        int x = buf.getInt();
+        int y = buf.getInt();
+        int color = buf.getInt();
+        int length = buf.getInt();
+        storage.ifPresent(signStorage -> signStorage.setPixel(x,y,color,length));
+    }
+
+    public ByteBuffer encodeFillPixel(int x,int y,int color){
+        ByteBuffer buf = ByteBuffer.allocate(24);
+        buf.putInt(x);
+        buf.putInt(y);
+        buf.putInt(color);
+        return buf;
+    }
+
+    public void fillPixel(ByteBuffer buf){
+        int x = buf.getInt();
+        int y = buf.getInt();
+        int color = buf.getInt();
+        storage.ifPresent(signStorage -> signStorage.fill(x, y, color));
+    }
+
+    public ByteBuffer encodeErasePixel(int x,int y,int length){
+        ByteBuffer buf = ByteBuffer.allocate(24);
+        buf.putInt(x);
+        buf.putInt(y);
+        buf.putInt(length);
+        return buf;
+    }
+
+    public void erasePixel(ByteBuffer buf){
+        int x = buf.getInt();
+        int y = buf.getInt();
+        int length = buf.getInt();
+        storage.ifPresent(signStorage -> signStorage.setPixel(x,y,0,length));
+    }
+
+    public ByteBuffer encodeSetTextPosition(int x,int y,int textIndices){
+        ByteBuffer buf = ByteBuffer.allocate(24);
+        buf.putInt(x);
+        buf.putInt(y);
+        buf.putInt(textIndices);
+        return buf;
+    }
+
+    public void setTextPosition(ByteBuffer buf){
+        int x = buf.getInt();
+        int y = buf.getInt();
+        int textIndices = buf.getInt();
+        if (textIndices != -1) {
+            storage.ifPresent(signStorage -> signStorage.setTextPosition(textIndices,x,y,getForm()));
+        }
+    }
+
+    public void makeOperationFromScreen(ClientAction action, IntBuffer buf){
+        //SignMod.LOGGER.info("doing operation in te with parameter : action : {} x : {} y : {} color : {} length : {}", action, x, y, color, length);
+        action.doActionOnTileEntity(this,buf);
     }
 
     @Nonnull

@@ -4,7 +4,6 @@ import fr.matt1999rd.signs.tileentity.primary.*;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.registries.ObjectHolder;
 
-import java.util.List;
 
 public class TEType {
 

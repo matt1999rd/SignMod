@@ -1,13 +1,11 @@
 package fr.matt1999rd.signs.tileentity.model;
 
-import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.datafixers.util.Pair;
 import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.util.Functions;
 import fr.matt1999rd.signs.tileentity.DirectionSignTileEntity;
-import fr.matt1999rd.signs.util.PictureRenderState;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -17,16 +15,11 @@ import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 @OnlyIn(Dist.CLIENT)
 public class DirectionSignModel extends Model {
     //private final ModelPart panel = new ModelPart(this,0,0)*/;
-    //private final CubeListBuilder arrow1 = CubeListBuilder.create();
-    //private final CubeListBuilder arrow3 = CubeListBuilder.create();
-    //private final CubeListBuilder arrow5 = CubeListBuilder.create();
     private ModelPart panelPart;
     private ModelPart arrow1Part /*= new ModelPart(this,0,0)*/;
     private ModelPart arrow3Part /*= new ModelPart(this,0,0)*/;
@@ -41,7 +34,7 @@ public class DirectionSignModel extends Model {
 
     private void initModel(){
         CubeListBuilder panel = CubeListBuilder.create();
-        panel.addBox(-7,13,-2,4,2,1);
+        panel.addBox(-7,13,-2,14,2,1);
         panelPart = Functions.bake(panel);
         //panel.addBox(-7,13,-2,14,2,1);
         arrow1Part = getArrowPart(1);
@@ -60,7 +53,7 @@ public class DirectionSignModel extends Model {
         //center
         //ModelPart arrowC = new ModelPart(this,0,0);
         CubeListBuilder arrowC = CubeListBuilder.create();
-        //offset of root 2 (pytagore theoreme apply a isosceles right triangle of length i -> hypothenus of root 2 times i)
+        //offset of root 2 (Pythagorean theorem apply an isosceles right triangle of length i -> hypotenuse of root 2 times i)
         //to match with the other square we translate of only the oR minus i
         float oR = Mth.sqrt(2)-1;
         arrowU.addBox(7     ,15-i  ,-2,i,i,1);
@@ -78,23 +71,10 @@ public class DirectionSignModel extends Model {
         arrowDPart.zRot = (float) (+Math.PI/4);
         //ModelPart arrow;
         return Functions.bake(CubeListBuilder.create(),Pair.of("arrowU",arrowUPart),Pair.of("arrowC",arrowCPart), Pair.of("arrowD",arrowDPart));
-        /*
-        if (i == 1) {
-            arrow = arrow1Part;
-        }else if (i == 3){
-            arrow = arrow3Part;
-        }else {
-            arrow = arrow5Part;
-        }
-        arrow.addChild(arrowU);
-        arrow.addChild(arrowC);
-        arrow.addChild(arrowD);
-
-         */
     }
 
     private void setRotationPoint(float x,float y,ModelPart model,double angle){
-        //angleXY is the angle between line ur of initial point and y axis.
+        //angleXY is the angle between line ur of initial point and y-axis.
         double angleXY = Math.atan(x/y);
         //distance between the point and the origin
         float D = Functions.distance(x,y);
@@ -182,6 +162,7 @@ public class DirectionSignModel extends Model {
     }
 
     @Override
+    @ParametersAreNonnullByDefault
     public void renderToBuffer(PoseStack stack, VertexConsumer builder, int p_225598_3_, int p_225598_4_, float p_225598_5_, float p_225598_6_, float p_225598_7_, float p_225598_8_) {
         panelPart.render(stack, builder, p_225598_3_, p_225598_4_, p_225598_5_, p_225598_6_, p_225598_7_, p_225598_8_);
         arrow1Part.render(stack, builder, p_225598_3_, p_225598_4_, p_225598_5_, p_225598_6_, p_225598_7_, p_225598_8_);

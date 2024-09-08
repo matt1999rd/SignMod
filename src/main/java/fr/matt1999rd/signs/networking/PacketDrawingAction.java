@@ -8,51 +8,51 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
+import java.nio.BufferOverflowException;
+import java.nio.IntBuffer;
 import java.util.Objects;
 import java.util.function.Supplier;
 
 public class PacketDrawingAction {
     private final BlockPos panelPos;
     private final byte action;
-    private final byte x;
-    private final byte y;
-    private final byte length;
-    private final int color;
-    public PacketDrawingAction(BlockPos panelPos, ClientAction action, int x, int y, int color, int length){
+    IntBuffer buffer;
+    public PacketDrawingAction(BlockPos panelPos, ClientAction action, IntBuffer buffer){
         this.panelPos = panelPos;
-        this.x = (byte) x;
-        this.y = (byte) y;
-        this.color = color;
+        this.buffer = buffer;
         this.action = (byte)action.getMeta();
-        this.length = (byte)length;
     }
 
     public PacketDrawingAction(FriendlyByteBuf buf){
         panelPos = buf.readBlockPos();
-        color = buf.readInt();
-        byte[] bytes = buf.readByteArray();
-        action = bytes[0];
-        x = bytes[1];
-        y = bytes[2];
-        length = bytes[3];
+        int intBufferLength = buf.readInt();
+        this.buffer = IntBuffer.allocate(intBufferLength);
+        for (int i=0;i<intBufferLength;i++){
+            try {
+                this.buffer.put(buf.readInt());
+            }catch (Exception e){
+                throw new IllegalStateException("Error in buffer transmission. IntBuffer length may be incorrect. See the current error : "+e.getMessage());
+            }
+        }
+        this.buffer.flip();
+        action = buf.readByte();
     }
 
     public void toBytes(FriendlyByteBuf buf){
         buf.writeBlockPos(panelPos);
-        buf.writeInt(color);
-        byte[] byte_array = new byte[4];
-        byte_array[0] = action;
-        byte_array[1] = x;
-        byte_array[2] = y;
-        byte_array[3] = length;
-        buf.writeByteArray(byte_array);
+        int intBufferLength = this.buffer.capacity();
+        buf.writeInt(intBufferLength);
+        for (int i=0;i<intBufferLength;i++){
+            buf.writeInt(this.buffer.get());
+        }
+        buf.writeByte(action);
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctx){
         ctx.get().enqueueWork(()-> {
             BlockEntity te = Objects.requireNonNull(ctx.get().getSender()).getLevel().getBlockEntity(panelPos);
             if (te instanceof DrawingSignTileEntity dste){
-                dste.makeOperationFromScreen(ClientAction.getAction(action),x,y,color,length);
+                dste.makeOperationFromScreen(ClientAction.getAction(action),this.buffer);
             }else {
                 SignMod.LOGGER.warn("unable to send packet to server : invalid position send");
             }

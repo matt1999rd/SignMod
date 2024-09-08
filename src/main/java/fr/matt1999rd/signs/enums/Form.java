@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
@@ -225,4 +226,5 @@ public enum Form {
             case UPSIDE_TRIANGLE -> new UpsideTriangleSignTileEntity(pos, state);
         };
     }
+
 }

@@ -5,6 +5,7 @@ import fr.matt1999rd.signs.enums.PSDisplayMode;
 import fr.matt1999rd.signs.enums.PSPosition;
 import fr.matt1999rd.signs.enums.ScreenType;
 import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
+import fr.matt1999rd.signs.tileentity.DirectionSignTileEntity;
 import fr.matt1999rd.signs.tileentity.PanelTileEntity;
 import fr.matt1999rd.signs.tileentity.primary.PlainSquareSignTileEntity;
 import fr.matt1999rd.signs.util.VoxelDouble;
@@ -90,6 +91,19 @@ public class PanelBlock extends AbstractPanelBlock {
                 vs = Shapes.or(vs, vi_plane.rotate(Direction.NORTH, facing).getAssociatedShape());
             }
             return vs;
+        } //TODO : add voxel shape for other block
+        if (form == Form.ARROW){
+            BlockEntity blockEntity = worldIn.getBlockEntity(pos);
+            if (blockEntity instanceof DirectionSignTileEntity dste){
+                int flag = dste.getLFlag();
+                if (flag == 0)return super.getShape(state, worldIn, pos, context);
+                VoxelShape vs = Shapes.empty();
+                for (int i=0;i<6;i++){
+                    if (((flag>>i)&1) == 1){
+                        DirectionSignTileEntity.addShape(form,vs,i);
+                    }
+                }
+            }
         }
         return super.getShape(state, worldIn, pos, context);
     }

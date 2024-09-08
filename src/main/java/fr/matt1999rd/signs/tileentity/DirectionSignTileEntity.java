@@ -1,6 +1,7 @@
 package fr.matt1999rd.signs.tileentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.fixedpanel.panelblock.AbstractPanelBlock;
 import fr.matt1999rd.signs.util.Text;
 import fr.matt1999rd.signs.capabilities.DirectionCapability;
@@ -8,6 +9,7 @@ import fr.matt1999rd.signs.capabilities.DirectionStorage;
 import fr.matt1999rd.signs.tileentity.primary.ArrowSignTileEntity;
 import fr.matt1999rd.signs.tileentity.primary.RectangleSignTileEntity;
 import fr.matt1999rd.signs.util.Vector2i;
+import fr.matt1999rd.signs.util.VoxelDouble;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -16,6 +18,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
@@ -31,6 +34,10 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
     private final LazyOptional<DirectionStorage> storage = LazyOptional.of(this::getStorage).cast();
     public DirectionSignTileEntity(BlockEntityType<?> tileEntityTypeIn,BlockPos pos, BlockState state) {
         super(tileEntityTypeIn,pos,state);
+    }
+
+    public static void addShape(Form form, VoxelShape vs,int i) {
+        //TODO : add the function here
     }
 
     @Override
@@ -151,7 +158,7 @@ public abstract class DirectionSignTileEntity extends PanelTileEntity{
         }
     }
 
-    //boolean norms : L n for an arrow of length n P i (j) panels where to put the arrow
+    //boolean norms : L n for an arrow of length n, P i1 i2... panels displayed (not indicated for L5 because all panel are displayed : L5 = L5P123)
     //the not values are here to prevent boolean of being used both
     // (L1P1 != L3P12 != L5 and L1P2 != L3P12 != L3P23 != L5 and L1P3 != L3P23 != L5)
     public int getLFlag(){

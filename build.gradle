@@ -96,6 +96,8 @@ dependencies {
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
     minecraft 'net.minecraftforge:forge:1.17.1-37.1.1'
 
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.3'
+
     // You may put jars on which you depend on in ./libs or you may define them like so..
     // compile "some.group:artifact:version:classifier"
     // compile "some.group:artifact:version"

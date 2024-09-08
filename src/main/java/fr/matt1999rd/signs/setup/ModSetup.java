@@ -2,6 +2,7 @@ package fr.matt1999rd.signs.setup;
 
 import fr.matt1999rd.signs.fixedpanel.ModBlock;
 import fr.matt1999rd.signs.networking.Networking;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 

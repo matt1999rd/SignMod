@@ -8,11 +8,9 @@ import fr.matt1999rd.signs.enums.Form;
 import fr.matt1999rd.signs.fixedpanel.support.GridSupport;
 import fr.matt1999rd.signs.tileentity.DirectionSignTileEntity;
 import fr.matt1999rd.signs.tileentity.model.DirectionSignModel;
-import fr.matt1999rd.signs.util.DrawUtils;
 import fr.matt1999rd.signs.util.Functions;
 import fr.matt1999rd.signs.util.PictureRenderState;
 import fr.matt1999rd.signs.util.Text;
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -32,7 +30,7 @@ public class DirectionSignTileEntityRenderer<T extends DirectionSignTileEntity> 
     private final Form form;
     private static final float blockLength = 16F;
 
-    public DirectionSignTileEntityRenderer(BlockEntityRendererProvider.Context context, Form form) {
+    public DirectionSignTileEntityRenderer(Form form) {
         if (!form.isForDirection())throw new IllegalArgumentException("no such form are authorised in direction tileentity");
         model = new DirectionSignModel(form);
         this.form = form;

@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.world.entity.player.Player;
 import static fr.matt1999rd.signs.tileentity.TEType.*;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.fmlclient.registry.ClientRegistry;
 //import net.minecraftforge.fmllegacy.client.registry.ClientRegistry;
 
 public class ClientProxy implements IProxy {
@@ -24,8 +23,8 @@ public class ClientProxy implements IProxy {
         BlockEntityRenderers.register(OCTAGON_SIGN,        context -> new EditingSignTileEntityRenderer<>(context,Form.OCTAGON));
         BlockEntityRenderers.register(CIRCLE_SIGN,         context -> new DrawingSignTileEntityRenderer<>(context,Form.CIRCLE));
         BlockEntityRenderers.register(SQUARE_SIGN,         context -> new DrawingSignTileEntityRenderer<>(context,Form.SQUARE));
-        BlockEntityRenderers.register(RECTANGLE_SIGN,      context -> new DirectionSignTileEntityRenderer<>(context,Form.RECTANGLE));
-        BlockEntityRenderers.register(ARROW_SIGN,          context -> new DirectionSignTileEntityRenderer<>(context,Form.ARROW));
+        BlockEntityRenderers.register(RECTANGLE_SIGN,      context -> new DirectionSignTileEntityRenderer<>(Form.RECTANGLE));
+        BlockEntityRenderers.register(ARROW_SIGN,          context -> new DirectionSignTileEntityRenderer<>(Form.ARROW));
         BlockEntityRenderers.register(PLAIN_SQUARE_SIGN,PlainSquareSignTileEntityRenderer::new);
         BlockEntityRenderers.register(DIAMOND_SIGN,        context -> new DrawingSignTileEntityRenderer<>(context,Form.DIAMOND));
     }

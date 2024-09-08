@@ -35,6 +35,7 @@ import net.minecraft.world.level.Level;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
+import java.nio.IntBuffer;
 
 import static net.minecraft.network.chat.Component.nullToEmpty;
 
@@ -51,6 +52,7 @@ public class DrawingScreen extends WithColorSliderScreen implements IWithEditTex
 
     ResourceLocation BACKGROUND = new ResourceLocation(SignMod.MODID,"textures/gui/drawing_gui.png");
     ResourceLocation PENCIL_BUTTONS = new ResourceLocation(SignMod.MODID,"textures/gui/buttons.png");
+    private Vector2i lastPositionClicked = null;
 
     protected DrawingScreen(Form form,BlockPos panelPos) {
         super(new TextComponent("Drawing Screen"));
@@ -218,7 +220,7 @@ public class DrawingScreen extends WithColorSliderScreen implements IWithEditTex
     }
 
     private void chBgButton(int color) {
-        transferActionToTE(ClientAction.SET_BG,-1,-1,color,-1);
+        transferActionToBE(ClientAction.SET_BG,ClientAction.makeBufferForSETBG(color));
     }
 
     private void changePencilMode(PencilMode newMode){
@@ -294,37 +296,58 @@ public class DrawingScreen extends WithColorSliderScreen implements IWithEditTex
         int y = getYOnScreen(mouseY);
         int length,color;
         boolean makeAction = true;
-        if (option.getMode() == PencilMode.PICK){
-            DrawingSignTileEntity te = getTileEntity();
-            color = te.getPixelColor(x,y);
-            if (color != option.getColor()){
-                super.fixColor(new Color(color));
-            }
-            length = 0;
-            makeAction = false;
-        }else if (option.getMode() != PencilMode.SELECT){
-            color = option.getColor();
-            length = option.getLength();
-        }else {
-            Pair<Integer,Text> indexAndText = getTextClicked(mouseX,mouseY);
-            int newInd = indexAndText.getFirst();
-            // if we have no text selected, and we click on left mouse button to select a text with success
-            if ((!option.isTextSelected() && newInd != Text.UNSELECTED_TEXT_ID && button == GLFW.GLFW_MOUSE_BUTTON_LEFT) ||
-                    // if we have a text selected, and we click on right button to unselect the text with success
-                    (option.isTextSelected() && newInd == Text.UNSELECTED_TEXT_ID && button == GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
-                onTextSelected(newInd);
-            }
-            Text t = indexAndText.getSecond();
-            if (t != null){
-                //the text is moved so that the position where the mouse was clicked is the center of the rectangle formed by text limit
-                x = getXOnScreen(mouseX - t.getLength(true,false)/2F);
-                y = getYOnScreen(mouseY - t.getHeight()/2F);
-            }
-            makeAction = option.isTextSelected();
-            color = option.getTextIndices();
-            length = 1;
+        IntBuffer buf;
+        switch (option.getMode()){
+            case PICK:
+                DrawingSignTileEntity te = getTileEntity();
+                color = te.getPixelColor(x,y);
+                if (color != option.getColor()){
+                    super.fixColor(new Color(color));
+                }
+                break;
+            case WRITE:
+                color = option.getColor();
+                length = option.getLength();
+                if (Screen.hasShiftDown()) { // action as in photofiltre : if maj is press -> make a line from the last position clicked to the new x,y position
+                    if (lastPositionClicked != null) {
+                        buf = ClientAction.makeBufferForMAKELINE(lastPositionClicked.getX(), lastPositionClicked.getY(), x, y, length, color);
+                        transferActionToBE(ClientAction.MAKE_LINE, buf);
+                    }
+                }
+                lastPositionClicked = new Vector2i(x, y);
+                buf = ClientAction.makeBufferForSETPIXEL(x,y,color,length);
+                transferActionToBE(ClientAction.SET_PIXEL,buf);
+                break;
+            case FILL:
+                color = option.getColor();
+                buf = ClientAction.makeBufferForFILLPIXEL(x,y,color);
+                transferActionToBE(ClientAction.FILL_PIXEL,buf);
+            case ERASE:
+                length = option.getLength();
+                buf = ClientAction.makeBufferForERASEPIXEL(x,y,length);
+                transferActionToBE(ClientAction.ERASE_PIXEL,buf);
+            case SELECT:
+                Pair<Integer,Text> indexAndText = getTextClicked(mouseX,mouseY);
+                int newInd = indexAndText.getFirst();
+                // if we have no text selected, and we click on left mouse button to select a text with success
+                if ((!option.isTextSelected() && newInd != Text.UNSELECTED_TEXT_ID && button == GLFW.GLFW_MOUSE_BUTTON_LEFT) ||
+                        // if we have a text selected, and we click on right button to unselect the text with success
+                        (option.isTextSelected() && newInd == Text.UNSELECTED_TEXT_ID && button == GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
+                    onTextSelected(newInd);
+                }
+                Text t = indexAndText.getSecond();
+                if (t != null){
+                    //the text is moved so that the position where the mouse was clicked is the center of the rectangle formed by text limit
+                    x = getXOnScreen(mouseX - t.getLength(true,false)/2F);
+                    y = getYOnScreen(mouseY - t.getHeight()/2F);
+                }
+                if ( option.isTextSelected()) {
+                    int textIndices = option.getTextIndices();
+                    buf = ClientAction.makeBufferForMOVETEXT(x, y, textIndices);
+                    transferActionToBE(ClientAction.MOVE_TEXT, buf);
+                }
+                break;
         }
-        if (makeAction)transferActionToTE(ClientAction.getActionFromMode(option.getMode()),x,y,color,length);
     }
 
     private void onTextSelected(int newIndex){
@@ -393,7 +416,8 @@ public class DrawingScreen extends WithColorSliderScreen implements IWithEditTex
                     int y_offset = (button == 2)? 1 : (button == 3) ? -1 : 0;
                     int x = (int)t.getX(true) + x_offset; //todo : solve the problem : "handle the offset position will lead to define a false position"
                     int y = (int)t.getY(true) + y_offset;
-                    transferActionToTE(ClientAction.MOVE_TEXT,x,y,option.getTextIndices(),1);
+                    IntBuffer buf = ClientAction.makeBufferForMOVETEXT(x,y,option.getTextIndices());
+                    transferActionToBE(ClientAction.MOVE_TEXT,buf);
                 }
             }
         }
@@ -416,10 +440,10 @@ public class DrawingScreen extends WithColorSliderScreen implements IWithEditTex
 
 
     /**             networking task             **/
-    private void transferActionToTE(ClientAction action,int x,int y,int color,int length){
+    private void transferActionToBE(ClientAction action, IntBuffer buffer){
         DrawingSignTileEntity dste = getTileEntity();
-        dste.makeOperationFromScreen(action,x,y,color,length);
-        Networking.INSTANCE.sendToServer(new PacketDrawingAction(panelPos,action,x,y,color,length));
+        dste.makeOperationFromScreen(action,buffer.duplicate());
+        Networking.INSTANCE.sendToServer(new PacketDrawingAction(panelPos,action,buffer));
     }
 
     @Override

@@ -13,7 +13,7 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid = SignMod.MODID,bus = Mod.EventBusSubscriber.Bus.MOD)
 
 public class ModSound {
-    private static final List<SoundEvent> SOUNDS = new ArrayList();
+    private static final List<SoundEvent> SOUNDS = new ArrayList<>();
 
     /*
     public static final SoundEvent ANIMATION_GARAGE =  register("gates:block.garage_animation");
@@ -36,9 +36,7 @@ public class ModSound {
     @SubscribeEvent
     public static void registerSounds(RegistryEvent.Register<SoundEvent> event) {
         System.out.println("registering sound ...");
-        SOUNDS.forEach((soundEvent) -> {
-            event.getRegistry().register(soundEvent);
-        });
+        SOUNDS.forEach((soundEvent) -> event.getRegistry().register(soundEvent));
         SOUNDS.clear();
     }
 

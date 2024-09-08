@@ -8,7 +8,10 @@ import fr.matt1999rd.signs.util.Text;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.util.Mth;
 import net.minecraftforge.common.util.INBTSerializable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Color;
@@ -20,6 +23,7 @@ import java.util.Queue;
 
 public class SignStorage implements ISignStorage, INBTSerializable<CompoundTag> {
 
+    private static final Logger log = LoggerFactory.getLogger(SignStorage.class);
     int[][] picture = new int[128][128];
     List<Text> texts = new ArrayList<>();
     Color bg_color;
@@ -77,22 +81,6 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundTag> 
     }
 
     @Override
-    public int[] getAllPixel() {
-        int[] allPixel = new int[128*128];
-        for (int i=0;i<128*128;i++){
-            allPixel[i] = picture[i/128][i%128];
-        }
-        return allPixel;
-    }
-
-    @Override
-    public void setAllPixel(int[] pixels) {
-        for (int i=0;i<128*128;i++){
-            setPixel(i/128,i%128,pixels[i],1);
-        }
-    }
-
-    @Override
     public void setText(Text t, int ind) {
         try {
             texts.set(ind,t);
@@ -111,6 +99,84 @@ public class SignStorage implements ISignStorage, INBTSerializable<CompoundTag> 
         if (form.rectangleIsIn(newX,newX+t.getLength(true,true),
                 newY,newY+t.getHeight()))t.setPosition(newX,newY);
         else SignMod.LOGGER.info("coordinate leads to out pass the limit of the text : no position set !");
+    }
+
+    private void makeLineBresenham(int dx,int dy,int x1,int y1,int x2,int y2,int length,int color,int octant){
+        boolean nearHor = octant % 4 == 0 || octant % 4 == 1;
+        int e = nearHor ? dx : dy;
+        dx = nearHor ? e*2 : dx*2;
+        dy = nearHor ? dy*2 : e*2;
+        while (true){
+            setPixel(x1,y1,color,length);
+            if (nearHor){
+                x1+=(octant > 3 && octant < 8) ? -1 : 1;
+            }else {
+                y1+=(octant > 3 && octant < 8) ? -1 : 1;
+            }
+            if (((x1 == x2) && nearHor) || ((y1 == y2) && !nearHor)){
+                break;
+            }
+            e+=((octant % 4 == 1 || octant % 4 == 2) ? -1 : 1)*(nearHor ? dy : dx);
+            // test to do :
+            // e<0 if octant is 1st,2nd and 8th (-> octant mod 8 = 0,1,2)
+            // e<=0 if octant is 3rd
+            // e>=0 if octant is 4th,5th,6th (-> octant mod 4 = 0,1,2 and octant mod 8 >= 4)
+            // e>0 if octant is 7th
+            if ((octant % 8 <= 2 && e<0) ||
+                    (octant == 3 && e<=0) ||
+                    ((octant % 8 >= 4 && octant % 4 <= 2) && e>=0) ||
+                    (octant == 7 && e>0)){
+                if (nearHor){
+                    y1 += (octant < 3 || octant == 4 || octant == 7) ? 1 : -1;
+                }else {
+                    x1 += (octant < 3 || octant == 4 || octant == 7) ? 1 : -1;
+                }
+                e+=nearHor ? dx : dy;
+            }
+        }
+    }
+
+    public int getOctant(int dx, int dy){
+        double angle = Mth.atan2(dy,dx); //calculate the angle for -pi to pi not including -pi
+        if (angle < 0){
+            angle += 2*Mth.PI;
+        }
+        return Mth.fastFloor(4*angle/Mth.PI)+1; // first octant has value 1
+    }
+
+    @Override
+    public void makeLine(int x1, int y1, int x2, int y2, int length, int color) {
+        if (Functions.isValidCoordinate(x1,y1) && Functions.isValidCoordinate(x2,y2)){
+            //Bresenham algorithm
+            int dx = x2 - x1;
+            int dy = y2 - y1;
+            if (dx == 0 && dy == 0)return;
+            if (dx == 0){ // vertical vector
+                if (y1>y2){ // directing downward
+                    int yEnd = y1;
+                    y1 = y2;
+                    y2 = yEnd;
+                }
+                for (int y = y1;y<=y2;y++){
+                    setPixel(x1,y,color,length);
+                }
+                return;
+            }
+            if (dy == 0){  // horizontal vector
+                if (x1>x2) { // directing left
+                    int xEnd = x1;
+                    x1 = x2;
+                    x2 = xEnd;
+                }
+                for (int x = x1;x<=x2;x++){
+                    setPixel(x,y1,color,length);
+                }
+                return;
+            }
+            int octant = getOctant(dx,dy);
+            // Base function see fr wikipedia page for information about Bresenham algorithm
+            makeLineBresenham(dx,dy,x1,y1,x2,y2,length,color,octant);
+        }
     }
 
     @Override

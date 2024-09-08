@@ -12,6 +12,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 public class PSDisplayModeScreen extends Screen{
     private static final int LENGTH = 161;
     private static final int TEX_WIDTH = 256;
@@ -76,6 +78,7 @@ public class PSDisplayModeScreen extends Screen{
     }
 
     @Override
+    @ParametersAreNonnullByDefault
     public void render(PoseStack stack,int mouseX, int mouseY, float partialTicks) {
         RenderSystem.setShaderTexture(0,GUI);
         int relX = (this.width-LENGTH) / 2;
